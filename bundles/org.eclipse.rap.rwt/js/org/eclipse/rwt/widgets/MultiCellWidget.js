@@ -562,6 +562,8 @@ qx.Class.define( "org.eclipse.rwt.widgets.MultiCellWidget",  {
       changes.layoutX =    changes.width
                         || changes.layoutX
                         || changes.frameWidth
+                        || changes.maxWidth
+                        || changes.minWidth
                         || changes.initial;
       changes.layoutY =    changes.height
                         || changes.layoutY

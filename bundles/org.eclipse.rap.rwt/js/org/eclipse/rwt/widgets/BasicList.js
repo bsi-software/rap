@@ -16,9 +16,9 @@ qx.Class.define( "org.eclipse.rwt.widgets.BasicList", {
 
   construct : function( multiSelection ) {
     this.base( arguments, new qx.ui.layout.VerticalBoxLayout() );
+    this._manager = new qx.ui.selection.SelectionManager( this._clientArea );
     this.setAppearance( "list" );
     this.setTabIndex( 1 );
-    this._manager = new qx.ui.selection.SelectionManager( this._clientArea );
     this.addEventListener( "mouseover", this._onmouseover );
     this.addEventListener( "mousedown", this._onmousedown );
     this.addEventListener( "mouseup", this._onmouseup );
@@ -243,6 +243,7 @@ qx.Class.define( "org.eclipse.rwt.widgets.BasicList", {
         manager.setAnchorItem( oldAnchorItem );
       }
       this._updateScrollDimension();
+      this._renderMaxItemWidth();
     },
 
     _escapeItems : function( items ) {
@@ -329,8 +330,26 @@ qx.Class.define( "org.eclipse.rwt.widgets.BasicList", {
         items[ i ].setWidth( this._itemWidth );
         items[ i ].setHeight( this._itemHeight );
       }
+      this._renderMaxItemWidth();
       this._vertScrollBar.setIncrement( height );
       this._updateScrollDimension();
+    },
+    
+    _layoutX : function() {
+      this.base( arguments );
+      this._renderMaxItemWidth();
+      //this.setItemDimensions( this._itemWidth, this._itemHeight );
+    },
+    
+    _renderMaxItemWidth : function() {
+      // prevent issues with scrolling on ipad, and also allowing using a fixed width for 
+      // markup using relative width values. Would be easier when the verticalBoxLayout had 
+      // a parent that is scrollable, instead of the items scrolling within the boxlayout.
+      var items = this.getItems();
+      var value = this._horzScrollBar.getDisplay() ? null : this._clientArea.getWidth();
+      for( var i = 0; i < items.length; i++ ) {
+        items[ i ].setMaxWidth( value );
+      }
     },
 
     _updateScrollDimension : function() {

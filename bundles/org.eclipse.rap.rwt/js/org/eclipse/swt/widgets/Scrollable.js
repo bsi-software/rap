@@ -164,6 +164,7 @@ qx.Class.define( "org.eclipse.swt.widgets.Scrollable", {
       this._clientArea.prepareEnhancedBorder();
       this._clientArea.setContainerOverflow( false );
       var el = this._clientArea._getTargetNode();
+      el.style.webkitOverflowScrolling = "touch";
       var eventUtil = qx.html.EventRegistration;
       eventUtil.addEventListener( el, "scroll", this.__onscroll );
       qx.html.Scroll.disableScrolling( this._clientArea.getElement() );
@@ -248,11 +249,17 @@ qx.Class.define( "org.eclipse.swt.widgets.Scrollable", {
     _syncClientArea : function( horz, vert ) {
       if( horz ) {
         var scrollX = this._horzScrollBar.getValue();
-        this._clientArea.setScrollLeft( scrollX );
+        var actualX = this._clientArea.getScrollLeft();
+        if( scrollX !== actualX ) {
+          this._clientArea.setScrollLeft( scrollX );
+        }
       }
       if( vert ) {
         var scrollY = this._vertScrollBar.getValue();
-        this._clientArea.setScrollTop( scrollY );
+        var actualY = this._clientArea.getScrollTop();
+        if( scrollY !== actualY ) { // prevents flickering with elastic scrolling in IOS
+          this._clientArea.setScrollTop( scrollY );
+        }
       }
     },
 

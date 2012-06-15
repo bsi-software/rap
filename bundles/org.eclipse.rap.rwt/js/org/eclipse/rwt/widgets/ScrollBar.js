@@ -61,8 +61,10 @@ qx.Class.define( "org.eclipse.rwt.widgets.ScrollBar", {
     // API
 
     setValue : function( value ) {
-      this._idealValue = value;
-      this._setSelection( value * this._selectionFactor );
+      if( this._idealValue !== value ) { // prevents some needless calculations (minmal performance win)
+        this._idealValue = value;
+        this._setSelection( value * this._selectionFactor );
+      }
     },
     
     getValue : function( value ) {

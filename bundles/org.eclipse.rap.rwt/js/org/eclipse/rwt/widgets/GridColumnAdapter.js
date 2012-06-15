@@ -38,6 +38,7 @@ org.eclipse.rwt.protocol.AdapterRegistry.add( "rwt.widgets.GridColumn", {
     "resizable",
     "moveable",
     "alignment",
+    "verticalAlignment",
     "fixed",
     "customVariant"
   ],

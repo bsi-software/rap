@@ -21,6 +21,7 @@ qx.Class.define( "org.eclipse.rwt.widgets.GridColumn", {
     this._resizable = true;
     this._moveable = false;
     this._alignment = "left";
+    this._verticalAlignment = qx.constant.Layout.ALIGN_MIDDLE;
     this._left = 0;
     this._hasSelectionListener = false;
     this._width = 0;
@@ -206,8 +207,18 @@ qx.Class.define( "org.eclipse.rwt.widgets.GridColumn", {
       this._update();
     },
 
+    setVerticalAlignment : function( value ) {
+      this._grid.setVerticalAlignment( this._index, value );
+      this._verticalAlignment = value;
+      this._update();
+    },
+
     getAlignment : function() {
       return this._alignment;
+    },
+
+    getVerticalAlignment : function() {
+      return this._verticalAlignment;
     },
 
     setFixed : function( value ) {

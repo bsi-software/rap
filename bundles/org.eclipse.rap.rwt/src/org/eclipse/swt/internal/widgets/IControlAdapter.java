@@ -28,6 +28,8 @@ public interface IControlAdapter {
   Color getUserForeground();
   Color getUserBackground();
   Image getUserBackgroundImage();
+  String getUserBackgroundRepeat();
+  String getUserBackgroundPosition();
 
   boolean getBackgroundTransparency();
   

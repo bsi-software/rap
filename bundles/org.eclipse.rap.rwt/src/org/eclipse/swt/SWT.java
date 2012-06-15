@@ -3399,6 +3399,136 @@ public class SWT {
    */
   public static final int ID_QUIT = -6;
 
+  /**
+   * The background image will be repeated both vertically and horizontally. This is default
+   *
+   * @see org.eclipse.swt.widgets.Control#setBackgroundRepeat(int)
+   * @see org.eclipse.swt.widgets.Control#getBackgroundRepeat()
+   *
+   * @since 1.4
+   */
+  public static final int BACKGROUND_REPEAT_REPEAT = 1;
+
+  /**
+   * The background image will be repeated only horizontally
+   *
+   * @see org.eclipse.swt.widgets.Control#setBackgroundRepeat(int)
+   * @see org.eclipse.swt.widgets.Control#getBackgroundRepeat()
+   *
+   * @since 1.4
+   */
+  public static final int BACKGROUND_REPEAT_REPEAT_X = 2;
+
+  /**
+   * The background image will be repeated only vertically
+   *
+   * @see org.eclipse.swt.widgets.Control#setBackgroundRepeat(int)
+   * @see org.eclipse.swt.widgets.Control#getBackgroundRepeat()
+   *
+   * @since 1.4
+   */
+  public static final int BACKGROUND_REPEAT_REPEAT_Y = 3;
+
+  /**
+   * The background-image will not be repeated
+   *
+   * @see org.eclipse.swt.widgets.Control#setBackgroundRepeat(int)
+   * @see org.eclipse.swt.widgets.Control#getBackgroundRepeat()
+   *
+   * @since 1.4
+   */
+  public static final int BACKGROUND_REPEAT_NO_REPEAT = 4;
+
+  /**
+   * The background-position property sets the starting position of a background image. This is default
+   *
+   * @see org.eclipse.swt.widgets.Control#setBackgroundPosition(int)
+   * @see org.eclipse.swt.widgets.Control#getBackgroundPosition()
+   *
+   * @since 1.4
+   */
+  public static final int BACKGROUND_POSITION_LEFT_TOP = -1;
+
+  /**
+   * The background-position property sets the starting position of a background image.
+   *
+   * @see org.eclipse.swt.widgets.Control#setBackgroundPosition(int)
+   * @see org.eclipse.swt.widgets.Control#getBackgroundPosition()
+   *
+   * @since 1.4
+   */
+  public static final int BACKGROUND_POSITION_LEFT_CENTER = -2;
+
+  /**
+   * The background-position property sets the starting position of a background image.
+   *
+   * @see org.eclipse.swt.widgets.Control#setBackgroundPosition(int)
+   * @see org.eclipse.swt.widgets.Control#getBackgroundPosition()
+   *
+   * @since 1.4
+   */
+  public static final int BACKGROUND_POSITION_LEFT_BOTTOM = -3;
+
+  /**
+   * The background-position property sets the starting position of a background image.
+   *
+   * @see org.eclipse.swt.widgets.Control#setBackgroundPosition(int)
+   * @see org.eclipse.swt.widgets.Control#getBackgroundPosition()
+   *
+   * @since 1.4
+   */
+  public static final int BACKGROUND_POSITION_RIGHT_TOP = -4;
+
+  /**
+   * The background-position property sets the starting position of a background image.
+   *
+   * @see org.eclipse.swt.widgets.Control#setBackgroundPosition(int)
+   * @see org.eclipse.swt.widgets.Control#getBackgroundPosition()
+   *
+   * @since 1.4
+   */
+  public static final int BACKGROUND_POSITION_RIGHT_CENTER = -5;
+
+  /**
+   * The background-position property sets the starting position of a background image.
+   *
+   * @see org.eclipse.swt.widgets.Control#setBackgroundPosition(int)
+   * @see org.eclipse.swt.widgets.Control#getBackgroundPosition()
+   *
+   * @since 1.4
+   */
+  public static final int BACKGROUND_POSITION_RIGHT_BOTTOM = -6;
+
+  /**
+   * The background-position property sets the starting position of a background image.
+   *
+   * @see org.eclipse.swt.widgets.Control#setBackgroundPosition(int)
+   * @see org.eclipse.swt.widgets.Control#getBackgroundPosition()
+   *
+   * @since 1.4
+   */
+  public static final int BACKGROUND_POSITION_CENTER_TOP = -7;
+
+  /**
+   * The background-position property sets the starting position of a background image.
+   *
+   * @see org.eclipse.swt.widgets.Control#setBackgroundPosition(int)
+   * @see org.eclipse.swt.widgets.Control#getBackgroundPosition()
+   *
+   * @since 1.4
+   */
+  public static final int BACKGROUND_POSITION_CENTER_CENTER = -8;
+
+  /**
+   * The background-position property sets the starting position of a background image.
+   *
+   * @see org.eclipse.swt.widgets.Control#setBackgroundPosition(int)
+   * @see org.eclipse.swt.widgets.Control#getBackgroundPosition()
+   *
+   * @since 1.4
+   */
+  public static final int BACKGROUND_POSITION_CENTER_BOTTOM = -9;
+
   private static final int RWT_VERSION = getVersion( 1, 500 );
 
   static {

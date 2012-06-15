@@ -15,7 +15,6 @@ qx.Class.define( "org.eclipse.rwt.widgets.Menu", {
   construct : function() {
     this.base( arguments );
     this._layout = null;
-    this._preItem = null;
     this._hasListener = false;
     this._maxCellWidths = null;
     this._menuLayoutScheduled = false;
@@ -50,7 +49,7 @@ qx.Class.define( "org.eclipse.rwt.widgets.Menu", {
   },
 
   destruct : function() {
-    this._disposeObjects( "_openTimer", "_closeTimer", "_preItem", "_animation" );
+    this._disposeObjects( "_openTimer", "_closeTimer", "_animation" );
     this._disposeFields( "_lastActive", 
                          "_lastFocus", 
                          "_layout", 
@@ -531,24 +530,17 @@ qx.Class.define( "org.eclipse.rwt.widgets.Menu", {
    _menuShown : function() {
       if( !org.eclipse.swt.EventUtil.getSuspended() ) {
         if( this._hasListener ) {
-          // create preliminary item              
-          if( this._preItem == null ) {
-            this._preItem = new org.eclipse.rwt.widgets.MenuItem( "push" );
-            this._preItem.setText( "..." );
-            this._preItem.setEnabled( false );
-            this.addMenuItemAt( this._preItem, 0 );
-          }
           // hide all but the preliminary item
           var items = this._layout.getChildren();
           for( var i = 0; i < items.length; i++ ) {
             var item = items[ i ];
             item.setDisplay( false );
           }
-          this._preItem.setDisplay( true );
           this._itemsHiddenFlag = true;
           if( this.getWidth() < 60 ) {
             this.setWidth( 60 );
           }
+          this.setDisplay( false );
           //this.setDisplay( true ); //wouldn't be called if display was false
           // send event
           var wm = org.eclipse.swt.WidgetManager.getInstance();
@@ -587,9 +579,7 @@ qx.Class.define( "org.eclipse.rwt.widgets.Menu", {
         for( var i = 0; i < items.length; i++ ) {
           items[ i ].setDisplay( true );
         }        
-        if( this._preItem ) {
-          this._preItem.setDisplay( false );
-        }
+        this.setDisplay( true );
         this._itemsHiddenFlag = false;      
         if( this._hoverFirstItemFlag ) {
           this.hoverFirstItem();

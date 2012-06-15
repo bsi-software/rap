@@ -27,6 +27,12 @@
     <property name="background-image"
         description="Background image for buttons." />
 
+    <property name="background-position"
+        description="Background image position for buttons." />
+
+    <property name="background-repeat"
+        description="Background image repetition for buttons." />
+
     <property name="border"
         description="Border for buttons." />
 

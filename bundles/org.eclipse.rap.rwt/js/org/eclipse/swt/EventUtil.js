@@ -212,6 +212,8 @@ qx.Class.define( "org.eclipse.swt.EventUtil", {
       var lastMouseDown = org.eclipse.swt.EventUtil._lastMouseDown;
       return    lastMouseDown.mouseUpCount === 1
              && lastMouseDown.widget === widget
+             && lastMouseDown.x === evt.getPageX()
+             && lastMouseDown.y === evt.getPageY()
              && lastMouseDown.button === qx.event.type.MouseEvent.C_BUTTON_LEFT
              && lastMouseDown.button === evt.getButton();
     },

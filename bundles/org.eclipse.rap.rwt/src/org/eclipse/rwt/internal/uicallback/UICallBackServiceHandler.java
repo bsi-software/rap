@@ -51,8 +51,7 @@ public class UICallBackServiceHandler implements IServiceHandler {
 
   public static void writeUICallBackActivation( ProtocolMessageWriter writer ) {
     boolean actual = UICallBackManager.getInstance().needsActivation();
-    boolean preserved = getPreservedUICallBackActivation();
-    if( preserved != actual && actual ) {
+    if( actual ) {
       ensureUICallBack( writer );
       writeUICallBackActivation( writer, actual );
       ISessionStore sessionStore = ContextProvider.getSessionStore();

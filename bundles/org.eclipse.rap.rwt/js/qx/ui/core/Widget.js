@@ -866,11 +866,23 @@ qx.Class.define( "qx.ui.core.Widget", {
     },
 
     /**
+     * Mapping to native style property background-position.
+     */
+    backgroundPosition : {
+      check : ["left top", "left center", "left bottom", "right top", "right center", "right bottom", "center top", "center center", "center bottom"],
+      nullable : true,
+      init : "left top",
+      apply : "_applyBackgroundPosition",
+      themeable : true
+    },
+
+    /**
      * Mapping to native style property background-repeat.
      */
     backgroundRepeat : {
-      check : "String",
+      check : ["repeat", "repeat-x", "repeat-y", "no-repeat"],
       nullable : true,
+      init : "repeat",
       apply : "_applyBackgroundRepeat",
       themeable : true
     },
@@ -3532,6 +3544,9 @@ qx.Class.define( "qx.ui.core.Widget", {
 
     _applyBackgroundRepeat : function(value, old) {
       value ? this.setStyleProperty("backgroundRepeat", value) : this.removeStyleProperty("backgroundRepeat");
+    },
+    _applyBackgroundPosition : function(value, old) {
+      value ? this.setStyleProperty("backgroundPosition", value) : this.removeStyleProperty("backgroundPosition");
     },
 
     ///////////////////

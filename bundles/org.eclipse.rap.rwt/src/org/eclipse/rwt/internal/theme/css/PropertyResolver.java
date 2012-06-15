@@ -118,6 +118,10 @@ public final class PropertyResolver {
       result = readFloat( unit );
     } else if( isAnimationProperty( name ) ) {
       result = readAnimation( unit );
+    } else if( isBackgroundRepeatProperty( name ) ) {
+      result = readBackgroundRepeat( unit );
+    } else if( isBackgroundPositionProperty( name ) ) {
+      result = readBackgroundPosition( unit );
     } else if( isShadowProperty( name ) ) {
       result = readShadow( unit );
     } else {
@@ -865,6 +869,73 @@ public final class PropertyResolver {
     }
     if( result == null ) {
       throw new IllegalArgumentException( "Failed to parse shadow " + toString( unit ) );
+    }
+    return result;
+  }
+
+  static boolean isBackgroundRepeatProperty( final String property ) {
+    return "background-repeat".equals( property );
+  }
+
+  static QxIdentifier readBackgroundRepeat( final LexicalUnit unit ) {
+    QxIdentifier result = null;
+    short type = unit.getLexicalUnitType();
+    if( type == LexicalUnit.SAC_IDENT ) {
+      String value = unit.getStringValue();
+      if(    "repeat".equals( value )
+          || "repeat-x".equals( value )
+          || "repeat-y".equals( value )
+          || "no-repeat".equals( value ) )
+      {
+        result = new QxIdentifier( value );
+      } else {
+        String msg = "Invalid value for background-repeat: " + value;
+        throw new IllegalArgumentException( msg );
+      }
+    }
+    if( result == null ) {
+      throw new IllegalArgumentException( "Failed to parse background-repeat "
+                                          + toString( unit ) );
+    }
+    return result;
+  }
+
+  static boolean isBackgroundPositionProperty(final String property ) {
+    return "background-position".equals( property );
+  }
+
+  static QxIdentifier readBackgroundPosition( final LexicalUnit unit ) {
+    QxIdentifier result = null;
+    short type = unit.getLexicalUnitType();
+    if( type == LexicalUnit.SAC_IDENT ) {
+      StringBuffer valueBuffer = new StringBuffer();
+      valueBuffer = valueBuffer.append( unit.getStringValue() );
+
+      LexicalUnit nextUnit = unit.getNextLexicalUnit();
+      if(nextUnit != null && nextUnit.getStringValue() != null) {
+        valueBuffer = valueBuffer.append( " " ).append( nextUnit.getStringValue() );
+      }
+      String value = valueBuffer.toString();
+      
+      if(    "left top".equals( value )
+          || "left center".equals( value )
+          || "left bottom".equals( value )
+          || "right top".equals( value )
+          || "right center".equals( value )
+          || "right bottom".equals( value )
+          || "center top".equals( value )
+          || "center center".equals( value )
+          || "center bottom".equals( value ) )
+      {
+        result = new QxIdentifier( value );
+      } else {
+        String msg = "Invalid value for background-position: " + value;
+        throw new IllegalArgumentException( msg );
+      }
+    }
+    if( result == null ) {
+      throw new IllegalArgumentException( "Failed to parse background-position "
+                                          + toString( unit ) );
     }
     return result;
   }

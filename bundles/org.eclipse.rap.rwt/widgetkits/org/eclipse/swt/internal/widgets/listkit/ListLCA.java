@@ -18,11 +18,16 @@ import static org.eclipse.rwt.lifecycle.WidgetLCAUtil.renderProperty;
 
 import java.io.IOException;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.eclipse.rwt.RWT;
+import org.eclipse.rwt.internal.lifecycle.JSConst;
 import org.eclipse.rwt.internal.protocol.ClientObjectFactory;
 import org.eclipse.rwt.internal.protocol.IClientObject;
+import org.eclipse.rwt.internal.service.ContextProvider;
 import org.eclipse.rwt.internal.util.NumberFormatUtil;
 import org.eclipse.rwt.lifecycle.*;
+import org.eclipse.swt.events.HyperlinkEvent;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.internal.widgets.*;
@@ -71,6 +76,7 @@ public class ListLCA extends AbstractWidgetLCA {
     readFocusIndex( list );
     ControlLCAUtil.processSelection( list, null, true );
     ControlLCAUtil.processMouseEvents( list );
+    processHyperlinkActivated( list );
     ControlLCAUtil.processKeyEvents( list );
     ControlLCAUtil.processMenuDetect( list );
     WidgetLCAUtil.processHelp( list );
@@ -147,6 +153,22 @@ public class ListLCA extends AbstractWidgetLCA {
       int focusIndex = NumberFormatUtil.parseInt( paramValue );
       getAdapter( list ).setFocusIndex( focusIndex );
     }
+  }
+  
+  private static void processHyperlinkActivated( final List list) {
+    if( WidgetLCAUtil.wasEventSent( list, JSConst.EVENT_HYPERLINK_ACTIVATED ) ) {
+      String url = getHyperlinkActivatedUrl();
+      if( url != null && url.length() > 0 ) {
+        HyperlinkEvent event = new HyperlinkEvent( list, url );
+        event.processEvent();
+      }
+    }
+  }
+  
+  private static String getHyperlinkActivatedUrl() {
+    HttpServletRequest request = ContextProvider.getRequest();
+    String value = request.getParameter( JSConst.EVENT_HYPERLINK_ACTIVATED_URL );
+    return value;
   }
 
   //////////////////

@@ -366,6 +366,22 @@ public class Table extends Composite {
     super.setData( key, value );
   }
 
+  /**
+   * @since 1.4
+   * This property is part of the extended RAP Web-2.0 API, but not part of the SWT API
+   */
+  public void addHyperlinkListener( HyperlinkListener listener ) {
+    HyperlinkEvent.addListener( Table.this, listener );
+  }
+
+  /**
+   * @since 1.4
+   * This property is part of the extended RAP Web-2.0 API, but not part of the SWT API
+   */
+  public void removeHyperlinkListener( HyperlinkListener listener ) {
+    HyperlinkEvent.removeListener( Table.this, listener );
+  }
+
   ///////////////////////////
   // Column handling methods
 

@@ -73,6 +73,7 @@ public class TypedEvent extends Event {
     DeselectionEvent.WIDGET_DESELECTED,
     SWT.Selection,
     SWT.DefaultSelection,
+    HyperlinkEvent.ACTIVATED,
     SWT.MouseUp,
     SWT.Help,
     SWT.KeyUp,

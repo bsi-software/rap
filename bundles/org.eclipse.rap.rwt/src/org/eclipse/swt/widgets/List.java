@@ -1052,6 +1052,22 @@ public class List extends Scrollable {
     checkWidget();
     SelectionEvent.removeListener( this, listener );
   }
+  
+  /**
+   * @since 1.4
+   * This property is part of the extended RAP Web-2.0 API, but not part of the SWT API
+   */
+  public void addHyperlinkListener( HyperlinkListener listener ) {
+    HyperlinkEvent.addListener( List.this, listener );
+  }
+  
+  /**
+   * @since 1.4
+   * This property is part of the extended RAP Web-2.0 API, but not part of the SWT API
+   */
+  public void removeHyperlinkListener( HyperlinkListener listener ) {
+    HyperlinkEvent.removeListener( List.this, listener );
+  }
 
   @Override
   public void setFont( Font font ) {

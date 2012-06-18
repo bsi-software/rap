@@ -22,6 +22,7 @@ qx.Class.define( "org.eclipse.rwt.widgets.Grid", {
     this._hasMultiSelection = false;
     // Internal State:
     this._hasSelectionListener = false;
+    this._hasHyperlinkListeners = false;
     this._leadItem = null;
     this._topItemIndex = 0;
     this._selection = [];
@@ -334,6 +335,10 @@ qx.Class.define( "org.eclipse.rwt.widgets.Grid", {
       this._hasSelectionListener = value;
     },
 
+    setHasHyperlinkListeners : function( value ) {
+      this._hasHyperlinkListeners = value;
+    },
+
     setAlignment : function( column, value ) {
       this._config.alignment[ column ] = value;
       this._scheduleUpdate();
@@ -499,6 +504,12 @@ qx.Class.define( "org.eclipse.rwt.widgets.Grid", {
       if( this._delayedSelection ) {
         this._onMouseDown( event );
       }
+      else {
+        var target = event.getOriginalTarget();
+        if( target instanceof org.eclipse.rwt.widgets.TreeRow ) {
+          this._onRowMouseUp( target, event );
+        }
+      }
     },
 
     _onRowMouseDown : function( row, event ) {
@@ -516,6 +527,13 @@ qx.Class.define( "org.eclipse.rwt.widgets.Grid", {
         } else if( this._isSelectionClick( identifier ) ) {
           this._onSelectionClick( event, item );
         }
+      }
+    },
+
+    _onRowMouseUp : function ( row, event ) {
+      var item = this._rowContainer.findItemByRow( row );
+      if( item != null ) {
+        this._sendHyperlinkActivated( event, item );
       }
     },
 
@@ -962,6 +980,22 @@ qx.Class.define( "org.eclipse.rwt.widgets.Grid", {
         if( detail != null ) {
           req.addParameter( eventName + ".detail", detail );
         }
+        req.send();
+      }
+    },
+
+    _sendHyperlinkActivated : function( event, item ) {
+      var targetNode = event.getDomTarget();
+      if( targetNode
+          && targetNode.nodeName=="span" || targetNode.nodeName=="SPAN"
+          && targetNode.className=="link"
+          && targetNode.getAttribute("href") ){
+        event.setDefaultPrevented( true );
+        var widgetManager = org.eclipse.swt.WidgetManager.getInstance();
+        var itemId = this._getItemId( item );
+        var req = org.eclipse.swt.Request.getInstance();
+        req.addEvent( "org.eclipse.swt.events.hyperlinkActivated", itemId );
+        req.addParameter( "org.eclipse.swt.events.hyperlinkActivated.url", targetNode.getAttribute("href") );
         req.send();
       }
     },

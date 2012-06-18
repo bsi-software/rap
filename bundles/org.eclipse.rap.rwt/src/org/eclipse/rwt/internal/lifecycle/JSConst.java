@@ -57,6 +57,8 @@ public final class JSConst {
     = "org.eclipse.swt.events.help";
   public static final String EVENT_MENU_DETECT
     = "org.eclipse.swt.events.menuDetect";
+  public static final String EVENT_HYPERLINK_ACTIVATED
+    = "org.eclipse.swt.events.hyperlinkActivated";
 
   // Request cell tooltip text event
   public static final String EVENT_CELL_TOOLTIP_REQUESTED
@@ -113,6 +115,8 @@ public final class JSConst {
     = "org.eclipse.swt.events.menuDetect.x";
   public static final String EVENT_MENU_DETECT_Y
     = "org.eclipse.swt.events.menuDetect.y";
+  public static final String EVENT_HYPERLINK_ACTIVATED_URL
+    = "org.eclipse.swt.events.hyperlinkActivated.url";
 
   // Request cell tooltip text event details
   public static final String EVENT_CELL_TOOLTIP_DETAILS

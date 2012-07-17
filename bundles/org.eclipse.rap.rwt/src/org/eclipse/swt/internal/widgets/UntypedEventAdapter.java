@@ -12,6 +12,9 @@
 package org.eclipse.swt.internal.widgets;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
@@ -53,10 +56,10 @@ public final class UntypedEventAdapter
     }
   }
 
-  private final java.util.List<Entry> listeners;
+  private final java.util.Map<Widget,  java.util.List< Entry >> listeners;
 
   public UntypedEventAdapter() {
-    listeners = new ArrayList<Entry>();
+    listeners = new HashMap<Widget, List<Entry>>();
   }
 
   // XXXListener interface imlementations
@@ -267,200 +270,205 @@ public final class UntypedEventAdapter
 
   public void addListener( Widget widget, int eventType, Listener listener ) {
     boolean validEventType = true;
-    switch( eventType ) {
-      case SWT.Move:
-      case SWT.Resize:
-        ControlEvent.addListener( widget, this );
-      break;
-      case SWT.Dispose:
-        DisposeEvent.addListener( widget, this );
-      break;
-      case SWT.Selection:
-      case SWT.DefaultSelection:
-        SelectionEvent.addListener( widget, this );
-      break;
-      case SWT.FocusIn:
-      case SWT.FocusOut:
-        FocusEvent.addListener( widget, this );
-      break;
-      case SWT.Expand:
-      case SWT.Collapse:
-        if( widget instanceof ExpandBar ) {
-          ExpandEvent.addListener( widget, ( ExpandListener )this );
-        } else {
-          TreeEvent.addListener( widget, ( TreeListener )this );
-        }
-      break;
-      case SWT.Activate:
-      case SWT.Deactivate:
-        if( widget instanceof Shell ) {
-          ShellEvent.addListener( widget, this );
-        } else {
-          ActivateEvent.addListener( widget, this );
-        }
-      break;
-      case SWT.Close:
-        ShellEvent.addListener( widget, this );
-      break;
-      case SWT.Hide:
-        if( widget instanceof Control ) {
-          ShowEvent.addListener( widget, this );
-        } else {
-          MenuEvent.addListener( widget, this );
-        }
+    if(!hasListener(widget, eventType)) {
+      switch( eventType ) {
+        case SWT.Move:
+        case SWT.Resize:
+          ControlEvent.addListener( widget, this );
         break;
-      case SWT.Show:
-        if( widget instanceof Control ) {
-          ShowEvent.addListener( widget, this );
-        } else {
-          MenuEvent.addListener( widget, this );
-        }
-      break;
-      case SWT.MenuDetect:
-        MenuDetectEvent.addListener( widget, this );
-      break;
-      case SWT.Modify:
-        ModifyEvent.addListener( widget, this );
-      break;
-      case SWT.Verify:
-        VerifyEvent.addListener( widget, ( VerifyListener )this );
-      break;
-      case SWT.SetData:
-        SetDataEvent.addListener( widget, this );
-      break;
-      case SWT.MouseDown:
-      case SWT.MouseUp:
-      case SWT.MouseDoubleClick:
-        MouseEvent.addListener( widget, this );
-      break;
-      case SWT.KeyDown:
-      case SWT.KeyUp:
-        KeyEvent.addListener( widget, this );
-      break;
-      case SWT.Traverse:
-        TraverseEvent.addListener( widget, ( TraverseListener )this );
-      break;
-      case SWT.Help:
-        HelpEvent.addListener( widget, this );
-      break;
-      case SWT.DragDetect:
-        DragDetectEvent.addListener( widget, ( DragDetectListener )this );
-      break;
-      case SWT.Arm:
-        ArmEvent.addListener( widget, this );
-      break;
-      default:
-        validEventType = false;
+        case SWT.Dispose:
+          DisposeEvent.addListener( widget, this );
+        break;
+        case SWT.Selection:
+        case SWT.DefaultSelection:
+          SelectionEvent.addListener( widget, this );
+        break;
+        case SWT.FocusIn:
+        case SWT.FocusOut:
+          FocusEvent.addListener( widget, this );
+        break;
+        case SWT.Expand:
+        case SWT.Collapse:
+          if( widget instanceof ExpandBar ) {
+            ExpandEvent.addListener( widget, ( ExpandListener )this );
+          } else {
+            TreeEvent.addListener( widget, ( TreeListener )this );
+          }
+        break;
+        case SWT.Activate:
+        case SWT.Deactivate:
+          if( widget instanceof Shell ) {
+            ShellEvent.addListener( widget, this );
+          } else {
+            ActivateEvent.addListener( widget, this );
+          }
+        break;
+        case SWT.Close:
+          ShellEvent.addListener( widget, this );
+        break;
+        case SWT.Hide:
+          if( widget instanceof Control ) {
+            ShowEvent.addListener( widget, this );
+          } else {
+            MenuEvent.addListener( widget, this );
+          }
+          break;
+        case SWT.Show:
+          if( widget instanceof Control ) {
+            ShowEvent.addListener( widget, this );
+          } else {
+            MenuEvent.addListener( widget, this );
+          }
+        break;
+        case SWT.MenuDetect:
+          MenuDetectEvent.addListener( widget, this );
+        break;
+        case SWT.Modify:
+          ModifyEvent.addListener( widget, this );
+        break;
+        case SWT.Verify:
+          VerifyEvent.addListener( widget, ( VerifyListener )this );
+        break;
+        case SWT.SetData:
+          SetDataEvent.addListener( widget, this );
+        break;
+        case SWT.MouseDown:
+        case SWT.MouseUp:
+        case SWT.MouseDoubleClick:
+          MouseEvent.addListener( widget, this );
+        break;
+        case SWT.KeyDown:
+        case SWT.KeyUp:
+          KeyEvent.addListener( widget, this );
+        break;
+        case SWT.Traverse:
+          TraverseEvent.addListener( widget, ( TraverseListener )this );
+        break;
+        case SWT.Help:
+          HelpEvent.addListener( widget, this );
+        break;
+        case SWT.DragDetect:
+          DragDetectEvent.addListener( widget, ( DragDetectListener )this );
+        break;
+        case SWT.Arm:
+          ArmEvent.addListener( widget, this );
+        break;
+        default:
+          validEventType = false;
+      }
     }
     if( validEventType ) {
-      addListener( eventType, listener );
+      List< Entry > list = listeners.get( widget );
+      if(list == null) {
+        list = new ArrayList< Entry >();
+        listeners.put( widget,  list);
+      }
+      list.add( new Entry( eventType, listener ) );
     }
-  }
-
-  void addListener( int eventType, Listener listener ) {
-    listeners.add( new Entry( eventType, listener ) );
   }
 
   public void removeListener( Widget widget, int eventType, Listener listener ) {
     boolean validEventType = true;
-    switch( eventType ) {
-      case SWT.Move:
-      case SWT.Resize:
-        ControlEvent.removeListener( widget, this );
-      break;
-      case SWT.Dispose:
-        DisposeEvent.removeListener( widget, this );
-      break;
-      case SWT.Selection:
-      case SWT.DefaultSelection:
-        SelectionEvent.removeListener( widget, this );
-      break;
-      case SWT.FocusIn:
-      case SWT.FocusOut:
-        FocusEvent.removeListener( widget, this );
-      break;
-      case SWT.Expand:
-      case SWT.Collapse:
-        if( widget instanceof ExpandBar ) {
-          ExpandEvent.removeListener( widget, ( ExpandListener )this );
-        } else {
-          TreeEvent.removeListener( widget, ( TreeListener )this );
-        }
-      break;
-      case SWT.Activate:
-      case SWT.Deactivate:
-        if( widget instanceof Shell ) {
-          ShellEvent.removeListener( widget, this );
-        } else {
-          ActivateEvent.removeListener( widget, this );
-        }
-      break;
-      case SWT.Close:
-        ShellEvent.removeListener( widget, this );
-      break;
-      case SWT.Hide:
-        if( widget instanceof Control ) {
-          ShowEvent.removeListener( widget, this );
-        } else {
-          MenuEvent.removeListener( widget, this );
-        }
+    if(!hasOtherListeners(widget, eventType, listener)) {
+      switch( eventType ) {
+        case SWT.Move:
+        case SWT.Resize:
+          ControlEvent.removeListener( widget, this );
         break;
-      case SWT.Show:
-        if( widget instanceof Control ) {
-          ShowEvent.removeListener( widget, this );
-        } else {
-          MenuEvent.removeListener( widget, this );
-        }
-      break;
-      case SWT.MenuDetect:
-        MenuDetectEvent.removeListener( widget, this );
-      break;
-      case SWT.Modify:
-        ModifyEvent.removeListener( widget, this );
-      break;
-      case SWT.Verify:
-        VerifyEvent.removeListener( widget, ( VerifyListener )this );
-      break;
-      case SWT.SetData:
-        SetDataEvent.removeListener( widget, this );
-      break;
-      case SWT.MouseDown:
-      case SWT.MouseUp:
-      case SWT.MouseDoubleClick:
-        MouseEvent.removeListener( widget, this );
-      break;
-      case SWT.KeyDown:
-      case SWT.KeyUp:
-        KeyEvent.removeListener( widget, this );
-      break;
-      case SWT.Traverse:
-        TraverseEvent.removeListener( widget, ( TraverseListener )this );
-      break;
-      case SWT.Help:
-        HelpEvent.removeListener( widget, this );
-      break;
-      case SWT.DragDetect:
-        DragDetectEvent.removeListener( widget, ( DragDetectListener )this );
-      break;
-      case SWT.Arm:
-        ArmEvent.removeListener( widget, this );
-      break;
-      default:
-        validEventType = false;
+        case SWT.Dispose:
+          DisposeEvent.removeListener( widget, this );
+        break;
+        case SWT.Selection:
+        case SWT.DefaultSelection:
+          SelectionEvent.removeListener( widget, this );
+        break;
+        case SWT.FocusIn:
+        case SWT.FocusOut:
+          FocusEvent.removeListener( widget, this );
+        break;
+        case SWT.Expand:
+        case SWT.Collapse:
+          if( widget instanceof ExpandBar ) {
+            ExpandEvent.removeListener( widget, ( ExpandListener )this );
+          } else {
+            TreeEvent.removeListener( widget, ( TreeListener )this );
+          }
+        break;
+        case SWT.Activate:
+        case SWT.Deactivate:
+          if( widget instanceof Shell ) {
+            ShellEvent.removeListener( widget, this );
+          } else {
+            ActivateEvent.removeListener( widget, this );
+          }
+        break;
+        case SWT.Close:
+          ShellEvent.removeListener( widget, this );
+        break;
+        case SWT.Hide:
+          if( widget instanceof Control ) {
+            ShowEvent.removeListener( widget, this );
+          } else {
+            MenuEvent.removeListener( widget, this );
+          }
+          break;
+        case SWT.Show:
+          if( widget instanceof Control ) {
+            ShowEvent.removeListener( widget, this );
+          } else {
+            MenuEvent.removeListener( widget, this );
+          }
+        break;
+        case SWT.MenuDetect:
+          MenuDetectEvent.removeListener( widget, this );
+        break;
+        case SWT.Modify:
+          ModifyEvent.removeListener( widget, this );
+        break;
+        case SWT.Verify:
+          VerifyEvent.removeListener( widget, ( VerifyListener )this );
+        break;
+        case SWT.SetData:
+          SetDataEvent.removeListener( widget, this );
+        break;
+        case SWT.MouseDown:
+        case SWT.MouseUp:
+        case SWT.MouseDoubleClick:
+          MouseEvent.removeListener( widget, this );
+        break;
+        case SWT.KeyDown:
+        case SWT.KeyUp:
+          KeyEvent.removeListener( widget, this );
+        break;
+        case SWT.Traverse:
+          TraverseEvent.removeListener( widget, ( TraverseListener )this );
+        break;
+        case SWT.Help:
+          HelpEvent.removeListener( widget, this );
+        break;
+        case SWT.DragDetect:
+          DragDetectEvent.removeListener( widget, ( DragDetectListener )this );
+        break;
+        case SWT.Arm:
+          ArmEvent.removeListener( widget, this );
+        break;
+        default:
+          validEventType = false;
+      }
     }
     if( validEventType ) {
-      removeListener( eventType, listener );
-    }
-  }
-
-  void removeListener( int eventType, Listener listener ) {
-    Entry[] entries = getEntries();
-    boolean found = false;
-    for( int i = 0; !found && i < entries.length; i++ ) {
-      // TODO [fappel]: check whether we have also to compare eventType!
-      found = entries[ i ].listener == listener;
-      if( found ) {
-        listeners.remove( entries[ i ] );
+      List< Entry > list = listeners.get( widget );
+      if(list != null) {
+        Entry[] entries = new Entry[ list.size() ];
+        list.toArray( entries );
+        boolean found = false;
+        for( int i = 0; !found && i < entries.length; i++ ) {
+          // TODO [fappel]: check whether we have also to compare eventType!
+          found = entries[ i ].listener == listener;
+          if( found ) {
+            list.remove( entries[ i ] );
+          }
+        }
       }
     }
   }
@@ -659,6 +667,32 @@ public final class UntypedEventAdapter
     return listeners.isEmpty();
   }
 
+  private boolean hasListener(Widget widget, int eventType) {
+    List< Entry > list = listeners.get( widget );
+    if(list != null ) {
+      for( int i = 0; i < list.size(); i++ ) {
+        if(list.get( i ).eventType == eventType) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  private boolean hasOtherListeners(Widget widget, int eventType, Listener listener) {
+    List< Entry > list = listeners.get( widget );
+    if(list != null ) {
+      for( int i = 0; i < list.size(); i++ ) {
+        Entry entry = list.get( i );
+        if(entry.eventType == eventType
+            && !entry.listener.equals( listener )) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   //////////////////
   // helping methods
 
@@ -674,7 +708,15 @@ public final class UntypedEventAdapter
   }
 
   private Entry[] getEntries() {
-    return listeners.toArray( new Entry[ listeners.size() ] );
+    ArrayList< Entry > listenersList = new ArrayList< Entry >();
+    Iterator iterator = listeners.keySet().iterator();
+    while(iterator.hasNext()) {
+      List< Entry > list = listeners.get(iterator.next());
+      listenersList.addAll( list );
+    }
+    Entry[] result = new Entry[ listenersList.size() ];
+    listenersList.toArray( result );
+    return result;
   }
 
   private static Event createEvent( int eventType, Object source ) {

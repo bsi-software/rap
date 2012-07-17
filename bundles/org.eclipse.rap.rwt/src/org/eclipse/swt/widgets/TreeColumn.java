@@ -59,6 +59,7 @@ public class TreeColumn extends Item {
   private int sort;
   int itemImageCount;
   private boolean packed;
+  private int verticalAlignment = SWT.CENTER;
 
   /**
    * Constructs a new instance of this class given its parent (which must be a
@@ -237,6 +238,34 @@ public class TreeColumn extends Item {
       return SWT.RIGHT;
     }
     return SWT.LEFT;
+  }
+
+  /**
+   * @return the vertical alignment {@link SWT#TOP}, {@link SWT#CENTER} (default), {@link SWT#BOTTOM}
+   * @since 1.4
+   * This property is part of the extended RAP Web-2.0 API, but not part of the SWT API
+   */
+  public int getVerticalAlignment() {
+    return verticalAlignment;
+  }
+
+  /**
+   * set the vertical alignment {@link SWT#TOP}, {@link SWT#CENTER} (default), {@link SWT#BOTTOM}
+   * @since 1.4
+   * This property is part of the extended RAP Web-2.0 API, but not part of the SWT API
+   */
+  public void setVerticalAlignment( int align ) {
+    switch(align){
+      case SWT.TOP:
+      case SWT.CENTER:
+      case SWT.BOTTOM:{
+        break;
+      }
+      default:{
+        throw new IllegalArgumentException("unsupported verticalAlignment");
+      }
+    }
+    verticalAlignment = align;
   }
 
   /*

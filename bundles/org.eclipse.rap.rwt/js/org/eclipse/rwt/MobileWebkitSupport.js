@@ -37,7 +37,7 @@ qx.Class.define( "org.eclipse.rwt.MobileWebkitSupport", {
     _fullscreen : window.navigator.standalone,
     _touchListener : null,
     _gestureListener : null,
-    _touchSession : null,  
+    _touchSession : null,
     _allowNativeScroll : false,
 
     _allowedMouseEvents : {
@@ -84,7 +84,7 @@ qx.Class.define( "org.eclipse.rwt.MobileWebkitSupport", {
     setGestureListener : function( func, context ) {
       this._gestureListener = [ func, context ];
     },
-    
+
     setTouchScrolling : function( value ) {
       this._allowNativeScroll = value;
     },
@@ -133,17 +133,17 @@ qx.Class.define( "org.eclipse.rwt.MobileWebkitSupport", {
       target.ongestureend = this.__onGestureEvent;
       target.onorientationchange = this.__onOrientationEvent;
     },
-    
+
     _removeListeners : function() {
       var target = document.body;
       target.ontouchstart = null;
-      target.ontouchmove = null
-      target.ontouchend = null
-      target.ontouchcancel = null
-      target.ongesturestart = null
-      target.ongesturechange = null
-      target.ongestureend = null
-      target.onorientationchange = null
+      target.ontouchmove = null;
+      target.ontouchend = null;
+      target.ontouchcancel = null;
+      target.ongesturestart = null;
+      target.ongesturechange = null;
+      target.ongestureend = null;
+      target.onorientationchange = null;
     },
 
     _registerFilter : function() {
@@ -169,7 +169,7 @@ qx.Class.define( "org.eclipse.rwt.MobileWebkitSupport", {
 
     _onTouchEvent : function( domEvent ) {
       try {
-        if( !org.eclipse.swt.EventUtil.getSuspended() ) { // ipad 2 can get confused about event order in same cases, crashing the entire browser
+        if( !org.eclipse.swt.EventUtil.getSuspended() ) {
           var type = domEvent.type;
           if( this._mouseEnabled ) {
             switch( type ) {
@@ -193,10 +193,16 @@ qx.Class.define( "org.eclipse.rwt.MobileWebkitSupport", {
         }
       } catch( ex ) {
         // problem: touch events emulate mouse events. When an error occurs in the emulation
-        // layer, it would be ignored. However, if the ErrorHandler is called here, it will be 
+        // layer, it would be ignored. However, if the ErrorHandler is called here, it will be
         // called twice if the error occurs within the mouse event handling. Therefore only
-        // alert is used for now: 
+        // alert is used for now:
         alert( "Error in touch event handling:" + ex );
+        if( typeof console === "object" ) {
+          console.log( ex );
+          if( ex.stack ) {
+            console.log( ex.stack );
+          }
+        }
       }
     },
 
@@ -222,12 +228,12 @@ qx.Class.define( "org.eclipse.rwt.MobileWebkitSupport", {
       };
       if( !this._touchSession.type.scroll ) {
         if( !org.eclipse.rwt.Client.isAndroidBrowser() || !this._touchSession.type.focus ) {
-        domEvent.preventDefault();
-      }
+          domEvent.preventDefault();
+        }
       }
       this._moveMouseTo( target, domEvent );
       if( this._touchSession.type.click ) {
-      this._fireMouseEvent( "mousedown", target, domEvent, pos );
+        this._fireMouseEvent( "mousedown", target, domEvent, pos );
       }
       if( this._touchSession.type.virtualScroll ) {
         this._initVirtualScroll( widgetTarget );
@@ -250,14 +256,15 @@ qx.Class.define( "org.eclipse.rwt.MobileWebkitSupport", {
           this._fireMouseEvent( "mousemove", target, domEvent, pos );
         } else {
           var oldPos = this._touchSession.initialPosition;
+          // TODO [tb] : offset too big for good use with touch-scrolling
           if(    Math.abs( oldPos[ 0 ] - pos[ 0 ] ) >= 15
               || Math.abs( oldPos[ 1 ] - pos[ 1 ] ) >= 15 )
           {
             if( this._touchSession.type.click ) {
-            this._cancelMouseSession( domEvent );
+              this._cancelMouseSession( domEvent );
             } else if( this._touchSession.type.focus ) {
-              delete this._touchSession.type.focus; 
-              this._touchSession.type.blur = true; 
+              delete this._touchSession.type.focus;
+              this._touchSession.type.blur = true;
             }
           }
         }
@@ -266,7 +273,7 @@ qx.Class.define( "org.eclipse.rwt.MobileWebkitSupport", {
 
     _handleTouchEnd : function( domEvent ) {
       if( !org.eclipse.rwt.Client.isAndroidBrowser() ) {
-        domEvent.preventDefault(); 
+        domEvent.preventDefault();
       }
       var touch = this._getTouch( domEvent );
       var pos = [ touch.clientX, touch.clientY ];
@@ -312,7 +319,7 @@ qx.Class.define( "org.eclipse.rwt.MobileWebkitSupport", {
 
     _initVirtualScroll : function( widget ) {
       var scrollable;
-      if( widget instanceof org.eclipse.rwt.widgets.TreeRow ) {
+      if( widget instanceof org.eclipse.rwt.widgets.GridRow ) {
         scrollable = widget.getParent().getParent();
       } else {
         scrollable = this._findScrollable( widget );
@@ -326,7 +333,7 @@ qx.Class.define( "org.eclipse.rwt.MobileWebkitSupport", {
       this._touchSession.initScrollX = scrollBarH.getValue();
       this._touchSession.maxScrollX = scrollBarH.getMaximum();
     },
-    
+
     _handleVirtualScroll : function( pos ) {
       var oldPos = this._touchSession.initialPosition;
       var offsetX = oldPos[ 0 ] - pos[ 0 ];
@@ -338,11 +345,13 @@ qx.Class.define( "org.eclipse.rwt.MobileWebkitSupport", {
     },
 
     _finishVirtualScroll : function() {
-      // set ideal value to actual value (prevents scroll on resize when ib max position)
+      // set ideal value to actual value (prevents scroll on resize when on max position)
       var barV = this._touchSession.scrollBarV;
-      barV.setValue( barV.getValue() ); 
+      barV.setValue( barV.getValue() );
     },
-    
+
+    /////////
+    // Helper
 
     _getSessionType : function( domEvent, widgetTarget ) {
       var result = {};
@@ -354,9 +363,9 @@ qx.Class.define( "org.eclipse.rwt.MobileWebkitSupport", {
           var nativeScrollable = this._isScrollableWidget( domEvent.target );
           if( this._allowNativeScroll && nativeScrollable ) {
             result.scroll = true;
-          } else if( nativeScrollable || this._isTreeRow( widgetTarget ) ) {
+          } else if( nativeScrollable || this._isGridRow( widgetTarget ) ) {
             result.virtualScroll = true;
-          } 
+          }
           if( this._isFocusable( widgetTarget ) || this._isSelectable( widgetTarget ) ) {
             // when in a scrolled composite focusing seems only to work reliably with
             // style.webkitOverflowScrolling = "touch";
@@ -367,10 +376,10 @@ qx.Class.define( "org.eclipse.rwt.MobileWebkitSupport", {
           } else {
             result.click = true;
           }
-        } 
+        }
       }
       return result;
-    },    
+    },
 
     _isFocusable : function( widgetTarget ) {
 //      var tagname = node.tagName;
@@ -381,24 +390,24 @@ qx.Class.define( "org.eclipse.rwt.MobileWebkitSupport", {
       }
       return result;
     },
-    
+
     _isSelectable : function( widgetTarget ) {
       var result = false;
-      if(    widgetTarget instanceof org.eclipse.rwt.widgets.ListItem 
-          || widgetTarget instanceof org.eclipse.rwt.widgets.TreeRow ) 
+      if(    widgetTarget instanceof org.eclipse.rwt.widgets.ListItem
+          || widgetTarget instanceof org.eclipse.rwt.widgets.GridRow )
       {
         result = true;
       }
       return result;
     },
-    
+
     _isScrollableWidget : function( node ) {
       var result = false;
       do {
         var style = node.style ? node.style : {};
-        if(    style.overflow === "scroll" 
-            || style.overflowX === "scroll" 
-            || style.overflowY === "scroll" ) 
+        if(    style.overflow === "scroll"
+            || style.overflowX === "scroll"
+            || style.overflowY === "scroll" )
         {
           result = true;
         }
@@ -409,7 +418,11 @@ qx.Class.define( "org.eclipse.rwt.MobileWebkitSupport", {
       } while( node && !result );
       return result;
     },
-    
+
+    _isGridRow : function( widgetTarget ) {
+      return widgetTarget instanceof org.eclipse.rwt.widgets.GridRow;
+    },
+
     _findScrollable : function( widget ) {
       var result = null;
       var currentWidget = widget;
@@ -424,11 +437,7 @@ qx.Class.define( "org.eclipse.rwt.MobileWebkitSupport", {
       } while( currentWidget && !result );
       return result;
     },
-    
-    _isTreeRow : function( widgetTarget ) {
-      return widgetTarget instanceof org.eclipse.rwt.widgets.TreeRow;
-    },
-    
+
     _isDraggableWidget : function ( widgetTarget ) {
       var widgetManager = org.eclipse.swt.WidgetManager.getInstance();
       // We find the nearest control because matching based on widgetTarget can produce too
@@ -444,7 +453,7 @@ qx.Class.define( "org.eclipse.rwt.MobileWebkitSupport", {
           draggable = true;
         } else {
           for( var i = 0; i < appearances.length && !draggable; i++ ) {
-            if( widgetTarget.getAppearance() == appearances[ i ] ) {
+            if( widgetTarget.getAppearance() === appearances[ i ] ) {
               draggable = true;
             }
           }

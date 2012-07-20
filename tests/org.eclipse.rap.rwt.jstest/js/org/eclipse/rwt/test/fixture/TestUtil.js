@@ -921,7 +921,13 @@ org.eclipse.rwt.test.fixture.TestUtil = {
       "action" : "set",
       "properties" : properties
     } );
-     org.eclipse.swt.EventUtil.setSuspended( false );
+    org.eclipse.swt.EventUtil.setSuspended( false );
+  },
+
+  resetObjectManager : function() {
+    var w1 = org.eclipse.rwt.protocol.ObjectManager._map[ "w1" ];
+    org.eclipse.rwt.protocol.ObjectManager._map = { "w1" : w1 };
+    org.eclipse.rwt.protocol.ObjectManager._callbacks = {};
   }
 
 };

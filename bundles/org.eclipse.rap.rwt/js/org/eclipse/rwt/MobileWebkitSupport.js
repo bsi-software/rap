@@ -154,13 +154,13 @@ qx.Class.define( "org.eclipse.rwt.MobileWebkitSupport", {
     _filterMouseEvents : function( event ) {
       var allowedMap = this._allowedMouseEvents;
       var result = typeof event.originalEvent === "object"; // faked event?
-//      if( !result ) {
+      if( !result ) {
 //        result = allowedMap[ "*" ][ event.type ] === true;
 //      }
 //      if( !result && typeof allowedMap[ event.target.tagName ] === "object" ) {
 //        result = allowedMap[ event.target.tagName ][ event.type ] === true;
 //      }
-      if( !result ) {
+//      if( !result ) {
         event.preventDefault();
         event.returnValue = false;
       }
@@ -226,7 +226,7 @@ qx.Class.define( "org.eclipse.rwt.MobileWebkitSupport", {
        "initialWidgetTarget" : widgetTarget,
        "initialPosition" : pos
       };
-      if( !this._touchSession.type.scroll ) {
+      if( !this._touchSession.type.scroll && !this._touchSession.type.outerScroll ) {
         if( !org.eclipse.rwt.Client.isAndroidBrowser() || !this._touchSession.type.focus ) {
           domEvent.preventDefault();
         }
@@ -244,11 +244,11 @@ qx.Class.define( "org.eclipse.rwt.MobileWebkitSupport", {
       if( this._touchSession !== null ) {
                 var touch = this._getTouch( domEvent );
         var pos = [ touch.clientX, touch.clientY ];
-        if( !this._touchSession.type.scroll ) {
-          event.preventDefault();
-        }
         if( this._touchSession.type.virtualScroll ) {
           this._handleVirtualScroll( pos );
+        }
+        if( !this._touchSession.type.scroll ) {
+          event.preventDefault();
         }
         if ( this._touchSession.type.drag ) {
           domEvent.preventDefault();
@@ -317,6 +317,40 @@ qx.Class.define( "org.eclipse.rwt.MobileWebkitSupport", {
       }
     },
 
+    _getSessionType : function( domEvent, widgetTarget ) {
+      var result = {};
+      if( widgetTarget ) {
+        if( this._isDraggableWidget( widgetTarget ) ) {
+          result.drag = true;
+          result.click = true;
+        } else {
+          var nativeScrollable = this._isScrollableWidget( domEvent.target );
+          if( this._isGridRow( widgetTarget ) ) {
+            result.virtualScroll = true;
+            result.outerScroll = this._allowNativeScroll && nativeScrollable;
+          } else if( this._allowNativeScroll && nativeScrollable ) {
+            result.scroll = true;
+          } else if( nativeScrollable ) {
+            result.virtualScroll = true;
+          }
+          if( this._isFocusable( widgetTarget ) || this._isSelectable( widgetTarget ) ) {
+            // when in a scrolled composite focusing seems only to work reliably with
+            // style.webkitOverflowScrolling = "touch";
+            result.focus = true;
+//            if( org.eclipse.rwt.Client.isAndroidBrowser() ) {
+//              delete result.virtualScroll;
+//            }
+          } else {
+            result.click = true;
+          }
+        }
+      }
+      return result;
+    },
+
+    ////////////////////
+    // virtual scrolling
+
     _initVirtualScroll : function( widget ) {
       var scrollable;
       if( widget instanceof org.eclipse.rwt.widgets.GridRow ) {
@@ -340,6 +374,11 @@ qx.Class.define( "org.eclipse.rwt.MobileWebkitSupport", {
       var offsetY = oldPos[ 1 ] - pos[ 1 ];
       var newX = this._touchSession.initScrollX + offsetX;
       var newY = this._touchSession.initScrollY + offsetY;
+      var nudged = newY < 0 || newY > ( this._touchSession.scrollBarV.getMaximum() - this._touchSession.scrollBarV._thumbLength );
+      if( this._touchSession.type.outerScroll && nudged ) {
+        delete this._touchSession.type.virtualScroll;
+        this._touchSession.type.scroll = true;
+      }
       this._touchSession.scrollBarH.setValue( newX );
       this._touchSession.scrollBarV.setValue( newY );
     },
@@ -353,42 +392,8 @@ qx.Class.define( "org.eclipse.rwt.MobileWebkitSupport", {
     /////////
     // Helper
 
-    _getSessionType : function( domEvent, widgetTarget ) {
-      var result = {};
-      if( widgetTarget ) {
-        if( this._isDraggableWidget( widgetTarget ) ) {
-          result.drag = true;
-          result.click = true;
-        } else {
-          var nativeScrollable = this._isScrollableWidget( domEvent.target );
-          if( this._allowNativeScroll && nativeScrollable ) {
-            result.scroll = true;
-          } else if( nativeScrollable || this._isGridRow( widgetTarget ) ) {
-            result.virtualScroll = true;
-          }
-          if( this._isFocusable( widgetTarget ) || this._isSelectable( widgetTarget ) ) {
-            // when in a scrolled composite focusing seems only to work reliably with
-            // style.webkitOverflowScrolling = "touch";
-            result.focus = true;
-//            if( org.eclipse.rwt.Client.isAndroidBrowser() ) {
-//              delete result.virtualScroll;
-//            }
-          } else {
-            result.click = true;
-          }
-        }
-      }
-      return result;
-    },
-
     _isFocusable : function( widgetTarget ) {
-//      var tagname = node.tagName;
-//      return ( tagname === "INPUT" || tagname === "TEXTAREA" );
-      var result = false;
-      if( widgetTarget instanceof org.eclipse.rwt.widgets.BasicText ) {
-        result = true;
-      }
-      return result;
+      return widgetTarget instanceof org.eclipse.rwt.widgets.BasicText;
     },
 
     _isSelectable : function( widgetTarget ) {

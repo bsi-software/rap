@@ -249,7 +249,7 @@ qx.Class.define( "org.eclipse.rwt.MobileWebkitSupport", {
           delete this._touchSession.type.outerScroll;
         }
         if( !this._touchSession.type.scroll ) {
-          event.preventDefault();
+          domEvent.preventDefault();
         }
         if ( this._touchSession.type.drag ) {
           domEvent.preventDefault();

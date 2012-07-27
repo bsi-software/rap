@@ -320,30 +320,25 @@ qx.Class.define( "org.eclipse.rwt.MobileWebkitSupport", {
 
     _getSessionType : function( domEvent, widgetTarget ) {
       var result = {};
-      if( widgetTarget ) {
-        if( this._isDraggableWidget( widgetTarget ) ) {
-          result.drag = true;
-          result.click = true;
+      if( this._isDraggableWidget( widgetTarget ) ) {
+        result.drag = true;
+        result.click = true;
+      } else {
+        var nativeScrollable = this._isScrollableWidget( widgetTarget );
+        if( this._isGridRow( widgetTarget ) ) {
+          result.virtualScroll = true;
+          result.outerScroll = this._allowNativeScroll && nativeScrollable;
+        } else if( this._allowNativeScroll && nativeScrollable ) {
+          result.scroll = true;
+        } else if( nativeScrollable ) {
+          result.virtualScroll = true;
+        }
+        if( this._isFocusable( widgetTarget ) || this._isSelectable( widgetTarget ) ) {
+          // when in a scrolled composite focusing seems only to work reliably with
+          // style.webkitOverflowScrolling = "touch";
+          result.focus = true;
         } else {
-          var nativeScrollable = this._isScrollableWidget( domEvent.target );
-          if( this._isGridRow( widgetTarget ) ) {
-            result.virtualScroll = true;
-            result.outerScroll = this._allowNativeScroll && nativeScrollable;
-          } else if( this._allowNativeScroll && nativeScrollable ) {
-            result.scroll = true;
-          } else if( nativeScrollable ) {
-            result.virtualScroll = true;
-          }
-          if( this._isFocusable( widgetTarget ) || this._isSelectable( widgetTarget ) ) {
-            // when in a scrolled composite focusing seems only to work reliably with
-            // style.webkitOverflowScrolling = "touch";
-            result.focus = true;
-//            if( org.eclipse.rwt.Client.isAndroidBrowser() ) {
-//              delete result.virtualScroll;
-//            }
-          } else {
-            result.click = true;
-          }
+          result.click = true;
         }
       }
       return result;
@@ -407,22 +402,8 @@ qx.Class.define( "org.eclipse.rwt.MobileWebkitSupport", {
       return result;
     },
 
-    _isScrollableWidget : function( node ) {
-      var result = false;
-      do {
-        var style = node.style ? node.style : {};
-        if(    style.overflow === "scroll"
-            || style.overflowX === "scroll"
-            || style.overflowY === "scroll" )
-        {
-          result = true;
-        }
-        node = node.parentNode;
-        if( node === document.body ) {
-          node = null;
-        }
-      } while( node && !result );
-      return result;
+    _isScrollableWidget : function( widget ) {
+      return this._findScrollable( widget ) !== null;
     },
 
     _isGridRow : function( widgetTarget ) {

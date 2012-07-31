@@ -197,6 +197,9 @@ qx.Class.define( "org.eclipse.rwt.MobileWebkitSupport", {
         // called twice if the error occurs within the mouse event handling. Therefore only
         // alert is used for now:
         alert( "Error in touch event handling:" + ex );
+        if( ex.stack ) {
+          alert( ex.stack );
+        }
         if( typeof console === "object" ) {
           console.log( ex );
           if( ex.stack ) {

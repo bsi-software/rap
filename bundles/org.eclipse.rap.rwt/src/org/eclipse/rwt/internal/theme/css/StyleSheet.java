@@ -37,19 +37,44 @@ public final class StyleSheet {
   }
 
   public ConditionalValue[] getValues( String elementName, String propertyName ) {
-    List<ConditionalValue> buffer = new ArrayList<ConditionalValue>();
+    TreeMap<Integer, List<ConditionalValue>> bufferMap = new TreeMap<Integer, List<ConditionalValue>>();
+    List<ConditionalValue> bufferList = new ArrayList<ConditionalValue>();
     for( SelectorWrapper selectorWrapper : selectorWrappers ) {
       String selectorElement = ( ( SelectorExt )selectorWrapper.selector ).getElementName();
       if( selectorElement == null || selectorElement.equals( elementName ) ) {
         QxType value = selectorWrapper.propertyMap.getValue( propertyName );
         if( value != null ) {
           String[] constraints = ( ( SelectorExt )selectorWrapper.selector ).getConstraints();
-          Arrays.sort( constraints );
-          if( !containsConstraintsAlready( buffer, constraints ) ) {
-            buffer.add( new ConditionalValue( constraints, value ) );
+          int weight = 0;
+          for( String string : constraints ) {
+            if( string.startsWith( "." ) ) {
+              weight -= 2;
+            }
+            else {
+              weight -= 1;
+            }
+          }
+          if( !containsConstraintsAlready( bufferList, constraints ) ) {
+            ConditionalValue conditionalValue = new ConditionalValue( constraints, value );
+            bufferList.add( conditionalValue );
+            List<ConditionalValue> buffer;
+            if( bufferMap.containsKey( Integer.valueOf( weight ) ) ) {
+              buffer = bufferMap.get( Integer.valueOf( weight ) );
+            }
+            else {
+              buffer = new ArrayList<ConditionalValue>(constraints.length);
+              bufferMap.put( Integer.valueOf( weight ), buffer );
+            }
+            buffer.add( conditionalValue );
           }
         }
       }
+    }
+    List<ConditionalValue> buffer = new ArrayList<ConditionalValue>();
+    Iterator<List<ConditionalValue>> iterator = bufferMap.values().iterator();
+    while( iterator.hasNext() ) {
+      List<ConditionalValue> condValues = iterator.next();
+      buffer.addAll( condValues );
     }
     return buffer.toArray( new ConditionalValue[ buffer.size() ] );
   }
@@ -77,13 +102,13 @@ public final class StyleSheet {
     return buffer.toString();
   }
 
-  private static boolean containsConstraintsAlready( List conditionalValuesList,
+  private static boolean containsConstraintsAlready( List<ConditionalValue> conditionalValuesList,
                                                      String[] constraints )
   {
-    Iterator iterator = conditionalValuesList.iterator();
+    Iterator<ConditionalValue> iterator = conditionalValuesList.iterator();
     boolean result = false;
     while( iterator.hasNext() && !result ) {
-      ConditionalValue condValue = ( ConditionalValue )iterator.next();
+      ConditionalValue condValue = iterator.next();
       if( Arrays.equals( condValue.constraints, constraints ) ) {
         result = true;
       }

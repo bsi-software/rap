@@ -28,6 +28,7 @@ import org.eclipse.rwt.internal.service.ContextProvider;
 import org.eclipse.rwt.internal.util.NumberFormatUtil;
 import org.eclipse.rwt.lifecycle.*;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.HyperlinkEvent;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.internal.events.EventLCAUtil;
@@ -68,6 +69,7 @@ public final class TableLCA extends AbstractWidgetLCA {
   private static final String PROP_SCROLLBARS_VISIBLE = "scrollBarsVisible";
   private static final String PROP_SCROLLBARS_SELECTION_LISTENER = "scrollBarsSelection";
   private static final String PROP_SELECTION_LISTENER = "selection";
+  private static final String PROP_HYPERLINK_LISTENERS = "hyperlinkListeners";
   private static final String PROP_ALWAYS_HIDE_SELECTION = "alwaysHideSelection";
   private static final String PROP_ENABLE_CELL_TOOLTIP = "enableCellToolTip";
   private static final String PROP_CELL_TOOLTIP_TEXT = "cellToolTipText";
@@ -102,6 +104,7 @@ public final class TableLCA extends AbstractWidgetLCA {
                       PROP_SCROLLBARS_SELECTION_LISTENER,
                       hasScrollBarsSelectionListener( table ) );
     preserveListener( table, PROP_SELECTION_LISTENER, SelectionEvent.hasListener( table ) );
+    preserveListener( table, PROP_HYPERLINK_LISTENERS, HyperlinkEvent.hasListener( table ) );
     preserveProperty( table, PROP_ALWAYS_HIDE_SELECTION, hasAlwaysHideSelection( table ) );
     preserveProperty( table, PROP_ENABLE_CELL_TOOLTIP, CellToolTipUtil.isEnabledFor( table ) );
     preserveProperty( table, PROP_CELL_TOOLTIP_TEXT, null );
@@ -170,6 +173,7 @@ public final class TableLCA extends AbstractWidgetLCA {
                     hasScrollBarsSelectionListener( table ),
                     false );
     renderListener( table, PROP_SELECTION_LISTENER, SelectionEvent.hasListener( table ), false );
+    renderListener( table, PROP_HYPERLINK_LISTENERS, HyperlinkEvent.hasListener( table ), false );
     renderProperty( table, PROP_ALWAYS_HIDE_SELECTION, hasAlwaysHideSelection( table ), false );
     renderProperty( table, PROP_ENABLE_CELL_TOOLTIP, CellToolTipUtil.isEnabledFor( table ), false );
     renderProperty( table, PROP_CELL_TOOLTIP_TEXT, getCellToolTipText( table ), null );

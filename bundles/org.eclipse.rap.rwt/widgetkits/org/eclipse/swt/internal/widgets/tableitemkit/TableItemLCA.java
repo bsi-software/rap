@@ -16,9 +16,14 @@ import static org.eclipse.rwt.lifecycle.WidgetLCAUtil.renderProperty;
 
 import java.io.IOException;
 
+import javax.servlet.http.HttpServletRequest;
+
+import org.eclipse.rwt.internal.lifecycle.JSConst;
 import org.eclipse.rwt.internal.protocol.ClientObjectFactory;
 import org.eclipse.rwt.internal.protocol.IClientObject;
+import org.eclipse.rwt.internal.service.ContextProvider;
 import org.eclipse.rwt.lifecycle.*;
+import org.eclipse.swt.events.HyperlinkEvent;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.internal.widgets.*;
 import org.eclipse.swt.widgets.*;
@@ -66,6 +71,7 @@ public final class TableItemLCA extends AbstractWidgetLCA {
   public void readData( Widget widget ) {
     TableItem item = ( TableItem )widget;
     readChecked( item );
+    processHyperlinkActivated( item );
   }
 
   @Override
@@ -116,6 +122,16 @@ public final class TableItemLCA extends AbstractWidgetLCA {
     String value = WidgetLCAUtil.readPropertyValue( item, "checked" );
     if( value != null ) {
       item.setChecked( Boolean.valueOf( value ).booleanValue() );
+    }
+  }
+
+  private static void processHyperlinkActivated( final TableItem item ) {
+    if( WidgetLCAUtil.wasEventSent( item, JSConst.EVENT_HYPERLINK_ACTIVATED ) ) {
+      String url = getHyperlinkActivatedUrl();
+      if( url != null && url.length() > 0 ) {
+        HyperlinkEvent event = new HyperlinkEvent( item.getParent(), url );
+        event.processEvent();
+      }
     }
   }
 
@@ -217,6 +233,12 @@ public final class TableItemLCA extends AbstractWidgetLCA {
 
   private static int getColumnCount( TableItem item ) {
     return Math.max( 1, item.getParent().getColumnCount() );
+  }
+
+  private static String getHyperlinkActivatedUrl() {
+    HttpServletRequest request = ContextProvider.getRequest();
+    String value = request.getParameter( JSConst.EVENT_HYPERLINK_ACTIVATED_URL );
+    return value;
   }
 
   private static boolean wasCleared( TableItem item ) {

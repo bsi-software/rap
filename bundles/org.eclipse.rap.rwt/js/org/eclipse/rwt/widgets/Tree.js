@@ -22,6 +22,7 @@ qx.Class.define( "org.eclipse.rwt.widgets.Tree", {
     this._hasMultiSelection = false;
     // Internal State:
     this._hasSelectionListener = false;
+    this._hasHyperlinkListeners = false;
     this._leadItem = null;
     this._topItemIndex = 0;
     this._selection = [];
@@ -97,7 +98,7 @@ qx.Class.define( "org.eclipse.rwt.widgets.Tree", {
       this._columnArea.setLeft( 0 );
       // NOTE: Need to use setDisplay here instead of setVisibility,
       // otherwise the appear event would be fired when the widget
-      // is not yet ready to be scrolled 
+      // is not yet ready to be scrolled
       this._columnArea.setDisplay( false );
       // TODO [tb] : Find a cleaner solution to block drag-events
       var dragBlocker = function( event ) { event.stopPropagation(); };
@@ -129,7 +130,7 @@ qx.Class.define( "org.eclipse.rwt.widgets.Tree", {
       this._horzScrollBar.addEventListener( "changeValue", this._onHorzScrollBarChangeValue, this );
       this._vertScrollBar.addEventListener( "changeValue", this._onVertScrollBarChangeValue, this );
       this._rowContainer.setSelectionProvider( this.isItemSelected, this );
-      this._rowContainer.setPostRenderFunction( this._vertScrollBar.autoEnableMerge, 
+      this._rowContainer.setPostRenderFunction( this._vertScrollBar.autoEnableMerge,
                                                 this._vertScrollBar );
     },
 
@@ -293,6 +294,10 @@ qx.Class.define( "org.eclipse.rwt.widgets.Tree", {
       this._hasSelectionListener = value;
     },
 
+    setHasHyperlinkListeners : function( value ) {
+      this._hasHyperlinkListeners = value;
+    },
+
     setAlignment : function( column, value ) {
       this._config.alignment[ column ] = value;
       this._scheduleUpdate();
@@ -357,7 +362,7 @@ qx.Class.define( "org.eclipse.rwt.widgets.Tree", {
     getTableHeader : function() {
       return this._columnArea;
     },
-    
+
     update : function() {
       this._scheduleUpdate();
     },
@@ -421,6 +426,12 @@ qx.Class.define( "org.eclipse.rwt.widgets.Tree", {
       if( this._delayedSelection ) {
         this._onMouseDown( event );
       }
+      else {
+        var target = event.getOriginalTarget();
+        if( target instanceof org.eclipse.rwt.widgets.TreeRow ) {
+          this._onRowMouseUp( target, event );
+        }
+      }
     },
 
     _onRowMouseDown : function( row, event ) {
@@ -440,13 +451,20 @@ qx.Class.define( "org.eclipse.rwt.widgets.Tree", {
         }
       }
     },
-    
+
+    _onRowMouseUp : function ( row, event ) {
+      var item = this._rowContainer.findItemByRow( row );
+      if( item != null ) {
+        this._sendHyperlinkActivated( event, item );
+      }
+    },
+
     _isSelectionClick : function( identifier ) {
       var result;
       if( this._config.fullSelection ) {
         result = identifier !== "checkBox";
       } else {
-        result = identifier === "treeColumn";        
+        result = identifier === "treeColumn";
       }
       return result;
     },
@@ -691,7 +709,7 @@ qx.Class.define( "org.eclipse.rwt.widgets.Tree", {
     },
 
     /**
-     * This will schedule the entire content of the tree (visible rows and gridlines) 
+     * This will schedule the entire content of the tree (visible rows and gridlines)
      * to be re-rendered. Additional tasks my be executed depending on "task" parameter.
      * Is only used within a server-response or when expanding/collapsing. Not used
      * when user is scrolling.
@@ -877,6 +895,22 @@ qx.Class.define( "org.eclipse.rwt.widgets.Tree", {
       }
     },
 
+    _sendHyperlinkActivated : function( event, item ) {
+      var targetNode = event.getDomTarget();
+      if( targetNode
+          && targetNode.nodeName=="span" || targetNode.nodeName=="SPAN"
+          && targetNode.className=="link"
+          && targetNode.getAttribute("href") ){
+        event.setDefaultPrevented( true );
+        var widgetManager = org.eclipse.swt.WidgetManager.getInstance();
+        var itemId = this._getItemId( item );
+        var req = org.eclipse.swt.Request.getInstance();
+        req.addEvent( "org.eclipse.swt.events.hyperlinkActivated", itemId );
+        req.addParameter( "org.eclipse.swt.events.hyperlinkActivated.url", targetNode.getAttribute("href") );
+        req.send();
+      }
+    },
+
     _isDoubleClicked : function( event, item ) {
       var result = false;
       var mousedown = event.getType() === "mousedown";
@@ -886,8 +920,8 @@ qx.Class.define( "org.eclipse.rwt.widgets.Tree", {
         var offset = event.getPageX();
         var timeDiff = org.eclipse.swt.EventUtil.DOUBLE_CLICK_TIME;
         var offsetDiff = 8;
-        if (    stamp.getTime() - this._selectionTimestamp.getTime() < timeDiff 
-             && Math.abs( this._selectionOffsetX - offset ) < offsetDiff ) 
+        if (    stamp.getTime() - this._selectionTimestamp.getTime() < timeDiff
+             && Math.abs( this._selectionOffsetX - offset ) < offsetDiff )
         {
           result = true;
         }
@@ -1055,7 +1089,7 @@ qx.Class.define( "org.eclipse.rwt.widgets.Tree", {
     },
 
     _checkDisposedItems : function() {
-      // NOTE : FocusItem might already been fixed by the server. But since this is not 
+      // NOTE : FocusItem might already been fixed by the server. But since this is not
       //        always the case (depending on the server-side widget), we also do it here.
       if( this._focusItem && this._focusItem.isDisposed() ) {
         this._focusItem = null;

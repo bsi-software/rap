@@ -19,6 +19,9 @@ qx.Class.define("org.eclipse.rwt.widgets.ListItem", {
     this.base( arguments, [ "label" ] );
     this.initMinWidth();
     this.setHorizontalChildrenAlign( "left" );
+    if( org.eclipse.rwt.Client.isMobileSafari() ) {
+      this.setStyleProperty( "webkitTransform", "translateZ(0)" ); // prevent rendering glitch with touch-scrolling
+    }
   },
 
   properties : {
@@ -30,7 +33,7 @@ qx.Class.define("org.eclipse.rwt.widgets.ListItem", {
 
     minWidth : {
       refine : true,
-      init : "auto"
+      init : "0px"
     },
 
     width : {
@@ -55,6 +58,33 @@ qx.Class.define("org.eclipse.rwt.widgets.ListItem", {
       return this.getCellContent( 0 );
     },
     
+    // NOTE: there are issues with list and markup based on the items width/height
+    // MultiCellWidget might not be ideal since it tries to measure and layout its content
+    
+    getCellWidth : function( cell, ignoreFlexible ) {
+      var result;
+      if( cell === 0 && !ignoreFlexible ) {// and markup enable
+        result = this.getInnerWidth(); // for markup to be able to work with relative widths/right
+      } else {
+        result = this.base( arguments, cell, ignoreFlexible );
+      }
+      return result;
+    },
+    
+    getCellHeight : function( cell, ignoreFlexible ) {
+      var result;
+      if( cell === 0 && !ignoreFlexible ) { // and markup enabled
+        result = this.getInnerHeight(); // for markup to be able to work with relative heights/bottom
+      } else {
+        result = this.base( arguments, cell, ignoreFlexible );
+      }
+      return result;
+    },
+    
+    cellIsDisplayable : function() {
+      return true;
+    },
+
     matchesString : function( value ) {
       var content;
       var el = this.getCellNode( 0 );

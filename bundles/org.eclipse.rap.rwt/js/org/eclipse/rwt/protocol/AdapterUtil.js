@@ -342,6 +342,7 @@ org.eclipse.rwt.protocol.AdapterUtil = {
       // [if] do nothing, parent is set in ScrolledComposite#setContent which is called from the 
       // server-side - see bug 349161
       widget.setUserData( "scrolledComposite", parent ); // Needed by "bounds" handler
+      widget.setStyleProperty( "webkitTransform", "translateZ(0)" );  // prevent rendering glitch with touch-scrolling
     } else if ( parent instanceof qx.ui.pageview.tabview.TabView ) {
       widget.setUserData( "tabFolder", parent ); // Needed by "bounds" handler
     } else if( parent instanceof org.eclipse.swt.widgets.ExpandBar ) {

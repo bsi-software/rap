@@ -2436,13 +2436,31 @@ qx.Class.define( "qx.ui.core.Widget", {
       return null;
     },
 
-    _computeFrameWidth : function() {
+    _computeFrameWidth : function() { // See Bug 378951 
       var fw = this._cachedBorderLeft + this.getPaddingLeft() + this.getPaddingRight() + this._cachedBorderRight;
+//      switch(this.getOverflow()) {
+//        case "scroll":
+//        case "scrollY":
+//          fw += qx.ui.core.Widget.SCROLLBAR_SIZE;
+//          break;
+//        case "auto":
+//          // This seems to be really hard to implement
+//          break;
+//      }
       return fw;
     },
 
     _computeFrameHeight : function() {
       var fh = this._cachedBorderTop + this.getPaddingTop() + this.getPaddingBottom() + this._cachedBorderBottom;
+//      switch(this.getOverflow()) {
+//        case "scroll":
+//        case "scrollX":
+//          fh += qx.ui.core.Widget.SCROLLBAR_SIZE;
+//          break;
+//        case "auto":
+//          // This seems to be really hard to implement
+//          break;
+//      }
       return fh;
     },
 

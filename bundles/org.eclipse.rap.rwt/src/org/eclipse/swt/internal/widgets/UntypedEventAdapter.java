@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2002, 2011 Innoopract Informationssysteme GmbH and others.
+ * Copyright (c) 2002, 2012 Innoopract Informationssysteme GmbH and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,6 +12,9 @@
 package org.eclipse.swt.internal.widgets;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
@@ -27,6 +30,7 @@ public final class UntypedEventAdapter
              SelectionListener,
              FocusListener,
              TreeListener,
+             ExpandListener,
              ShellListener,
              MenuListener,
              ModifyListener,
@@ -52,10 +56,10 @@ public final class UntypedEventAdapter
     }
   }
 
-  private final java.util.List<Entry> listeners;
+  private final java.util.Map<Widget,  java.util.List< Entry >> listeners;
 
   public UntypedEventAdapter() {
-    listeners = new ArrayList<Entry>();
+    listeners = new HashMap<Widget, List<Entry>>();
   }
 
   // XXXListener interface imlementations
@@ -109,6 +113,18 @@ public final class UntypedEventAdapter
   }
 
   public void treeExpanded( TreeEvent typedEvent ) {
+    Event event = createEvent( SWT.Expand, typedEvent.getSource() );
+    copyFields( typedEvent, event );
+    dispatchEvent( event );
+  }
+
+  public void itemCollapsed( ExpandEvent typedEvent ) {
+    Event event = createEvent( SWT.Collapse, typedEvent.getSource() );
+    copyFields( typedEvent, event );
+    dispatchEvent( event );
+  }
+
+  public void itemExpanded( ExpandEvent typedEvent ) {
     Event event = createEvent( SWT.Expand, typedEvent.getSource() );
     copyFields( typedEvent, event );
     dispatchEvent( event );
@@ -254,6 +270,7 @@ public final class UntypedEventAdapter
 
   public void addListener( Widget widget, int eventType, Listener listener ) {
     boolean validEventType = true;
+    if(!hasListener(widget, eventType)) {
     switch( eventType ) {
       case SWT.Move:
       case SWT.Resize:
@@ -272,7 +289,11 @@ public final class UntypedEventAdapter
       break;
       case SWT.Expand:
       case SWT.Collapse:
+          if( widget instanceof ExpandBar ) {
+            ExpandEvent.addListener( widget, ( ExpandListener )this );
+          } else {
         TreeEvent.addListener( widget, ( TreeListener )this );
+          }
       break;
       case SWT.Activate:
       case SWT.Deactivate:
@@ -335,17 +356,20 @@ public final class UntypedEventAdapter
       default:
         validEventType = false;
     }
-    if( validEventType ) {
-      addListener( eventType, listener );
     }
+    if( validEventType ) {
+      List< Entry > list = listeners.get( widget );
+      if(list == null) {
+        list = new ArrayList< Entry >();
+        listeners.put( widget,  list);
+    }
+      list.add( new Entry( eventType, listener ) );
   }
-
-  void addListener( int eventType, Listener listener ) {
-    listeners.add( new Entry( eventType, listener ) );
   }
 
   public void removeListener( Widget widget, int eventType, Listener listener ) {
     boolean validEventType = true;
+    if(!hasOtherListeners(widget, eventType, listener)) {
     switch( eventType ) {
       case SWT.Move:
       case SWT.Resize:
@@ -364,7 +388,11 @@ public final class UntypedEventAdapter
       break;
       case SWT.Expand:
       case SWT.Collapse:
+          if( widget instanceof ExpandBar ) {
+            ExpandEvent.removeListener( widget, ( ExpandListener )this );
+          } else {
         TreeEvent.removeListener( widget, ( TreeListener )this );
+          }
       break;
       case SWT.Activate:
       case SWT.Deactivate:
@@ -427,19 +455,20 @@ public final class UntypedEventAdapter
       default:
         validEventType = false;
     }
-    if( validEventType ) {
-      removeListener( eventType, listener );
     }
-  }
-
-  void removeListener( int eventType, Listener listener ) {
-    Entry[] entries = getEntries();
+    if( validEventType ) {
+      List< Entry > list = listeners.get( widget );
+      if(list != null) {
+        Entry[] entries = new Entry[ list.size() ];
+        list.toArray( entries );
     boolean found = false;
     for( int i = 0; !found && i < entries.length; i++ ) {
       // TODO [fappel]: check whether we have also to compare eventType!
       found = entries[ i ].listener == listener;
       if( found ) {
-        listeners.remove( entries[ i ] );
+            list.remove( entries[ i ] );
+          }
+        }
       }
     }
   }
@@ -488,7 +517,11 @@ public final class UntypedEventAdapter
         break;
       case SWT.Expand:
       case SWT.Collapse:
+        if( widget instanceof ExpandBar ) {
+          result = ExpandEvent.hasListener( widget );
+        } else {
         result = TreeEvent.hasListener( widget );
+        }
         break;
       case SWT.Activate:
       case SWT.Deactivate:
@@ -566,10 +599,10 @@ public final class UntypedEventAdapter
       break;
       case SWT.Expand:
       case SWT.Collapse:
-        if( event.widget instanceof Tree ) {
-          typedEvent = new TreeEvent( event );
-        } else {
+        if( event.widget instanceof ExpandBar ) {
           typedEvent = new ExpandEvent( event );
+        } else {
+          typedEvent = new TreeEvent( event );
         }
       break;
       case SWT.Activate:
@@ -634,6 +667,32 @@ public final class UntypedEventAdapter
     return listeners.isEmpty();
   }
 
+  private boolean hasListener(Widget widget, int eventType) {
+    List< Entry > list = listeners.get( widget );
+    if(list != null ) {
+      for( int i = 0; i < list.size(); i++ ) {
+        if(list.get( i ).eventType == eventType) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  private boolean hasOtherListeners(Widget widget, int eventType, Listener listener) {
+    List< Entry > list = listeners.get( widget );
+    if(list != null ) {
+      for( int i = 0; i < list.size(); i++ ) {
+        Entry entry = list.get( i );
+        if(entry.eventType == eventType
+            && !entry.listener.equals( listener )) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   //////////////////
   // helping methods
 
@@ -649,7 +708,15 @@ public final class UntypedEventAdapter
   }
 
   private Entry[] getEntries() {
-    return listeners.toArray( new Entry[ listeners.size() ] );
+    ArrayList< Entry > listenersList = new ArrayList< Entry >();
+    Iterator iterator = listeners.keySet().iterator();
+    while(iterator.hasNext()) {
+      List< Entry > list = listeners.get(iterator.next());
+      listenersList.addAll( list );
+    }
+    Entry[] result = new Entry[ listenersList.size() ];
+    listenersList.toArray( result );
+    return result;
   }
 
   private static Event createEvent( int eventType, Object source ) {
@@ -681,6 +748,18 @@ public final class UntypedEventAdapter
   }
 
   private static void copyFields( TreeEvent from, Event to ) {
+    copyFields( ( TypedEvent )from, to );
+    to.detail = from.detail;
+    to.doit = from.doit;
+    to.x = from.x;
+    to.y = from.y;
+    to.height = from.height;
+    to.width = from.width;
+    to.item = from.item;
+    to.text = from.text;
+  }
+
+  private static void copyFields( ExpandEvent from, Event to ) {
     copyFields( ( TypedEvent )from, to );
     to.detail = from.detail;
     to.doit = from.doit;

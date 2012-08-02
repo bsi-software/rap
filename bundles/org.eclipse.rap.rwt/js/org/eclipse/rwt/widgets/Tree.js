@@ -303,6 +303,11 @@ qx.Class.define( "org.eclipse.rwt.widgets.Tree", {
       this._scheduleUpdate();
     },
 
+    setVerticalAlignment : function( column, value ) {
+      this._config.verticalAlignment[ column ] = value;
+      this._scheduleUpdate();
+    },
+
     setLinesVisible : function( value ) {
       this._config.linesVisible = value;
       if( value ) {

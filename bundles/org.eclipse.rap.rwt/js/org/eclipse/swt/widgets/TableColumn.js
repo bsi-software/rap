@@ -23,6 +23,7 @@ qx.Class.define( "org.eclipse.swt.widgets.TableColumn", {
     this._parentIsTree = parent.getAppearance() === "tree";
     this.setAppearance( this._parentIsTree ? "tree-column" : "table-column" );
     this.setHorizontalChildrenAlign( qx.constant.Layout.ALIGN_LEFT ); 
+    this.setVerticalChildrenAlign( qx.constant.Layout.ALIGN_MIDDLE ); 
     this.setOverflow( qx.constant.Style.OVERFLOW_HIDDEN );
     this._resizable = true;
     this._moveable = false;
@@ -145,6 +146,11 @@ qx.Class.define( "org.eclipse.swt.widgets.TableColumn", {
       this._table.setAlignment( this._index, value );
       this.getLabelObject().setTextAlign( value );
       this.setHorizontalChildrenAlign( value );
+    },
+
+    setVerticalAlignment : function( value ) {
+      this._table.setVerticalAlignment( this._index, value );
+      this.setVerticalChildrenAlign( value );
     },
 
     setFixed : function( value ) {

@@ -392,6 +392,9 @@ qx.Class.define( "org.eclipse.rwt.widgets.TreeRow", {
         var left = this._getItemImageLeft( item, cell, config );
         var width = this._getItemImageWidth( item, cell, config );
         this._setBounds( element, left, 0, width, this.getHeight() );
+        if(element.style.verticalAlign=="middle"){
+          element.style.lineHeight = element.style.height;
+        }
       }
     },
 
@@ -406,7 +409,8 @@ qx.Class.define( "org.eclipse.rwt.widgets.TreeRow", {
         element = this._getTextElement( cell, config );
         this._renderElementContent( element, item, cell, config.markupEnabled );
         if( renderBounds ) {
-          element.style.textAlign = isTreeColumn ? "left" : this._getAlignment( cell, config );
+          element.style.textAlign = treeColumn ? "left" : this._getAlignment( cell, config );
+          element.style.verticalAlign = this._getVerticalAlignment( cell, config );
         }
         this._styleLabel( element, item, cell, config );
       } else if( this._cellLabels[ cell ] ) {
@@ -822,6 +826,10 @@ qx.Class.define( "org.eclipse.rwt.widgets.TreeRow", {
 
     _getAlignment : function( column, config ) {
       return config.alignment[ column ] ? config.alignment[ column ] : "left";
+    },
+
+    _getVerticalAlignment : function( column, config ) {
+      return config.verticalAlignment[ column ] ? config.verticalAlignment[ column ] : "middle";
     },
 
     _getIndentionOffset : function( level, config ) {

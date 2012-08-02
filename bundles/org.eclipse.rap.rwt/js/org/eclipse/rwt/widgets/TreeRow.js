@@ -182,7 +182,7 @@ qx.Class.define( "org.eclipse.rwt.widgets.TreeRow", {
                    || this._styleMap.overlayBackgroundGradient !== null;
       return result;
     },
-    
+
     _renderIndention : function( item, config, hoverElement ) {
       var expandSymbol = this._getExpandSymbol( item, config, hoverElement );
       if( expandSymbol != null ) {
@@ -353,7 +353,7 @@ qx.Class.define( "org.eclipse.rwt.widgets.TreeRow", {
         this._renderCellBackgroundBounds( item, cell, config );
       }
     },
-    
+
     _renderCellBackgroundBounds : function( item, cell, config ) {
       var element = this._cellBackgrounds[ cell ];
       if( element ) {
@@ -385,7 +385,7 @@ qx.Class.define( "org.eclipse.rwt.widgets.TreeRow", {
       }
       return element;
     },
-    
+
     _renderCellImageBounds : function( item, cell, config ) {
       var element = this._cellImages[ cell ];
       if( element ) {
@@ -409,7 +409,7 @@ qx.Class.define( "org.eclipse.rwt.widgets.TreeRow", {
         element = this._getTextElement( cell, config );
         this._renderElementContent( element, item, cell, config.markupEnabled );
         if( renderBounds ) {
-          element.style.textAlign = treeColumn ? "left" : this._getAlignment( cell, config );
+          element.style.textAlign = isTreeColumn ? "left" : this._getAlignment( cell, config );
           element.style.verticalAlign = this._getVerticalAlignment( cell, config );
         }
         this._styleLabel( element, item, cell, config );
@@ -423,7 +423,7 @@ qx.Class.define( "org.eclipse.rwt.widgets.TreeRow", {
       }
       return element;
     },
-    
+
     _renderCellLabelBounds : function( item, cell, config ) {
       var element = this._cellLabels[ cell ];
       if( element ) {
@@ -469,8 +469,8 @@ qx.Class.define( "org.eclipse.rwt.widgets.TreeRow", {
 
     _getCellBackgroundColor : function( item, cell, config ) {
       var result;
-      if(    config.enabled === false 
-          || this._styleMap.overlayBackground !== "undefined" 
+      if(    config.enabled === false
+          || this._styleMap.overlayBackground !== "undefined"
       ) {
         result = "undefined";
       } else {
@@ -613,7 +613,7 @@ qx.Class.define( "org.eclipse.rwt.widgets.TreeRow", {
         result.style.whiteSpace = "nowrap";
         if( org.eclipse.rwt.Client.isNewMshtml() ) {
           result.style.backgroundColor = "rgba(0, 0, 0, 0)";
-        }        
+        }
         this._cellLabels[ cell ] = result;
       }
       return result;
@@ -705,7 +705,7 @@ qx.Class.define( "org.eclipse.rwt.widgets.TreeRow", {
       var columns = this._getColumnCount( config );
       for( var i = 0; i < columns; i++ ) {
         // tree column bounds can not be rendered without item, is rendered always anyway
-        if( !this._isTreeColumn( i, config ) ) { 
+        if( !this._isTreeColumn( i, config ) ) {
           this._renderCellLabelBounds( null, i, config );
           this._renderCellImageBounds( null, i, config );
         }

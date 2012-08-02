@@ -328,7 +328,7 @@ qx.Class.define( "org.eclipse.rwt.MobileWebkitSupport", {
         result.click = true;
       } else {
         var nativeScrollable = this._isScrollableWidget( widgetTarget );
-        if( this._isGridRow( widgetTarget ) ) {
+        if( this._isTreeRow( widgetTarget ) ) {
           result.virtualScroll = true;
           result.outerScroll = this._allowNativeScroll && nativeScrollable;
         } else if( this._allowNativeScroll && nativeScrollable ) {
@@ -352,7 +352,7 @@ qx.Class.define( "org.eclipse.rwt.MobileWebkitSupport", {
 
     _initVirtualScroll : function( widget ) {
       var scrollable;
-      if( widget instanceof org.eclipse.rwt.widgets.GridRow ) {
+      if( widget instanceof org.eclipse.rwt.widgets.TreeRow ) {
         scrollable = widget.getParent().getParent();
       } else {
         scrollable = this._findScrollable( widget );
@@ -398,7 +398,7 @@ qx.Class.define( "org.eclipse.rwt.MobileWebkitSupport", {
     _isSelectable : function( widgetTarget ) {
       var result = false;
       if(    widgetTarget instanceof org.eclipse.rwt.widgets.ListItem
-          || widgetTarget instanceof org.eclipse.rwt.widgets.GridRow )
+          || widgetTarget instanceof org.eclipse.rwt.widgets.TreeRow )
       {
         result = true;
       }
@@ -409,8 +409,8 @@ qx.Class.define( "org.eclipse.rwt.MobileWebkitSupport", {
       return this._findScrollable( widget ) !== null;
     },
 
-    _isGridRow : function( widgetTarget ) {
-      return widgetTarget instanceof org.eclipse.rwt.widgets.GridRow;
+    _isTreeRow : function( widgetTarget ) {
+      return widgetTarget instanceof org.eclipse.rwt.widgets.TreeRow;
     },
 
     _findScrollable : function( widget ) {

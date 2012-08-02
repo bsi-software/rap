@@ -392,9 +392,6 @@ qx.Class.define( "org.eclipse.rwt.widgets.TreeRow", {
         var left = this._getItemImageLeft( item, cell, config );
         var width = this._getItemImageWidth( item, cell, config );
         this._setBounds( element, left, 0, width, this.getHeight() );
-        if(element.style.verticalAlign=="middle"){
-          element.style.lineHeight = element.style.height;
-        }
       }
     },
 
@@ -430,7 +427,9 @@ qx.Class.define( "org.eclipse.rwt.widgets.TreeRow", {
         var left = this._getItemTextLeft( item, cell, config );
         var width = this._getItemTextWidth( item, cell, config );
         this._setBounds( element, left, 0, width, this.getHeight() );
-        element.style.lineHeight = config.markupEnabled ? "" : element.style.height;
+        if(element.style.verticalAlign=="middle"){
+          element.style.lineHeight = element.style.height;
+        }
       }
     },
 

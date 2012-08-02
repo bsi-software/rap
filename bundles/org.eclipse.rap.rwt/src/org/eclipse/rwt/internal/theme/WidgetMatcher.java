@@ -13,6 +13,7 @@ package org.eclipse.rwt.internal.theme;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.eclipse.rwt.internal.theme.css.ConditionalValue;
 import org.eclipse.rwt.lifecycle.WidgetUtil;
@@ -42,12 +43,17 @@ public final class WidgetMatcher implements ValueSelector {
 
   public QxType select( ConditionalValue[] values, Widget widget ) {
     QxType result = null;
-    for( int i = 0; i < values.length && result == null; i++ ) {
+    TreeMap<Integer, QxType> valueMap = new TreeMap<Integer, QxType>(); 
+    for( int i = 0; i < values.length; i++ ) {
       ConditionalValue condValue = values[ i ];
       String[] constraints = condValue.constraints;
-      if( matches( widget, constraints ) ) {
-        result = condValue.value;
+      int matches = matches( widget, constraints );
+      if( matches >= 0 ) {
+        valueMap.put( Integer.valueOf( matches ), condValue.value ); 
       }
+    }
+    if(!valueMap.isEmpty()) {
+      result = valueMap.get(valueMap.lastKey());
     }
     return result;
   }
@@ -61,16 +67,16 @@ public final class WidgetMatcher implements ValueSelector {
     return matcher;
   }
 
-  private boolean matches( Widget widget, String[] constraints ) {
-    boolean result = true;
-    for( int i = 0; i < constraints.length && result; i++ ) {
+  private int matches( Widget widget, String[] constraints ) {
+    int result = 0;
+    for( int i = 0; i < constraints.length && result>=0 ; i++ ) {
       String string = constraints[ i ];
       if( string.startsWith( "." ) ) {
         String variant = string.substring( 1 );
-        result &= hasVariant( widget, variant );
+        result += hasVariant( widget, variant )?2:Integer.MIN_VALUE;
       } else {
         Constraint constraint = constraintMap.get( string );
-        result &= constraint != null && constraint.matches( widget );
+        result +=( constraint != null && constraint.matches( widget ))?1:Integer.MIN_VALUE;
       }
     }
     return result;

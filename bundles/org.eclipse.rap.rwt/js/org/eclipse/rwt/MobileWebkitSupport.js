@@ -373,10 +373,20 @@ qx.Class.define( "org.eclipse.rwt.MobileWebkitSupport", {
       var offsetY = oldPos[ 1 ] - pos[ 1 ];
       var newX = this._touchSession.initScrollX + offsetX;
       var newY = this._touchSession.initScrollY + offsetY;
-      var nudged = newY < 0 || newY > ( this._touchSession.scrollBarV.getMaximum() - this._touchSession.scrollBarV._thumbLength );
+      var max =   this._touchSession.scrollBarV.getMaximum()
+                - this._touchSession.scrollBarV._thumbLength;
+      var nudged = newY < 0 || newY > max;
       if( this._touchSession.type.outerScroll && nudged ) {
-        delete this._touchSession.type.virtualScroll;
-        this._touchSession.type.scroll = true;
+        var outer = this._findScrollable( this._touchSession.initialWidgetTarget );
+        var outerValue = outer._vertScrollBar.getValue();
+        var outerMax =   outer._vertScrollBar.getMaximum()
+                       - outer._vertScrollBar._thumbLength;
+        if(    ( newY < 0 && outerValue > 0 )
+            || ( newY > max && outerValue < outerMax ) )
+        {
+          delete this._touchSession.type.virtualScroll;
+          this._touchSession.type.scroll = true;
+        }
       }
       this._touchSession.scrollBarH.setValue( newX );
       this._touchSession.scrollBarV.setValue( newY );

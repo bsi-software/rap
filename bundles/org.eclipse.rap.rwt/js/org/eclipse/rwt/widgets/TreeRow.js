@@ -418,6 +418,7 @@ qx.Class.define( "org.eclipse.rwt.widgets.TreeRow", {
       if( renderBounds ) {
         this._renderCellLabelBounds( item, cell, config );
       }
+      this._renderCellLabelVerticalAlignment( element );
       return element;
     },
 
@@ -427,11 +428,14 @@ qx.Class.define( "org.eclipse.rwt.widgets.TreeRow", {
         var left = this._getItemTextLeft( item, cell, config );
         var width = this._getItemTextWidth( item, cell, config );
         this._setBounds( element, left, 0, width, this.getHeight() );
-        if(element.style.verticalAlign=="middle"){
-          element.style.lineHeight = element.style.height;
-        }
       }
     },
+
+    _renderCellLabelVerticalAlignment : function( element ) {
+        if( element && element.style.verticalAlign === "middle" ) {
+          element.style.lineHeight = element.style.height ? element.style.height : this.getHeight() + "px";
+        }
+     },
 
     _renderElementContent : Variant.select( "qx.client", {
       "mshtml|newmshtml" : function( element, item, cell, markupEnabled ) {
@@ -608,7 +612,7 @@ qx.Class.define( "org.eclipse.rwt.widgets.TreeRow", {
       var result = this._cellLabels[ cell ];
       if( !result ) {
         result = this._createElement( 3 );
-        result.style.verticalAlign = "middle";
+        result.style.verticalAlign = this._getVerticalAlignment( cell, config );
         result.style.whiteSpace = "nowrap";
         if( org.eclipse.rwt.Client.isNewMshtml() ) {
           result.style.backgroundColor = "rgba(0, 0, 0, 0)";

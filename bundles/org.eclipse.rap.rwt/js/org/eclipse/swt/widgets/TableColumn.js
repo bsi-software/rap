@@ -11,7 +11,7 @@
  ******************************************************************************/
 
 /**
- * This class provides the client-side counterpart for 
+ * This class provides the client-side counterpart for
  * org.eclipse.swt.TableColumn.
  */
 qx.Class.define( "org.eclipse.swt.widgets.TableColumn", {
@@ -151,6 +151,10 @@ qx.Class.define( "org.eclipse.swt.widgets.TableColumn", {
     setVerticalAlignment : function( value ) {
       this._table.setVerticalAlignment( this._index, value );
       this.setVerticalChildrenAlign( value );
+    },
+
+    setBackgroundPosition : function( value ) {
+      this._table.setBackgroundPosition( this._index, value );
     },
 
     setFixed : function( value ) {

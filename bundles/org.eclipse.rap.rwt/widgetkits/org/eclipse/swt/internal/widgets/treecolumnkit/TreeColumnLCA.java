@@ -50,10 +50,12 @@ public final class TreeColumnLCA extends AbstractWidgetLCA {
   static final String PROP_VERTICAL_ALIGNMENT = "verticalAlignment";
   static final String PROP_FIXED = "fixed";
   static final String PROP_SELECTION_LISTENER = "selection";
+  static final String PROP_BACKGROUND_POSITION = "backgroundPosition";
 
   private static final int ZERO = 0;
   private static final String DEFAULT_ALIGNMENT = "left";
   private static final String DEFAULT_VERTICAL_ALIGNMENT = "middle";
+  private static final String DEFAULT_BACKGROUND_POSITION = "center";
 
   @Override
   public void preserveValues( Widget widget ) {
@@ -68,6 +70,7 @@ public final class TreeColumnLCA extends AbstractWidgetLCA {
     preserveProperty( column, PROP_MOVEABLE, column.getMoveable() );
     preserveProperty( column, PROP_ALIGNMENT, getAlignment( column ) );
     preserveProperty( column, PROP_VERTICAL_ALIGNMENT, getVerticalAlignment( column ) );
+    preserveProperty( column, PROP_BACKGROUND_POSITION, getBackgroundPosition( column ) );
     preserveProperty( column, PROP_FIXED, isFixed( column ) );
     preserveListener( column, PROP_SELECTION_LISTENER, SelectionEvent.hasListener( column ) );
   }
@@ -126,6 +129,7 @@ public final class TreeColumnLCA extends AbstractWidgetLCA {
     renderProperty( column, PROP_MOVEABLE, column.getMoveable(), false );
     renderProperty( column, PROP_ALIGNMENT, getAlignment( column ), DEFAULT_ALIGNMENT );
     renderProperty( column, PROP_VERTICAL_ALIGNMENT, getVerticalAlignment( column ), DEFAULT_VERTICAL_ALIGNMENT );
+    renderProperty( column, PROP_BACKGROUND_POSITION, getBackgroundPosition( column ), DEFAULT_BACKGROUND_POSITION );
     renderProperty( column, PROP_FIXED, isFixed( column ), false );
     renderListener( column, PROP_SELECTION_LISTENER, SelectionEvent.hasListener( column ), false );
   }
@@ -167,6 +171,31 @@ public final class TreeColumnLCA extends AbstractWidgetLCA {
       result = "bottom";
     }
     return result;
+  }
+
+  private static String getBackgroundPosition( TreeColumn column ) {
+    switch( column.getBackgroundPosition() ) {
+      case SWT.BACKGROUND_POSITION_LEFT_TOP:
+        return "left top";
+      case SWT.BACKGROUND_POSITION_LEFT_CENTER:
+        return "left center";
+      case SWT.BACKGROUND_POSITION_LEFT_BOTTOM:
+        return "left bottom";
+      case SWT.BACKGROUND_POSITION_RIGHT_TOP:
+        return "right top";
+      case SWT.BACKGROUND_POSITION_RIGHT_CENTER:
+        return "right center";
+      case SWT.BACKGROUND_POSITION_RIGHT_BOTTOM:
+        return "right bottom";
+      case SWT.BACKGROUND_POSITION_CENTER_TOP:
+        return "center top";
+      case SWT.BACKGROUND_POSITION_CENTER_CENTER:
+        return "center center";
+      case SWT.BACKGROUND_POSITION_CENTER_BOTTOM:
+        return "center bottom";
+      default:
+        return DEFAULT_BACKGROUND_POSITION;
+    }
   }
 
   private static boolean isFixed( TreeColumn column ) {

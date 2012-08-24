@@ -33,6 +33,7 @@ org.eclipse.rwt.protocol.AdapterRegistry.add( "rwt.widgets.TableColumn", {
     "moveable",
     "alignment",
     "verticalAlignment",
+    "backgroundPosition",
     "fixed",
     "customVariant"
   ],

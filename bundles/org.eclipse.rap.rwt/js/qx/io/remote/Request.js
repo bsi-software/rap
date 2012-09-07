@@ -305,7 +305,14 @@ qx.Class.define("qx.io.remote.Request",
     {
       check : "Boolean",
       init : false
-    }
+    },
+    
+    
+    timeoutEnabled :
+    {
+      check : "Boolean",
+      nullable : true
+    }	
   },
 
 

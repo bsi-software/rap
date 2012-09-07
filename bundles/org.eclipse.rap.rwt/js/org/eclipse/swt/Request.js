@@ -146,6 +146,12 @@ qx.Class.define( "org.eclipse.swt.Request", {
         // create and configure request object
         var request = this._createRequest();
         request.setAsynchronous( async );
+        
+        // enable timeout but not on the first request
+        if( this._requestCounter != null ) {
+          request.setTimeoutEnabled( true );
+        }
+        
         // copy the _parameters map which was filled during client interaction
         // to the request
         this._inDelayedSend = false;

@@ -18,12 +18,12 @@
 
   <groupId>org.eclipse.rap</groupId>
   <artifactId>org.eclipse.rap.runtime.target-parent</artifactId>
-  <version>1.5.0-SNAPSHOT</version>
+  <version>1.5.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <properties>
     <tycho-version>0.13.0</tycho-version>
-    <base-platform>4.2milestones/S-4.2RC4-201206081400/</base-platform>
+    <base-platform>4.2-M-builds/M20120829-1200/</base-platform>
   </properties>
 
   <prerequisites>

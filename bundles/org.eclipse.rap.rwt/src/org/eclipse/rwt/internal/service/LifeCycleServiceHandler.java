@@ -81,6 +81,9 @@ public class LifeCycleServiceHandler implements IServiceHandler {
     setJsonResponseHeaders();
     if( isSessionTimeout() ) {
       handleSessionTimeout();
+    } else if( isRequestAlreadyProcessed() ) {
+      sendLastResponse();
+      return;
     } else if( !isRequestCounterValid() ) {
       handleInvalidRequestCounter();
     } else {
@@ -92,6 +95,16 @@ public class LifeCycleServiceHandler implements IServiceHandler {
       runLifeCycle();
     }
     writeProtocolMessage();
+  }
+  
+  private boolean isRequestAlreadyProcessed() {
+    return RWTRequestVersionControl.getInstance().isAlreadyProcessed();
+  }
+  
+  private void sendLastResponse()throws IOException  {
+    HttpServletResponse response = ContextProvider.getResponse();
+    String lastResponseMessage = RWTRequestVersionControl.getInstance().getLastResponseMessage();
+    response.getWriter().write( lastResponseMessage);
   }
 
   private void runLifeCycle() throws IOException {
@@ -204,5 +217,7 @@ public class LifeCycleServiceHandler implements IServiceHandler {
     ProtocolMessageWriter protocolWriter = ContextProvider.getProtocolWriter();
     String message = protocolWriter.createMessage();
     response.getWriter().write( message );
+    
+    RWTRequestVersionControl.getInstance().setLastResponseMessage( message);
   }
 }

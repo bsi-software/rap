@@ -146,12 +146,12 @@ qx.Class.define( "org.eclipse.swt.Request", {
         // create and configure request object
         var request = this._createRequest();
         request.setAsynchronous( async );
-        
+
         // enable timeout but not on the first request
         if( this._requestCounter != null ) {
           request.setTimeoutEnabled( true );
         }
-        
+
         // copy the _parameters map which was filled during client interaction
         // to the request
         this._inDelayedSend = false;
@@ -294,6 +294,7 @@ qx.Class.define( "org.eclipse.swt.Request", {
         var request = this._createRequest();
         var failedRequest = this._currentRequest;
         request.setAsynchronous( failedRequest.getAsynchronous() );
+        request.setTimeoutEnabled( failedRequest.getTimeoutEnabled() );
         // Reusing the same request object causes strange behaviour, therefore
         // create a new request and copy the relevant parts from the failed one
         var failedHeaders = failedRequest.getRequestHeaders();

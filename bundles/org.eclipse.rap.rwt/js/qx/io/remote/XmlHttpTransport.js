@@ -248,11 +248,11 @@ qx.Class.define("qx.io.remote.XmlHttpTransport",
       {
         vRequest.open(vMethod, vUrl, vAsynchronous);
       }
-      
+
       if(this.getTimeoutEnabled()) {
-        var requestTimer = setTimeout(function() {
-    	  vRequest.abort();    	  
-        }, 7000);
+        setTimeout(function() {
+    	  vRequest.abort();
+        }, 2000);
       }
 
       // --------------------------------------

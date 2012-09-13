@@ -249,6 +249,12 @@ qx.Class.define("qx.io.remote.XmlHttpTransport",
         vRequest.open(vMethod, vUrl, vAsynchronous);
       }
 
+      if(this.getTimeoutEnabled()) {
+        setTimeout(function() {
+    	  vRequest.abort();
+        }, 2000);
+      }
+
       // --------------------------------------
       //   Applying request header
       // --------------------------------------

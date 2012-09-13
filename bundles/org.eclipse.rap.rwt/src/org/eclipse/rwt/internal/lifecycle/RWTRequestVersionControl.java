@@ -27,6 +27,7 @@ public final class RWTRequestVersionControl implements SerializableCompatibility
   }
 
   private Integer requestId;
+  private String responseMessage;
   
   private RWTRequestVersionControl() {
     requestId = INITIAL_REQUEST_ID;
@@ -38,6 +39,17 @@ public final class RWTRequestVersionControl implements SerializableCompatibility
     boolean invalidVersionState = INITIAL_REQUEST_ID.equals( requestId ) && sentRequestId != null;
     boolean requestIdEquals = requestId.toString().equals( sentRequestId );
     return !invalidVersionState && ( initialRequest || requestIdEquals );
+  }
+  
+  public boolean isAlreadyProcessed() {
+    String sentRequestId = ContextProvider.getRequest().getParameter( REQUEST_COUNTER );
+    boolean initialRequest = sentRequestId == null;
+    boolean invalidVersionState = INITIAL_REQUEST_ID.equals( requestId ) && sentRequestId != null;
+    if(!invalidVersionState && !initialRequest) {
+      Integer lastRequestId = new Integer( requestId.intValue() - 1 );
+      return lastRequestId.toString().equals( sentRequestId );
+    }
+    return false;
   }
 
   public Integer nextRequestId() {
@@ -51,5 +63,15 @@ public final class RWTRequestVersionControl implements SerializableCompatibility
   
   public void setCurrentRequestId( Integer version ) {
     this.requestId = version;
+  }
+  
+  
+  public void setLastResponseMessage( String responseMessage ) {
+    this.responseMessage = responseMessage;
+  }
+  
+  
+  public String getLastResponseMessage() {
+    return responseMessage;
   }
 }

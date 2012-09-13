@@ -249,15 +249,13 @@ qx.Class.define( "org.eclipse.swt.widgets.Scrollable", {
     _syncClientArea : function( horz, vert ) {
       if( horz ) {
         var scrollX = this._horzScrollBar.getValue();
-        var actualX = this._clientArea.getScrollLeft();
-        if( scrollX !== actualX ) {
+        if( this._clientArea.getScrollLeft() !== scrollX ) {
           this._clientArea.setScrollLeft( scrollX );
         }
       }
       if( vert ) {
         var scrollY = this._vertScrollBar.getValue();
-        var actualY = this._clientArea.getScrollTop();
-        if( scrollY !== actualY ) { // prevents flickering with elastic scrolling in IOS
+        if( this._clientArea.getScrollTop() !== scrollY ) {
           this._clientArea.setScrollTop( scrollY );
         }
       }

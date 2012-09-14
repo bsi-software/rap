@@ -348,16 +348,17 @@ qx.Class.define( "org.eclipse.swt.Request", {
     },
 
     _isConnectionError : qx.core.Variant.select( "qx.client", {
-      "mshtml|newmshtml" : function( statusCode ) {
-        // for a description of the IE status codes, see
-        // http://support.microsoft.com/kb/193625
-        var result = (    statusCode === 12007    // ERROR_INTERNET_NAME_NOT_RESOLVED
-                       || statusCode === 12029    // ERROR_INTERNET_CANNOT_CONNECT
-                       || statusCode === 12030    // ERROR_INTERNET_CONNECTION_ABORTED
-                       || statusCode === 12031    // ERROR_INTERNET_CONNECTION_RESET
-                       || statusCode === 12152 ); // ERROR_HTTP_INVALID_SERVER_RESPONSE
-        return result;
-      },
+        "mshtml|newmshtml" : function( statusCode ) {
+          // for a description of the IE status codes, see
+          // http://support.microsoft.com/kb/193625
+          var result = (    statusCode === 12007    // ERROR_INTERNET_NAME_NOT_RESOLVED
+                         || statusCode === 12029    // ERROR_INTERNET_CANNOT_CONNECT
+                         || statusCode === 12030    // ERROR_INTERNET_CONNECTION_ABORTED
+                         || statusCode === 12031    // ERROR_INTERNET_CONNECTION_RESET
+                         || statusCode === 12152    // ERROR_HTTP_INVALID_SERVER_RESPONSE
+                         || statusCode === -1);     // On a manual connection abort, no status code is set on IE 9, see http://stackoverflow.com/questions/7287706/ie-9-javascript-error-c00c023f
+          return result;
+        },
       "gecko" : function( statusCode ) {
         // Firefox 3 reports other statusCode than oder versions (bug #249814)
         var result;

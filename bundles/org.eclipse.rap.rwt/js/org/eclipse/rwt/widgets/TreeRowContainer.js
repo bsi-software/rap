@@ -71,6 +71,7 @@ qx.Class.define( "org.eclipse.rwt.widgets.TreeRowContainer", {
         "treeColumn" : 0,    
         "alignment" : [],   
         "verticalAlignment" : [],
+        "backgroundPosition" : [],
         "itemLeft" : [],   
         "itemWidth" : [],   
         "itemImageLeft" : [],   

@@ -261,22 +261,29 @@ qx.Class.define( "org.eclipse.swt.Request", {
       var exchange = evt.getTarget();
       var text = exchange.getImplementation().getRequest().responseText;
       var errorOccured = false;
-      try {
-        var messageObject = JSON.parse( text );
-        org.eclipse.swt.EventUtil.setSuspended( true );
-        org.eclipse.rwt.protocol.Processor.processMessage( messageObject );
-        qx.ui.core.Widget.flushGlobalQueues();
-        org.eclipse.swt.EventUtil.setSuspended( false );
-        org.eclipse.rwt.UICallBack.getInstance().sendUICallBackRequest();
-      } catch( ex ) {
-        org.eclipse.rwt.ErrorHandler.processJavaScriptErrorInResponse( text,
+
+      if(!this._isJsonResponse(evt)) {
+        window.location.reload();
+      }
+      else {
+        try {
+          var messageObject = JSON.parse( text );
+          org.eclipse.swt.EventUtil.setSuspended( true );
+          org.eclipse.rwt.protocol.Processor.processMessage( messageObject );
+          qx.ui.core.Widget.flushGlobalQueues();
+          org.eclipse.swt.EventUtil.setSuspended( false );
+          org.eclipse.rwt.UICallBack.getInstance().sendUICallBackRequest();
+        } catch( ex ) {
+          org.eclipse.rwt.ErrorHandler.processJavaScriptErrorInResponse( text,
                                                                        ex,
                                                                        this._currentRequest );
-        errorOccured = true;
+          errorOccured = true;
+        }
+        if( !errorOccured ) {
+          this._dispatchReceivedEvent();
+        }
       }
-      if( !errorOccured ) {
-        this._dispatchReceivedEvent();
-      }
+
       this._runningRequestCount--;
       this._hideWaitHint();
       // [if] Dispose only finished transport - see bug 301261, 317616

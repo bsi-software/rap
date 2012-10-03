@@ -57,6 +57,7 @@ public final class ClientResources {
     "qx/event/type/DataEvent.js",
     "qx/event/type/ChangeEvent.js",
     "qx/client/Timer.js",
+    "qx/client/IOS6TimerPatch.js",
     "qx/html/String.js",
     "qx/dom/String.js",
     "qx/html/Entity.js",

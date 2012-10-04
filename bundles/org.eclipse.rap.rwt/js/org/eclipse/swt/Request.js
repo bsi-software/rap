@@ -363,7 +363,8 @@ qx.Class.define( "org.eclipse.swt.Request", {
                          || statusCode === 12030    // ERROR_INTERNET_CONNECTION_ABORTED
                          || statusCode === 12031    // ERROR_INTERNET_CONNECTION_RESET
                          || statusCode === 12152    // ERROR_HTTP_INVALID_SERVER_RESPONSE
-                         || statusCode === -1);     // On a manual connection abort, no status code is set on IE 9, see http://stackoverflow.com/questions/7287706/ie-9-javascript-error-c00c023f
+                         || statusCode === 0        // IE 7: CONNECTION_ABORT
+                         || statusCode === -1);     // IE 9: On a manual connection abort, no status code is set, see http://stackoverflow.com/questions/7287706/ie-9-javascript-error-c00c023f
           return result;
         },
       "gecko" : function( statusCode ) {

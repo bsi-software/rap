@@ -40,8 +40,6 @@ qx.Class.define( "org.eclipse.swt.Request", {
     requestQueue.setMaxConcurrentRequests( 1 );
     // References the currently running request or null if no request is active
     this._currentRequest = null;
-    // Counter to track the automatically executed retries after a connection failure
-    this._autoRetryCounter = 0;
   },
 
   destruct : function() {
@@ -311,21 +309,26 @@ qx.Class.define( "org.eclipse.swt.Request", {
                                 failedParameters[ parameterName ] );
         }
         request.setData( failedRequest.getData() );
+        request.autoRetryCounter = failedRequest.autoRetryCounter;
         this._restartRequest( request );
       };
 
       // Before showing a message box, automatically try to send the request again to not bother the user. See also XmlHttpTransport for the request timeout.
       // Message box appears after request timeout * (1 + maxAutoRetryCount).
+      var currentRequest = this._currentRequest;
+      if(currentRequest.autoRetryCounter === undefined){
+        currentRequest.autoRetryCounter = 0;
+      }
       var maxAutoRetryCount = 5;
-      if(this._autoRetryCounter < maxAutoRetryCount) {
-        this._autoRetryCounter++;
+      if(currentRequest.autoRetryCounter < maxAutoRetryCount) {
+        currentRequest.autoRetryCounter++;
         this._retry();
       }
       else {
         var msg
           = "<p>The server seems to be temporarily unavailable</p>"
           + "<p><a href=\"javascript:org.eclipse.swt.Request.getInstance()._retry();\">Retry</a></p>";
-        this._autoRetryCounter = 0;
+        currentRequest.autoRetryCounter = 0;
         qx.ui.core.ClientDocument.getInstance().setGlobalCursor( null );
         org.eclipse.rwt.ErrorHandler.showErrorBox( msg, false );
       }

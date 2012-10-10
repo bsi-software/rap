@@ -262,7 +262,7 @@ qx.Class.define( "org.eclipse.swt.Request", {
       var text = exchange.getImplementation().getRequest().responseText;
       var errorOccured = false;
 
-      if(!this._isJsonResponse(evt)) {
+      if(this._isJsonResponse(evt) === false) {
         window.location.reload();
       }
       else {
@@ -386,6 +386,10 @@ qx.Class.define( "org.eclipse.swt.Request", {
 
     _isJsonResponse : function( request ) {
       var contentType = request.getResponseHeader( "Content-Type" );
+      if(contentType == null) {
+        // May not be set on Android 2 devices. Returning null to make it possible to distinguish between not set and wrong type
+        return null;
+      }
       return contentType.indexOf( qx.util.Mime.JSON ) !== -1;
     },
 

@@ -31,6 +31,7 @@ qx.Class.define( "org.eclipse.swt.Request", {
     // Flag that is set to true if send() was called but the delay timeout
     // has not yet timed out
     this._inDelayedSend = false;
+    this._retryHandler = null;
     // As the CallBackRequests get blocked at the server to wait for
     // background activity I choose a large timeout...
     var requestQueue = qx.io.remote.RequestQueue.getInstance();
@@ -226,11 +227,9 @@ qx.Class.define( "org.eclipse.swt.Request", {
       // See https://bugs.eclipse.org/bugs/show_bug.cgi?id=253756
       var exchange = evt.getTarget();
       this._currentRequest = exchange.getRequest();
-      var giveUp = true;
       if( this._isConnectionError( evt.getStatusCode() ) ) {
-        giveUp = !this._handleConnectionError( evt );
-      }
-      if( giveUp ) {
+        this._handleConnectionError( evt );
+      } else {
         this._hideWaitHint();
         var request = exchange.getImplementation().getRequest();
         var text = request.responseText;
@@ -242,7 +241,7 @@ qx.Class.define( "org.eclipse.swt.Request", {
         if( text && text.length > 0 ) {
           if( this._isJsonResponse( request ) ) {
             var messageObject = JSON.parse( text );
-            org.eclipse.rwt.ErrorHandler.showErrorBox( messageObject.meta.message );
+            org.eclipse.rwt.ErrorHandler.showErrorBox( messageObject.meta.message, true );
           } else {
             org.eclipse.rwt.ErrorHandler.showErrorPage( text );
           }
@@ -260,22 +259,29 @@ qx.Class.define( "org.eclipse.swt.Request", {
       var exchange = evt.getTarget();
       var text = exchange.getImplementation().getRequest().responseText;
       var errorOccured = false;
-      try {
-        var messageObject = JSON.parse( text );
-        org.eclipse.swt.EventUtil.setSuspended( true );
-        org.eclipse.rwt.protocol.Processor.processMessage( messageObject );
-        qx.ui.core.Widget.flushGlobalQueues();
-        org.eclipse.swt.EventUtil.setSuspended( false );
-        org.eclipse.rwt.UICallBack.getInstance().sendUICallBackRequest();
-      } catch( ex ) {
-        org.eclipse.rwt.ErrorHandler.processJavaScriptErrorInResponse( text,
+
+      if(this._isJsonResponse(evt) === false) {
+        window.location.reload();
+      }
+      else {
+        try {
+          var messageObject = JSON.parse( text );
+          org.eclipse.swt.EventUtil.setSuspended( true );
+          org.eclipse.rwt.protocol.Processor.processMessage( messageObject );
+          qx.ui.core.Widget.flushGlobalQueues();
+          org.eclipse.swt.EventUtil.setSuspended( false );
+          org.eclipse.rwt.UICallBack.getInstance().sendUICallBackRequest();
+        } catch( ex ) {
+          org.eclipse.rwt.ErrorHandler.processJavaScriptErrorInResponse( text,
                                                                        ex,
                                                                        this._currentRequest );
-        errorOccured = true;
+          errorOccured = true;
+        }
+        if( !errorOccured ) {
+          this._dispatchReceivedEvent();
+        }
       }
-      if( !errorOccured ) {
-        this._dispatchReceivedEvent();
-      }
+
       this._runningRequestCount--;
       this._hideWaitHint();
       // [if] Dispose only finished transport - see bug 301261, 317616
@@ -286,11 +292,7 @@ qx.Class.define( "org.eclipse.swt.Request", {
     // Handling connection problems
 
     _handleConnectionError : function( evt ) {
-      var msg
-        = "The server seems to be temporarily unavailable.\n"
-        + "Would you like to retry?";
-      var result = confirm( msg );
-      if( result ) {
+      this._retryHandler = function() {
         var request = this._createRequest();
         var failedRequest = this._currentRequest;
         request.setAsynchronous( failedRequest.getAsynchronous() );
@@ -307,9 +309,39 @@ qx.Class.define( "org.eclipse.swt.Request", {
                                 failedParameters[ parameterName ] );
         }
         request.setData( failedRequest.getData() );
+        request.autoRetryCounter = failedRequest.autoRetryCounter;
         this._restartRequest( request );
+      };
+
+      // Before showing a message box, automatically try to send the request again to not bother the user. See also XmlHttpTransport for the request timeout.
+      // Message box appears after request timeout * (1 + maxAutoRetryCount).
+      var currentRequest = this._currentRequest;
+      if(currentRequest.autoRetryCounter === undefined){
+        currentRequest.autoRetryCounter = 0;
       }
-      return result;
+      var maxAutoRetryCount = 5;
+      if(currentRequest.autoRetryCounter < maxAutoRetryCount) {
+        currentRequest.autoRetryCounter++;
+        this._retry();
+      }
+      else {
+        var msg
+          = "<p>The server seems to be temporarily unavailable</p>"
+          + "<p><a href=\"javascript:org.eclipse.swt.Request.getInstance()._retry();\">Retry</a></p>";
+        currentRequest.autoRetryCounter = 0;
+        qx.ui.core.ClientDocument.getInstance().setGlobalCursor( null );
+        org.eclipse.rwt.ErrorHandler.showErrorBox( msg, false );
+      }
+    },
+
+    _retry : function() {
+      try {
+        org.eclipse.rwt.ErrorHandler.hideErrorBox();
+        this._showWaitHint();
+        this._retryHandler();
+      } catch( ex ) {
+        org.eclipse.rwt.ErrorHandler.processJavaScriptError( ex );
+      }
     },
 
     _restartRequest : function( request ) {
@@ -334,7 +366,8 @@ qx.Class.define( "org.eclipse.swt.Request", {
                          || statusCode === 12030    // ERROR_INTERNET_CONNECTION_ABORTED
                          || statusCode === 12031    // ERROR_INTERNET_CONNECTION_RESET
                          || statusCode === 12152    // ERROR_HTTP_INVALID_SERVER_RESPONSE
-                         || statusCode === -1);     // On a manual connection abort, no status code is set on IE 9, see http://stackoverflow.com/questions/7287706/ie-9-javascript-error-c00c023f
+                         || statusCode === 0        // IE 7: CONNECTION_ABORT
+                         || statusCode === -1);     // IE 9: On a manual connection abort, no status code is set, see http://stackoverflow.com/questions/7287706/ie-9-javascript-error-c00c023f
           return result;
         },
       "gecko" : function( statusCode ) {
@@ -356,6 +389,10 @@ qx.Class.define( "org.eclipse.swt.Request", {
 
     _isJsonResponse : function( request ) {
       var contentType = request.getResponseHeader( "Content-Type" );
+      if(contentType == null) {
+        // May not be set on Android 2 devices. Returning null to make it possible to distinguish between not set and wrong type
+        return null;
+      }
       return contentType.indexOf( qx.util.Mime.JSON ) !== -1;
     },
 

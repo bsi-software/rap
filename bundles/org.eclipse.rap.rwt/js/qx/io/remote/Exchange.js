@@ -737,7 +737,6 @@ qx.Class.define("qx.io.remote.Exchange",
         value.setUrl(vRequest.getUrl());
         value.setMethod(vRequest.getMethod());
         value.setAsynchronous(vRequest.getAsynchronous());
-        value.setTimeoutEnabled(vRequest.getTimeoutEnabled());
 
         value.setUsername(vRequest.getUsername());
         value.setPassword(vRequest.getPassword());

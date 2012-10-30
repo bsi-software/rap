@@ -59,7 +59,7 @@ qx.Class.define("qx.io.remote.Request",
     }
 
     this.setProhibitCaching(true);
-    
+
     // Get the next sequence number for this request
     this._seqNum = ++qx.io.remote.Request._seqNum;
   },
@@ -305,14 +305,8 @@ qx.Class.define("qx.io.remote.Request",
     {
       check : "Boolean",
       init : false
-    },
-    
-    
-    timeoutEnabled :
-    {
-      check : "Boolean",
-      nullable : true
-    }	
+    }
+
   },
 
 

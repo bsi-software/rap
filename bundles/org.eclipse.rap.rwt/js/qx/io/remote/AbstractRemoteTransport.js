@@ -154,14 +154,8 @@ qx.Class.define("qx.io.remote.AbstractRemoteTransport",
     {
       check : "Boolean",
       nullable : true
-    },
-    
-    
-    timeoutEnabled :
-    {
-      check : "Boolean",
-      nullable : true
-    }	
+    }
+
   },
 
 

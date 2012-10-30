@@ -150,7 +150,7 @@ qx.Class.define( "org.eclipse.swt.Request", {
 
         // enable timeout but not on the first request
         if( this._requestCounter != null ) {
-          request.setTimeoutEnabled( true );
+          request.setTimeout( 9000 );
         }
 
         // copy the _parameters map which was filled during client interaction
@@ -188,6 +188,7 @@ qx.Class.define( "org.eclipse.swt.Request", {
       result.addEventListener( "sending", this._handleSending, this );
       result.addEventListener( "completed", this._handleCompleted, this );
       result.addEventListener( "failed", this._handleFailed, this );
+      result.addEventListener( "timeout", this._handleTimeout, this );
       return result;
     },
 
@@ -255,6 +256,13 @@ qx.Class.define( "org.eclipse.swt.Request", {
       exchange.dispose();
     },
 
+    _handleTimeout : function( evt ) {
+        var exchange = evt.getTarget();
+        this._currentRequest = exchange.getRequest();
+    	this._handleConnectionError( evt );
+    	exchange.dispose();
+    },
+
     _handleCompleted : function( evt ) {
       var exchange = evt.getTarget();
       var text = exchange.getImplementation().getRequest().responseText;
@@ -296,7 +304,7 @@ qx.Class.define( "org.eclipse.swt.Request", {
         var request = this._createRequest();
         var failedRequest = this._currentRequest;
         request.setAsynchronous( failedRequest.getAsynchronous() );
-        request.setTimeoutEnabled( failedRequest.getTimeoutEnabled() );
+        request.setTimeout( failedRequest.getTimeout());
         // Reusing the same request object causes strange behaviour, therefore
         // create a new request and copy the relevant parts from the failed one
         var failedHeaders = failedRequest.getRequestHeaders();
@@ -322,6 +330,7 @@ qx.Class.define( "org.eclipse.swt.Request", {
       var maxAutoRetryCount = 5;
       if(currentRequest.autoRetryCounter < maxAutoRetryCount) {
         currentRequest.autoRetryCounter++;
+        currentRequest.setTimeout(currentRequest.getTimeout() + 3000);
         this._retry();
       }
       else {
@@ -329,6 +338,7 @@ qx.Class.define( "org.eclipse.swt.Request", {
           = "<p>The server seems to be temporarily unavailable</p>"
           + "<p><a href=\"javascript:org.eclipse.swt.Request.getInstance()._retry();\">Retry</a></p>";
         currentRequest.autoRetryCounter = 0;
+        currentRequest.setTimeout( 9000 );
         qx.ui.core.ClientDocument.getInstance().setGlobalCursor( null );
         org.eclipse.rwt.ErrorHandler.showErrorBox( msg, false );
       }

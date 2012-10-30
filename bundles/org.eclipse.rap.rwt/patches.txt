@@ -1,0 +1,20 @@
+Bug 382613 - Race condition with ui callbacks, https://bugs.eclipse.org/bugs/show_bug.cgi?id=382613
+Bug 383397 - Supporting unreliable networks by adding a request timeout handling, https://bugs.eclipse.org/bugs/show_bug.cgi?id=383397
+Bug 391048 - [iOs6] No requests will be sent anymore after executing window.setInterval() while scrolling, https://bugs.eclipse.org/bugs/show_bug.cgi?id=347436
+Bug ?????? - Limitations in overriding or extending a stylesheet, https://github.com/BSI-Business-Systems-Integration-AG/rap/commits/patches/1.5/15_StyleSheetPrio
+Bug 347436 - Add support to have links in table cells, https://bugs.eclipse.org/bugs/show_bug.cgi?id=347436
+Bug 361796 - [Table][Tree] Setting vertical alignment, https://bugs.eclipse.org/bugs/show_bug.cgi?id=361796
+- Bug 387963 - RAP: Missing vertical alignment on table checkboxes, https://bugs.eclipse.org/bugs/show_bug.cgi?id=387963
+- Bug 387897 - RAP: Wrong vertical alignment of table row after scrolling, https://bugs.eclipse.org/bugs/show_bug.cgi?id=387897
+Bug 286039 - [Widget] removeListener is too aggressive, https://bugs.eclipse.org/bugs/show_bug.cgi?id=286039
+Bug 358858 - Double-click events may be fired when clicking while moving mouse, https://bugs.eclipse.org/bugs/show_bug.cgi?id=358858
+Bug 361799 - [Theming] Ability to specify background position and repeat, https://bugs.eclipse.org/bugs/show_bug.cgi?id=361799
+Bug 382736 - [Menu] Context menu show preliminary "...", https://bugs.eclipse.org/bugs/show_bug.cgi?id=382736
+Bug 390711 - Unauthorized ajax request after session timeout breaks form authentication (tomcat), https://bugs.eclipse.org/bugs/show_bug.cgi?id=390711
+Bug 347771 - [Theming][Table] Make column separator themable, https://bugs.eclipse.org/bugs/show_bug.cgi?id=347771
+
+Finger Scrolling Tickets
+Bug 378360 -[Android][iOs] Enable native 1-finger scrolling, https://bugs.eclipse.org/bugs/show_bug.cgi?id=378360
+- Bug 378240 -[Android][List][ScrolledComposite] incorrect scroll position reported, programatic scrolling broken, https://bugs.eclipse.org/bugs/show_bug.cgi?id=378240
+- Bug 386930 - [Grid][iOS] Touch-scrolling a grid within an ScrolledComposite may have unexpected results, https://bugs.eclipse.org/bugs/show_bug.cgi?id=386930
+- Bug 385714 - [iOs] Touch-Scrolling a Table not possible within a ScrolledComposite, https://bugs.eclipse.org/bugs/show_bug.cgi?id=385714

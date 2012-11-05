@@ -102,7 +102,7 @@ public class QxCursor implements QxType, ThemeResource {
     String result = null;
     if( isCustomCursor() ) {
       ThemePropertyAdapterRegistry registry = ThemePropertyAdapterRegistry.getInstance();
-      ThemePropertyAdapter adapter = registry.getPropertyAdapter( QxImage.class );
+      ThemePropertyAdapter adapter = registry.getPropertyAdapter( QxCursor.class );
       String cssKey = adapter.getKey( this );
       result = CURSOR_DEST_PATH + "/" + cssKey;
     }

@@ -1,3 +1,4 @@
+-- Bugs with patches
 Bug 382613 - Race condition with ui callbacks, https://bugs.eclipse.org/bugs/show_bug.cgi?id=382613
 Bug 383397 - Supporting unreliable networks by adding a request timeout handling, https://bugs.eclipse.org/bugs/show_bug.cgi?id=383397
 Bug 391048 - [iOs6] No requests will be sent anymore after executing window.setInterval() while scrolling, https://bugs.eclipse.org/bugs/show_bug.cgi?id=347436
@@ -13,8 +14,12 @@ Bug 382736 - [Menu] Context menu show preliminary "...", https://bugs.eclipse.or
 Bug 390711 - Unauthorized ajax request after session timeout breaks form authentication (tomcat), https://bugs.eclipse.org/bugs/show_bug.cgi?id=390711
 Bug 347771 - [Theming][Table] Make column separator themable, https://bugs.eclipse.org/bugs/show_bug.cgi?id=347771
 
-Finger Scrolling Tickets
+-- Finger Scrolling Tickets
 Bug 378360 -[Android][iOs] Enable native 1-finger scrolling, https://bugs.eclipse.org/bugs/show_bug.cgi?id=378360
 - Bug 378240 -[Android][List][ScrolledComposite] incorrect scroll position reported, programatic scrolling broken, https://bugs.eclipse.org/bugs/show_bug.cgi?id=378240
 - Bug 386930 - [Grid][iOS] Touch-scrolling a grid within an ScrolledComposite may have unexpected results, https://bugs.eclipse.org/bugs/show_bug.cgi?id=386930
 - Bug 385714 - [iOs] Touch-Scrolling a Table not possible within a ScrolledComposite, https://bugs.eclipse.org/bugs/show_bug.cgi?id=385714
+
+-- Bugs without patches
+Bug 393692 - [iOS]: When selecting a list item while scrolling, the wrong one gets selected, https://bugs.eclipse.org/bugs/show_bug.cgi?id=393692
+Bug 393217 - Characters get lost when using a VerifyListener to modify the text, https://bugs.eclipse.org/bugs/show_bug.cgi?id=393217

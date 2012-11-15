@@ -4,6 +4,7 @@ Bug 383397 - Supporting unreliable networks by adding a request timeout handling
 Bug 391048 - [iOs6] No requests will be sent anymore after executing window.setInterval() while scrolling, https://bugs.eclipse.org/bugs/show_bug.cgi?id=347436
 Bug ?????? - Limitations in overriding or extending a stylesheet, https://github.com/BSI-Business-Systems-Integration-AG/rap/commits/patches/1.5/15_StyleSheetPrio
 Bug 347436 - Add support to have links in table cells, https://bugs.eclipse.org/bugs/show_bug.cgi?id=347436
+Bug 394323 - [ScrolledComposite] Origin may be wrong when using touch scrolling on iOS, https://bugs.eclipse.org/bugs/show_bug.cgi?id=394323
 Bug 361796 - [Table][Tree] Setting vertical alignment, https://bugs.eclipse.org/bugs/show_bug.cgi?id=361796
 - Bug 387963 - RAP: Missing vertical alignment on table checkboxes, https://bugs.eclipse.org/bugs/show_bug.cgi?id=387963
 - Bug 387897 - RAP: Wrong vertical alignment of table row after scrolling, https://bugs.eclipse.org/bugs/show_bug.cgi?id=387897
@@ -14,7 +15,7 @@ Bug 382736 - [Menu] Context menu show preliminary "...", https://bugs.eclipse.or
 Bug 390711 - Unauthorized ajax request after session timeout breaks form authentication (tomcat), https://bugs.eclipse.org/bugs/show_bug.cgi?id=390711
 Bug 347771 - [Theming][Table] Make column separator themable, https://bugs.eclipse.org/bugs/show_bug.cgi?id=347771
 
--- Finger Scrolling Tickets
+-- Finger Scrolling Tickets (created by rap people)
 Bug 378360 -[Android][iOs] Enable native 1-finger scrolling, https://bugs.eclipse.org/bugs/show_bug.cgi?id=378360
 - Bug 378240 -[Android][List][ScrolledComposite] incorrect scroll position reported, programatic scrolling broken, https://bugs.eclipse.org/bugs/show_bug.cgi?id=378240
 - Bug 386930 - [Grid][iOS] Touch-scrolling a grid within an ScrolledComposite may have unexpected results, https://bugs.eclipse.org/bugs/show_bug.cgi?id=386930

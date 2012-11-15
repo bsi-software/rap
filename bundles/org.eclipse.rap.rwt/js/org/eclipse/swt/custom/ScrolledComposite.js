@@ -134,10 +134,27 @@ qx.Class.define( "org.eclipse.swt.custom.ScrolledComposite", {
         var wm = org.eclipse.swt.WidgetManager.getInstance();
         var req = org.eclipse.swt.Request.getInstance();
         var id = wm.findIdByWidget( this );
+
         var scrollX = this._clientArea.getScrollLeft();
+        var scrollLeftMax = this._clientArea.getScrollWidth() - this._clientArea.getWidth();
+        if(scrollX < 0) {
+          scrollX = 0;
+        }
+        else if (scrollX > scrollLeftMax) {
+          scrollX = scrollLeftMax;
+        }
         req.addParameter( id + ".horizontalBar.selection", scrollX );
+
         var scrollY = this._clientArea.getScrollTop();
+        var scrollTopMax = this._clientArea.getScrollHeight() - this._clientArea.getHeight();
+        if(scrollY < 0) {
+          scrollY = 0;
+        }
+        else if (scrollY > scrollTopMax) {
+          scrollY = scrollTopMax;
+        }
         req.addParameter( id + ".verticalBar.selection", scrollY );
+
         if( this._hasSelectionListener ) {
           req.send();
         }

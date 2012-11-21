@@ -153,7 +153,7 @@ qx.Class.define( "org.eclipse.rwt.Client", {
     },
 
     supportsTouch : function() {
-      return this.isMobileSafari() || this.isAndroidBrowser() || this.isMobileChrome();
+      return this.getPlatform() === "ios" || this.getPlatform() === "android";
     },
 
     supportsSvg : function() {

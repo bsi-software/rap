@@ -54,7 +54,10 @@ qx.Class.define( "org.eclipse.swt.widgets.List", {
       if( items.length > 0 && items[ 0 ].isCreated() ) {
         var itemHeight = this.getManager().getItemHeight( items[ 0 ] );
         if( itemHeight > 0 ) {
-          this._clientArea.setScrollTop( newIndex * itemHeight );
+          var func = function() {
+            this._clientArea.setScrollTop( newIndex * itemHeight );
+          };
+          qx.client.Timer.once( func, this, 60 );
         }
       }
     },

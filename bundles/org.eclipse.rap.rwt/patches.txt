@@ -8,6 +8,7 @@ Bug 394323 - [ScrolledComposite] Origin may be wrong when using touch scrolling 
 Bug 361796 - [Table][Tree] Setting vertical alignment, https://bugs.eclipse.org/bugs/show_bug.cgi?id=361796
 - Bug 387963 - RAP: Missing vertical alignment on table checkboxes, https://bugs.eclipse.org/bugs/show_bug.cgi?id=387963
 - Bug 387897 - RAP: Wrong vertical alignment of table row after scrolling, https://bugs.eclipse.org/bugs/show_bug.cgi?id=387897
+Bug 395053 - [List] Scrolling with topIndex does not work if items are loaded at the same time, https://bugs.eclipse.org/bugs/show_bug.cgi?id=395053
 Bug 286039 - [Widget] removeListener is too aggressive, https://bugs.eclipse.org/bugs/show_bug.cgi?id=286039
 Bug 358858 - Double-click events may be fired when clicking while moving mouse, https://bugs.eclipse.org/bugs/show_bug.cgi?id=358858
 Bug 361799 - [Theming] Ability to specify background position and repeat, https://bugs.eclipse.org/bugs/show_bug.cgi?id=361799

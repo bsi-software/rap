@@ -247,7 +247,7 @@ qx.Class.define("qx.client.History",
         var newHash = this.__getState();
         // RAP [if] Ignore all non application states
         //if (newHash != this._state) {
-        if( newHash != this._state && this._titles[ newHash ] != null ) {
+        if( newHash != this._state ) {
           this.__onHistoryLoad(newHash);
         }
       }, this );

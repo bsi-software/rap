@@ -5,6 +5,7 @@ Bug 391048 - [iOs6] No requests will be sent anymore after executing window.setI
 Bug ?????? - Limitations in overriding or extending a stylesheet, https://github.com/BSI-Business-Systems-Integration-AG/rap/commits/patches/1.5/15_StyleSheetPrio
 Bug 347436 - Add support to have links in table cells, https://bugs.eclipse.org/bugs/show_bug.cgi?id=347436
 Bug 394323 - [ScrolledComposite] Origin may be wrong when using touch scrolling on iOS, https://bugs.eclipse.org/bugs/show_bug.cgi?id=394323
+Bug 396400 - BrowserHistoryEvent not fired anymore after page reload, https://bugs.eclipse.org/bugs/show_bug.cgi?id=396400
 Bug 361796 - [Table][Tree] Setting vertical alignment, https://bugs.eclipse.org/bugs/show_bug.cgi?id=361796
 - Bug 387963 - RAP: Missing vertical alignment on table checkboxes, https://bugs.eclipse.org/bugs/show_bug.cgi?id=387963
 - Bug 387897 - RAP: Wrong vertical alignment of table row after scrolling, https://bugs.eclipse.org/bugs/show_bug.cgi?id=387897

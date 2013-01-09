@@ -13,6 +13,7 @@ Bug 395053 - [List] Scrolling with topIndex does not work if items are loaded at
 Bug 286039 - [Widget] removeListener is too aggressive, https://bugs.eclipse.org/bugs/show_bug.cgi?id=286039
 Bug 358858 - Double-click events may be fired when clicking while moving mouse, https://bugs.eclipse.org/bugs/show_bug.cgi?id=358858
 Bug 361799 - [Theming] Ability to specify background position and repeat, https://bugs.eclipse.org/bugs/show_bug.cgi?id=361799
+Bug 397695 - [Text] setMessage does not work with SWT.MULTI style, https://bugs.eclipse.org/bugs/show_bug.cgi?id=397695
 Bug 382736 - [Menu] Context menu show preliminary "...", https://bugs.eclipse.org/bugs/show_bug.cgi?id=382736
 Bug 390711 - Unauthorized ajax request after session timeout breaks form authentication (tomcat), https://bugs.eclipse.org/bugs/show_bug.cgi?id=390711
 Bug 347771 - [Theming][Table] Make column separator themable, https://bugs.eclipse.org/bugs/show_bug.cgi?id=347771

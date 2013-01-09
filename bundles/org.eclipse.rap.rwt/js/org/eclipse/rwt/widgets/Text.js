@@ -52,10 +52,8 @@ qx.Class.define( "org.eclipse.rwt.widgets.Text", {
     // API
     
     setMessage : function( value ) {
-      if( this._inputTag !== "textarea" ) {
-        this._message = value;
-        this._updateMessage();
-      }
+      this._message = value;
+      this._updateMessage();
     },
     
     getMessage : function() {
@@ -379,8 +377,10 @@ qx.Class.define( "org.eclipse.rwt.widgets.Text", {
                         - this._cachedBorderRight 
                         - styleMap.paddingLeft 
                         - styleMap.paddingRight ) + "px";
-        var messageHeight = parseInt( style.height );
-        style.top = Math.round( this.getInnerHeight() / 2 - messageHeight / 2 ) + "px";
+        if( this._inputTag !== "textarea" ) {
+        	var messageHeight = parseInt( style.height );
+            style.top = Math.round( this.getInnerHeight() / 2 - messageHeight / 2 ) + "px";
+        }
       }
     },
 

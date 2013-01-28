@@ -67,6 +67,8 @@ public class ControlLCAUtil {
   private static final String PROP_TAB_INDEX = "tabIndex";
   private static final String PROP_CURSOR = "cursor";
   private static final String PROP_BACKGROUND_IMAGE = "backgroundImage";
+  private static final String PROP_BACKGROUND_REPEAT = "backgroundRepeat";
+  private static final String PROP_BACKGROUND_POSITION = "backgroundPosition";
   private static final String PROP_CHILDREN = "children";
 
   static final int MAX_STATIC_ZORDER = 300;
@@ -246,6 +248,8 @@ public class ControlLCAUtil {
                                       controlAdapter.getUserBackground(),
                                       controlAdapter.getBackgroundTransparency() );
     preserveBackgroundImage( control );
+    preserveBackgroundRepeat( control );
+    preserveBackgroundPosition( control );
     WidgetLCAUtil.preserveFont( control, controlAdapter.getUserFont() );
     adapter.preserve( PROP_CURSOR, control.getCursor() );
     preserveActivateListeners( control );
@@ -279,6 +283,20 @@ public class ControlLCAUtil {
     Image image = controlAdapter.getUserBackgroundImage();
     WidgetAdapter adapter = WidgetUtil.getAdapter( control );
     adapter.preserve( PROP_BACKGROUND_IMAGE, image );
+  }
+
+  public static void preserveBackgroundRepeat( Control control ) {
+    IControlAdapter controlAdapter = control.getAdapter( IControlAdapter.class );
+    String repeat = controlAdapter.getUserBackgroundRepeat();
+    WidgetAdapter adapter = WidgetUtil.getAdapter( control );
+    adapter.preserve( PROP_BACKGROUND_REPEAT, repeat );
+  }
+
+  public static void preserveBackgroundPosition( Control control ) {
+    IControlAdapter controlAdapter = control.getAdapter( IControlAdapter.class );
+    String position = controlAdapter.getUserBackgroundPosition();
+    WidgetAdapter adapter = WidgetUtil.getAdapter( control );
+    adapter.preserve( PROP_BACKGROUND_POSITION, position );
   }
 
   ///////////////////////////////////////////

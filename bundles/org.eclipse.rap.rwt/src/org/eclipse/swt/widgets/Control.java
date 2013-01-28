@@ -105,6 +105,47 @@ public abstract class Control extends Widget implements Drawable {
       return backgroundImage;
     }
 
+    public String getUserBackgroundRepeat() {
+      switch( Control.this.backgroundRepeat ) {
+        case SWT.BACKGROUND_REPEAT_REPEAT:
+          return "repeat";
+        case SWT.BACKGROUND_REPEAT_REPEAT_X:
+          return "repeat-x";
+        case SWT.BACKGROUND_REPEAT_REPEAT_Y:
+          return "repeat-y";
+        case SWT.BACKGROUND_REPEAT_NO_REPEAT:
+          return "no-repeat";
+        default:
+          return null;
+      }
+    }
+
+    public String getUserBackgroundPosition() {
+      switch( Control.this.backgroundPosition ) {
+        case SWT.BACKGROUND_POSITION_LEFT_TOP:
+          return "left top";
+        case SWT.BACKGROUND_POSITION_LEFT_CENTER:
+          return "left center";
+        case SWT.BACKGROUND_POSITION_LEFT_BOTTOM:
+          return "left bottom";
+        case SWT.BACKGROUND_POSITION_RIGHT_TOP:
+          return "right top";
+        case SWT.BACKGROUND_POSITION_RIGHT_CENTER:
+          return "right center";
+        case SWT.BACKGROUND_POSITION_RIGHT_BOTTOM:
+          return "right bottom";
+        case SWT.BACKGROUND_POSITION_CENTER_TOP:
+          return "center top";
+        case SWT.BACKGROUND_POSITION_CENTER_CENTER:
+          return "center center";
+        case SWT.BACKGROUND_POSITION_CENTER_BOTTOM:
+          return "center bottom";
+        default:
+          return null;
+      }
+    }
+
+
     public boolean getBackgroundTransparency() {
       return backgroundTransparency;
     }
@@ -125,6 +166,8 @@ public abstract class Control extends Widget implements Drawable {
   private Color foreground;
   private Color background;
   private Image backgroundImage;
+  private int backgroundRepeat;
+  private int backgroundPosition;
   private boolean backgroundTransparency;
   private Font font;
   private Cursor cursor;
@@ -523,6 +566,105 @@ public abstract class Control extends Widget implements Drawable {
       control = this;
     }
     return control.backgroundImage;
+  }
+
+  /**
+   *
+   * Sets the repeat property of the background to the receiver, which must be one of the following values:
+   * <dl>
+   * <dt><code>BACKGROUND_REPEAT_REPEAT</code></dt>
+   * <dt><code>BACKGROUND_REPEAT_REPEAT_X</code></dt>
+   * <dt><code>BACKGROUND_REPEAT_REPEAT_Y</code></dt>
+   * <dt><code>BACKGROUND_REPEAT_NO_REPEAT</code></dt>
+   * </dl>
+   *
+   * @param repeat new repeat style
+   *
+   * @exception SWTException <ul>
+   *    <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+   *    <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
+   * </ul>
+   *
+   * @since 1.4
+   */
+  public void setBackgroundRepeat( final int repeat) {
+    checkWidget();
+    if( backgroundRepeat != repeat ) {
+      backgroundRepeat = repeat;
+    }
+  }
+
+  /**
+   * Returns the receiver's background repeat property.
+   *
+   * @return the background repeat property
+   *
+   * @exception SWTException <ul>
+   *    <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+   *    <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
+   * </ul>
+   *
+   * @since 1.4
+   */
+  public int getBackgroundRepeat() {
+    checkWidget();
+    Control control = findBackgroundControl();
+    if( control == null ) {
+      control = this;
+    }
+    return control.backgroundRepeat;
+  }
+
+  /**
+   *
+   * Sets the position property of the background to the receiver, which must be one of the following values:
+   * <dl>
+   * <dt><code>BACKGROUND_POSITION_LEFT_TOP</code></dt>
+   * <dt><code>BACKGROUND_POSITION_LEFT_CENTER</code></dt>
+   * <dt><code>BACKGROUND_POSITION_LEFT_BOTTOM</code></dt>
+   * <dt><code>BACKGROUND_POSITION_RIGHT_TOP</code></dt>
+   * <dt><code>BACKGROUND_POSITION_RIGHT_CENTER</code></dt>
+   * <dt><code>BACKGROUND_POSITION_RIGHT_BOTTOM</code></dt>
+   * <dt><code>BACKGROUND_POSITION_CENTER_TOP</code></dt>
+   * <dt><code>BACKGROUND_POSITION_CENTER_CENTER</code></dt>
+   * <dt><code>BACKGROUND_POSITION_CENTER_BOTTOM</code></dt>
+   * </dl>
+   *
+   * @param position new position style
+   *
+   * @exception SWTException <ul>
+   *    <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+   *    <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
+   * </ul>
+   *
+   * @since 1.4
+   */
+  public void setBackgroundPosition( final int position) {
+    checkWidget();
+    if( backgroundPosition != position ) {
+      backgroundPosition = position;
+    }
+  }
+
+  /**
+   * Returns the receiver's background position property.
+   *
+   * @return the background position property
+   *
+   * @exception SWTException <ul>
+   *    <li>ERROR_WIDGET_DISPOSED - if the receiver has been disposed</li>
+   *    <li>ERROR_THREAD_INVALID_ACCESS - if not called from the thread that created the receiver</li>
+   * </ul>
+   *
+   * @since 1.4
+   */
+  public int getBackgroundPosition() {
+    checkWidget();
+    Control control = findBackgroundControl();
+    if( control == null ) {
+      control = this;
+    }
+    return control.backgroundPosition;
   }
 
   /**

@@ -421,11 +421,11 @@ rwt.qx.Class.define( "rwt.widgets.base.GridRow", {
       var renderBounds = false;
       if( source !== null ) {
         renderBounds = isTreeColumn || !contentOnly || !this._cellImages[ cell ];
-        element = this._getCellImage( cell );
+        element = this._getCellImage( cell, config );
         this._setImage( element, source, renderBounds ? config.enabled : null );
       } else if( this._cellImages[ cell ] ) {
         renderBounds = isTreeColumn || !contentOnly;
-        element = this._getCellImage( cell );
+        element = this._getCellImage( cell, config );
         this._setImage( element, null, null );
       }
       if( renderBounds ) {
@@ -666,12 +666,12 @@ rwt.qx.Class.define( "rwt.widgets.base.GridRow", {
       return result;
     },
 
-    _getCellImage : function( cell ) {
+    _getCellImage : function( cell, config ) {
       var result = this._cellImages[ cell ];
       if( !result ) {
         result = this._createElement( 3 );
         result.style.backgroundRepeat = "no-repeat";
-        result.style.backgroundPosition = "center";
+        result.style.backgroundPosition = this._getBackgroundPosition( cell, config );
         this._cellImages[ cell ] = result;
       }
       return result;
@@ -911,6 +911,10 @@ rwt.qx.Class.define( "rwt.widgets.base.GridRow", {
 
     _getVerticalAlignment : function( column, config ) {
       return config.verticalAlignment[ column ] ? config.verticalAlignment[ column ] : "middle";
+    },
+
+   _getBackgroundPosition : function( column, config ) {
+	  return config.backgroundPosition[ column ] ? config.backgroundPosition[ column ] : "center";
     },
 
     _getIndentionOffset : function( level, config ) {

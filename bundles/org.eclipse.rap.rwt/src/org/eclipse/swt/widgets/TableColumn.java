@@ -56,6 +56,7 @@ public class TableColumn extends Item {
   private boolean moveable;
   private boolean packed;
   private int verticalAlignment=SWT.CENTER;
+  private int backgroundPosition=SWT.BACKGROUND_POSITION_CENTER_CENTER;
 
   /**
    * Constructs a new instance of this class given its parent
@@ -390,6 +391,18 @@ public class TableColumn extends Item {
       }
     }
     verticalAlignment = align;
+  }
+
+  public void setBackgroundPosition(final int position) {
+    checkWidget();
+    if (backgroundPosition != position) {
+      backgroundPosition = position;
+    }
+  }
+
+  public int getBackgroundPosition() {
+    checkWidget();
+    return backgroundPosition;
   }
 
   ///////////////////////////////////////

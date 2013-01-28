@@ -466,6 +466,7 @@ rwt.qx.Class.define( "rwt.widgets.base.GridRow", {
       if( renderBounds ) {
         this._renderCellLabelBounds( item, cell, config );
       }
+      this._renderCellLabelVerticalAlignment( element );
       return element;
     },
 
@@ -475,9 +476,12 @@ rwt.qx.Class.define( "rwt.widgets.base.GridRow", {
         var left = this._getItemTextLeft( item, cell, config );
         var width = this._getItemTextWidth( item, cell, config );
         this._setBounds( element, left, 0, width, this.getHeight() );
-        if( element.style.verticalAlign == "middle" ) {
-          element.style.lineHeight = element.style.height;
-        }
+      }
+    },
+
+    _renderCellLabelVerticalAlignment : function( element ) {
+      if( element && element.style.verticalAlign === "middle" ) {
+    	 element.style.lineHeight = element.style.height ? element.style.height : this.getHeight() + "px";
       }
     },
 
@@ -656,7 +660,7 @@ rwt.qx.Class.define( "rwt.widgets.base.GridRow", {
       var result = this._cellLabels[ cell ];
       if( !result ) {
         result = this._createElement( 3 );
-        result.style.verticalAlign = "middle";
+        result.style.verticalAlign = this._getVerticalAlignment( cell, config );
         result.style.whiteSpace = "nowrap";
         if( rwt.client.Client.isNewMshtml() ) {
           result.style.backgroundColor = "rgba(0, 0, 0, 0)";

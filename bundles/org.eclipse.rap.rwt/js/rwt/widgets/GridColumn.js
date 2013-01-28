@@ -22,6 +22,7 @@ rwt.qx.Class.define( "rwt.widgets.GridColumn", {
     this._resizable = isGroup ? false : true;
     this._moveable = false;
     this._alignment = "left";
+    this._verticalAlignment = rwt.widgets.util.Layout.ALIGN_MIDDLE;
     this._group = null;
     this._left = 0;
     this._height = 0;
@@ -287,8 +288,18 @@ rwt.qx.Class.define( "rwt.widgets.GridColumn", {
       this._update();
     },
 
+    setVerticalAlignment : function( value ) {
+      this._grid.setVerticalAlignment( this._index, value );
+      this._verticalAlignment = value;
+      this._update();
+    },
+
     getAlignment : function() {
       return this._alignment;
+    },
+
+    getVerticalAlignment : function() {
+      return this._verticalAlignment;
     },
 
     setFixed : function( value ) {

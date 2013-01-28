@@ -455,6 +455,7 @@ rwt.qx.Class.define( "rwt.widgets.base.GridRow", {
         this._renderElementContent( element, item, cell, config.markupEnabled );
         if( renderBounds ) {
           element.style.textAlign = isTreeColumn ? "left" : this._getAlignment( cell, config );
+          element.style.verticalAlign = this._getVerticalAlignment( cell, config );
         }
         this._styleLabel( element, item, cell, config );
       } else if( this._cellLabels[ cell ] ) {
@@ -474,7 +475,9 @@ rwt.qx.Class.define( "rwt.widgets.base.GridRow", {
         var left = this._getItemTextLeft( item, cell, config );
         var width = this._getItemTextWidth( item, cell, config );
         this._setBounds( element, left, 0, width, this.getHeight() );
-        element.style.lineHeight = config.markupEnabled ? "" : element.style.height;
+        if( element.style.verticalAlign == "middle" ) {
+          element.style.lineHeight = element.style.height;
+        }
       }
     },
 
@@ -904,6 +907,10 @@ rwt.qx.Class.define( "rwt.widgets.base.GridRow", {
 
     _getAlignment : function( column, config ) {
       return config.alignment[ column ] ? config.alignment[ column ] : "left";
+    },
+
+    _getVerticalAlignment : function( column, config ) {
+      return config.verticalAlignment[ column ] ? config.verticalAlignment[ column ] : "middle";
     },
 
     _getIndentionOffset : function( level, config ) {

@@ -51,11 +51,13 @@ public final class TableColumnLCA extends AbstractWidgetLCA {
   static final String PROP_RESIZABLE = "resizable";
   static final String PROP_MOVEABLE = "moveable";
   static final String PROP_ALIGNMENT = "alignment";
+  static final String PROP_VERTICAL_ALIGNMENT = "verticalAlignment";
   static final String PROP_FIXED = "fixed";
   static final String PROP_SELECTION_LISTENER = "Selection";
 
   private static final int ZERO = 0;
   private static final String DEFAULT_ALIGNMENT = "left";
+  private static final String DEFAULT_VERTICAL_ALIGNMENT = "middle";
 
   @Override
   public void preserveValues( Widget widget ) {
@@ -70,6 +72,7 @@ public final class TableColumnLCA extends AbstractWidgetLCA {
     preserveProperty( column, PROP_RESIZABLE, column.getResizable() );
     preserveProperty( column, PROP_MOVEABLE, column.getMoveable() );
     preserveProperty( column, PROP_ALIGNMENT, getAlignment( column ) );
+    preserveProperty( column, PROP_VERTICAL_ALIGNMENT, getVerticalAlignment( column ) );
     preserveProperty( column, PROP_FIXED, isFixed( column ) );
     preserveListener( column, PROP_SELECTION_LISTENER, column.isListening( SWT.Selection ) );
   }
@@ -124,6 +127,7 @@ public final class TableColumnLCA extends AbstractWidgetLCA {
     renderProperty( column, PROP_RESIZABLE, column.getResizable(), true );
     renderProperty( column, PROP_MOVEABLE, column.getMoveable(), false );
     renderProperty( column, PROP_ALIGNMENT, getAlignment( column ), DEFAULT_ALIGNMENT );
+    renderProperty( column, PROP_VERTICAL_ALIGNMENT, getVerticalAlignment( column ), DEFAULT_VERTICAL_ALIGNMENT );
     renderProperty( column, PROP_FIXED, isFixed( column ), false );
     renderListener( column, PROP_SELECTION_LISTENER, column.isListening( SWT.Selection ), false );
   }
@@ -142,11 +146,23 @@ public final class TableColumnLCA extends AbstractWidgetLCA {
 
   private static String getAlignment( TableColumn column ) {
     int alignment = column.getAlignment();
-    String result = "left";
+    String result = DEFAULT_ALIGNMENT;
     if( ( alignment & SWT.CENTER ) != 0 ) {
       result = "center";
     } else if( ( alignment & SWT.RIGHT ) != 0 ) {
       result = "right";
+    }
+    return result;
+  }
+
+
+  private static String getVerticalAlignment( TableColumn column ) {
+    int verticalAlignment = column.getVerticalAlignment();
+    String result = DEFAULT_VERTICAL_ALIGNMENT;
+    if( ( verticalAlignment & SWT.TOP ) != 0 ) {
+      result = "top";
+    } else if( ( verticalAlignment & SWT.BOTTOM ) != 0 ) {
+      result = "bottom";
     }
     return result;
   }

@@ -370,6 +370,11 @@ rwt.qx.Class.define( "rwt.widgets.Grid", {
       this._scheduleUpdate();
     },
 
+    setVerticalAlignment : function( column, value ) {
+      this._config.verticalAlignment[ column ] = value;
+      this._scheduleUpdate();
+    },
+
     setCellCheck : function( column, value ) {
       this._config.itemCellCheck[ column ] = value;
       this._scheduleUpdate();

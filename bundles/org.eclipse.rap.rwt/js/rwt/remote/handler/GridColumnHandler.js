@@ -40,6 +40,7 @@ rwt.remote.HandlerRegistry.add( "rwt.widgets.GridColumn", {
     "resizable",
     "moveable",
     "alignment",
+    "verticalAlignment",
     "fixed",
     "group",
     "customVariant",

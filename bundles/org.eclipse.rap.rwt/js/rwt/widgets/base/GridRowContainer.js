@@ -70,6 +70,7 @@ rwt.qx.Class.define( "rwt.widgets.base.GridRowContainer", {
         "columnCount" : 0,
         "treeColumn" : 0,
         "alignment" : [],
+        "verticalAlignment" : [],
         "itemLeft" : [],
         "itemWidth" : [],
         "itemImageLeft" : [],

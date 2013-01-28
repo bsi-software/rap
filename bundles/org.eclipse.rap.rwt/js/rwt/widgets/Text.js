@@ -57,10 +57,8 @@ rwt.qx.Class.define( "rwt.widgets.Text", {
     // API
 
     setMessage : function( value ) {
-      if( this._inputTag !== "textarea" ) {
-        this._message = value;
-        this._updateMessage();
-      }
+      this._message = value;
+      this._updateMessage();
     },
 
     getMessage : function() {
@@ -494,8 +492,10 @@ rwt.qx.Class.define( "rwt.widgets.Text", {
                     - this._getIconOuterWidth( "search" )
                     - this._getIconOuterWidth( "cancel" );
         style.width = Math.max( 0, width ) + "px";
-        var messageHeight = parseInt( style.height, 10 );
-        style.top = Math.round( this.getInnerHeight() / 2 - messageHeight / 2 ) + "px";
+        if( this._inputTag !== "textarea" ) {
+          var messageHeight = parseInt( style.height, 10 );
+          style.top = Math.round( this.getInnerHeight() / 2 - messageHeight / 2 ) + "px";
+        }
         style.left = ( this._getIconOuterWidth( "search" ) + styleMap.paddingLeft ) + "px";
       }
     },

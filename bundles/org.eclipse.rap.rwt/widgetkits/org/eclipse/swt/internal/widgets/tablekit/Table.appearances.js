@@ -44,8 +44,8 @@ var appearances = {
       var borderWidths = [ 0, 0, 0, 0 ];
       var borderStyles = [ "solid", "solid", "solid", "solid" ];
       if( !states.dummy ) {
-        var verticalState = { "vertical" : true };
-        var tvGrid = new rwt.theme.ThemeValues( verticalState );
+        var headerState = { "header" : true };
+        var tvGrid = new rwt.theme.ThemeValues( headerState );
         var gridColor = tvGrid.getCssColor( "Table-GridLine", "color" );
         gridColor = gridColor == "undefined" ? "transparent" : gridColor;
         borderColors[ 1 ] = gridColor;
@@ -54,7 +54,7 @@ var appearances = {
           borderColors[ 3 ] = gridColor;
           borderWidths[ 3 ] = 1;
         }
-      } 
+      }
       var borderBottom = tv.getCssBorder( "TableColumn", "border-bottom" );
       borderWidths[ 2 ] = borderBottom.getWidthBottom();
       borderStyles[ 2 ] = borderBottom.getStyleBottom();

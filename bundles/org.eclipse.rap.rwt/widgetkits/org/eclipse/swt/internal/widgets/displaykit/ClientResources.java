@@ -54,6 +54,7 @@ public final class ClientResources {
     "rwt/event/DataEvent.js",
     "rwt/event/ChangeEvent.js",
     "rwt/client/Timer.js",
+    "rwt/client/IOS6TimerPatch.js",
     "rwt/html/Entity.js",
     "rwt/html/EventRegistration.js",
     "rwt/event/EventHandlerUtil.js",

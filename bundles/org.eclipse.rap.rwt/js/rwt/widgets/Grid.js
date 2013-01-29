@@ -22,6 +22,7 @@ rwt.qx.Class.define( "rwt.widgets.Grid", {
     // Internal State:
     this._hasSelectionListener = false;
     this._hasDefaultSelectionListener = false;
+    this._hasHyperlinkListeners = false;
     this._leadItem = null;
     this._topItemIndex = 0;
     this._topItem = null;
@@ -353,6 +354,10 @@ rwt.qx.Class.define( "rwt.widgets.Grid", {
       this._hasDefaultSelectionListener = value;
     },
 
+    setHasHyperlinkListeners : function( value ) {
+      this._hasHyperlinkListeners = value;
+    },
+
     setHasExpandListener : function( value ) {
       this._hasExpandListener = value;
     },
@@ -553,6 +558,12 @@ rwt.qx.Class.define( "rwt.widgets.Grid", {
       if( this._delayedSelection ) {
         this._onMouseDown( event );
       }
+      else {
+        var target = event.getOriginalTarget();
+    	if( target instanceof rwt.widgets.base.GridRow ) {
+    	  this._onRowMouseUp( target, event );
+    	}
+      }
     },
 
     _onRowMouseDown : function( row, event ) {
@@ -570,6 +581,13 @@ rwt.qx.Class.define( "rwt.widgets.Grid", {
         } else if( this._isSelectionClick( identifier ) ) {
           this._onSelectionClick( event, item );
         }
+      }
+    },
+
+    _onRowMouseUp : function( row, event ) {
+      var item = this._rowContainer.findItemByRow( row );
+      if( item != null ) {
+        this._sendHyperlinkActivated( event, item );
       }
     },
 
@@ -948,6 +966,20 @@ rwt.qx.Class.define( "rwt.widgets.Grid", {
         var selection = this._getSelectionList();
         rwt.remote.Server.getInstance().getRemoteObject( this ).set( "selection", selection );
         this._sendSelectionEvent( item, false, null );
+      }
+    },
+
+    _sendHyperlinkActivated : function( event, item ) {
+      var targetNode = event.getDomTarget();
+      if( targetNode
+    	  && targetNode.nodeName=="span" || targetNode.nodeName=="SPAN"
+    	  && targetNode.className=="link"
+    	  && targetNode.getAttribute("href") ) {
+    	event.setDefaultPrevented( true );
+    	//var itemId = this._getItemId( item );
+    	var server = rwt.remote.Server.getInstance();
+    	var properties = { "url" : targetNode.getAttribute("href") };
+    	server.getRemoteObject( item ).notify( "HyperlinkActivated", properties );
       }
     },
 

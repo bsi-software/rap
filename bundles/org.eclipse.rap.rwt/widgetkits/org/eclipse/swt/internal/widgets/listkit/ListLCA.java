@@ -20,6 +20,7 @@ import static org.eclipse.rap.rwt.lifecycle.WidgetUtil.getId;
 import java.io.IOException;
 
 import org.eclipse.rap.rwt.RWT;
+import org.eclipse.rap.rwt.internal.protocol.ClientMessageConst;
 import org.eclipse.rap.rwt.internal.protocol.ClientObjectFactory;
 import org.eclipse.rap.rwt.internal.protocol.IClientObject;
 import org.eclipse.rap.rwt.internal.protocol.ProtocolUtil;
@@ -29,9 +30,11 @@ import org.eclipse.rap.rwt.lifecycle.ControlLCAUtil;
 import org.eclipse.rap.rwt.lifecycle.WidgetLCAUtil;
 import org.eclipse.rap.rwt.lifecycle.WidgetUtil;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.HyperlinkEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.internal.widgets.IListAdapter;
 import org.eclipse.swt.internal.widgets.ScrollBarLCAUtil;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Widget;
 
@@ -81,6 +84,7 @@ public class ListLCA extends AbstractWidgetLCA {
     ControlLCAUtil.processSelection( list, null, true );
     ControlLCAUtil.processDefaultSelection( list, null );
     ControlLCAUtil.processEvents( list );
+    processHyperlinkActivated( list );
     ControlLCAUtil.processKeyEvents( list );
     ControlLCAUtil.processMenuDetect( list );
     WidgetLCAUtil.processHelp( list );
@@ -145,6 +149,22 @@ public class ListLCA extends AbstractWidgetLCA {
       int focusIndex = NumberFormatUtil.parseInt( paramValue );
       getAdapter( list ).setFocusIndex( focusIndex );
     }
+  }
+
+  private static void processHyperlinkActivated( final List list ) {
+    if( WidgetLCAUtil.wasEventSent( list, ClientMessageConst.EVENT_HYPERLINK_ACTIVATED ) ) {
+      Event hyperlinkEvent = createHyperlinkEvent( list );
+      if( hyperlinkEvent.text != null && hyperlinkEvent.text.length() > 0 ) {
+        list.notifyListeners( HyperlinkEvent.ACTIVATED, hyperlinkEvent );
+      }
+    }
+  }
+
+  private static Event createHyperlinkEvent( List list)  {
+    Event result = new Event();
+    result.text = WidgetLCAUtil.readEventPropertyValue( list, ClientMessageConst.EVENT_HYPERLINK_ACTIVATED, ClientMessageConst.EVENT_PARAM_URL );
+    result.item = list;
+    return result;
   }
 
   //////////////////

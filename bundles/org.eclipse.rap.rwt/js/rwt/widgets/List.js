@@ -28,6 +28,7 @@ rwt.qx.Class.define( "rwt.widgets.List", {
     this.addEventListener( "dblclick", this._onDblClick, this );
     this.addEventListener( "appear", this._onAppear, this );
     this.addEventListener( "userScroll", this._onUserScroll );
+    this.addEventListener( "mouseup", this._onMouseUp, this );
   },
 
   destruct : function() {
@@ -38,6 +39,7 @@ rwt.qx.Class.define( "rwt.widgets.List", {
     this.removeEventListener( "focus", this._onFocusIn, this );
     this.removeEventListener( "blur", this._onFocusOut, this );
     this.removeEventListener( "dblclick", this._onDblClick, this );
+    this.removeEventListener( "mouseup", this._onMouseUp, this );
     this.removeEventListener( "appear", this._onAppear, this );
   },
 
@@ -139,6 +141,34 @@ rwt.qx.Class.define( "rwt.widgets.List", {
 
     _onFocusOut : function( evt ) {
       this._updateSelectedItemState();
+    },
+
+
+    _onMouseUp : function( event ) {
+      var target = event.getOriginalTarget();
+      if( target instanceof rwt.widgets.ListItem ) {
+        this._onListItemMouseUp( target, event );
+      }
+    },
+
+    _onListItemMouseUp : function( row, event ) {
+      this._sendHyperlinkActivated( event );
+    },
+
+    _sendHyperlinkActivated : function( event ) {
+      var targetNode = event.getDomTarget();
+      if( targetNode
+          && targetNode.nodeName=="span" || targetNode.nodeName=="SPAN"
+          && targetNode.className=="link"
+          && targetNode.getAttribute("href") ) {
+         event.setDefaultPrevented( true );
+         var wm = org.eclipse.swt.WidgetManager.getInstance();
+         var id = wm.findIdByWidget( this );
+         var req = org.eclipse.swt.Request.getInstance();
+         req.addEvent( "org.eclipse.swt.events.hyperlinkActivated", id );
+         req.addParameter( "org.eclipse.swt.events.hyperlinkActivated.url", targetNode.getAttribute("href") );
+         req.send();
+      }
     },
 
     _updateSelectedItemState : function() {

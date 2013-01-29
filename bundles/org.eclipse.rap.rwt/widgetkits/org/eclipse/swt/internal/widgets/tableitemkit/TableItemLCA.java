@@ -16,12 +16,14 @@ import static org.eclipse.rap.rwt.lifecycle.WidgetLCAUtil.renderProperty;
 
 import java.io.IOException;
 
+import org.eclipse.rap.rwt.internal.protocol.ClientMessageConst;
 import org.eclipse.rap.rwt.internal.protocol.ClientObjectFactory;
 import org.eclipse.rap.rwt.internal.protocol.IClientObject;
 import org.eclipse.rap.rwt.lifecycle.AbstractWidgetLCA;
 import org.eclipse.rap.rwt.lifecycle.WidgetAdapter;
 import org.eclipse.rap.rwt.lifecycle.WidgetLCAUtil;
 import org.eclipse.rap.rwt.lifecycle.WidgetUtil;
+import org.eclipse.swt.events.HyperlinkEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
@@ -30,6 +32,7 @@ import org.eclipse.swt.internal.widgets.ITableItemAdapter;
 import org.eclipse.swt.internal.widgets.IWidgetColorAdapter;
 import org.eclipse.swt.internal.widgets.IWidgetFontAdapter;
 import org.eclipse.swt.internal.widgets.WidgetAdapterImpl;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Widget;
@@ -77,6 +80,7 @@ public final class TableItemLCA extends AbstractWidgetLCA {
   public void readData( Widget widget ) {
     TableItem item = ( TableItem )widget;
     readChecked( item );
+    processHyperlinkActivated( item );
   }
 
   @Override
@@ -119,6 +123,22 @@ public final class TableItemLCA extends AbstractWidgetLCA {
     if( value != null ) {
       item.setChecked( Boolean.valueOf( value ).booleanValue() );
     }
+  }
+
+  private static void processHyperlinkActivated( final TableItem item ) {
+    if( WidgetLCAUtil.wasEventSent( item, ClientMessageConst.EVENT_HYPERLINK_ACTIVATED ) ) {
+      Event hyperlinkEvent = createHyperlinkEvent( item );
+      if( hyperlinkEvent.text != null && hyperlinkEvent.text.length() > 0 ) {
+        item.notifyListeners( HyperlinkEvent.ACTIVATED, hyperlinkEvent );
+      }
+    }
+  }
+
+  private static Event createHyperlinkEvent( TableItem item )  {
+    Event result = new Event();
+    result.text = WidgetLCAUtil.readEventPropertyValue( item.getParent(), ClientMessageConst.EVENT_HYPERLINK_ACTIVATED, ClientMessageConst.EVENT_PARAM_URL );
+    result.item = item;
+    return result;
   }
 
   ///////////////////////

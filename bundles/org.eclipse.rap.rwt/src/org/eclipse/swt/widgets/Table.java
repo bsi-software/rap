@@ -17,6 +17,8 @@ import org.eclipse.rap.rwt.internal.theme.IThemeAdapter;
 import org.eclipse.rap.rwt.lifecycle.ProcessActionRunner;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
+import org.eclipse.swt.events.HyperlinkEvent;
+import org.eclipse.swt.events.HyperlinkListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Font;
@@ -1987,6 +1989,31 @@ public class Table extends Composite {
     }
     removeListener( SWT.Selection, listener );
     removeListener( SWT.DefaultSelection, listener );
+  }
+
+  /**
+   * @since 2.0
+   * This property is part of the extended RAP Web-2.0 API, but not part of the SWT API
+   */
+  public void addHyperlinkListener( HyperlinkListener listener ) {
+    checkWidget();
+    if( listener == null ) {
+      SWT.error( SWT.ERROR_NULL_ARGUMENT );
+    }
+    TypedListener typedListener = new TypedListener( listener );
+    addListener( HyperlinkEvent.ACTIVATED, typedListener );
+  }
+
+  /**
+   * @since 2.0
+   * This property is part of the extended RAP Web-2.0 API, but not part of the SWT API
+   */
+  public void removeHyperlinkListener( HyperlinkListener listener ) {
+    checkWidget();
+    if( listener == null ) {
+      SWT.error( SWT.ERROR_NULL_ARGUMENT );
+    }
+    removeListener( HyperlinkEvent.ACTIVATED, listener );
   }
 
   @Override

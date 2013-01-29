@@ -37,6 +37,7 @@ public final class ClientMessageConst {
   public static final String EVENT_TRAVERSE = "Traverse";
   public static final String EVENT_HELP = "Help";
   public static final String EVENT_MENU_DETECT = "MenuDetect";
+  public static final String EVENT_HYPERLINK_ACTIVATED = "HyperlinkActivated";
 
   // CTabFolder specific events
   public static final String EVENT_FOLDER = "Folder";
@@ -61,6 +62,7 @@ public final class ClientMessageConst {
   public static final String EVENT_PARAM_TIME = "time";
   public static final String EVENT_PARAM_KEY_CODE = "keyCode";
   public static final String EVENT_PARAM_CHAR_CODE = "charCode";
+  public static final String EVENT_PARAM_URL = "url";
 
   private ClientMessageConst() {
     // prevent instantiation

@@ -6,7 +6,7 @@
   	    // This code is free to use by anyone (MIT, blabla).
         // Author: rkorving@wizcorp.jp
 
-	    var Client = org.eclipse.rwt.Client;
+	    var Client = rwt.client.Client;
 		var applyPatch = false;
 		if(Client.getPlatform() === "ios") {
 		  if(navigator.appVersion.indexOf("OS 6") > 0) {

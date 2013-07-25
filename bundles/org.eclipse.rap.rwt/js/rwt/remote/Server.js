@@ -206,18 +206,23 @@ rwt.qx.Class.define( "rwt.remote.Server", {
     },
 
     _handleSuccess : function( event ) {
-      try {
-        var messageObject = JSON.parse( event.responseText );
-        rwt.remote.EventUtil.setSuspended( true );
-        Processor.processMessage( messageObject );
-        Widget.flushGlobalQueues();
-        rap._.notify( "render" );
-        EventUtil.setSuspended( false );
-        ServerPush.getInstance().sendUICallBackRequest();
-        this.dispatchSimpleEvent( "received" );
-      } catch( ex ) {
-        ErrorHandler.processJavaScriptErrorInResponse( event.responseText, ex, event.target );
+      if(!this._isJsonResponse(event)) {
+        window.location.reload();
       }
+      else {
+        try {
+          var messageObject = JSON.parse( event.responseText );
+          rwt.remote.EventUtil.setSuspended( true );
+          Processor.processMessage( messageObject );
+          Widget.flushGlobalQueues();
+          rap._.notify( "render" );
+          EventUtil.setSuspended( false );
+          ServerPush.getInstance().sendUICallBackRequest();
+          this.dispatchSimpleEvent( "received" );
+        } catch( ex ) {
+          ErrorHandler.processJavaScriptErrorInResponse( event.responseText, ex, event.target );
+        }
+     }
       this._hideWaitHint();
     },
 

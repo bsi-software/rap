@@ -206,18 +206,23 @@ rwt.qx.Class.define( "rwt.remote.Server", {
     },
 
     _handleSuccess : function( event ) {
-      try {
-        var messageObject = JSON.parse( event.responseText );
-        rwt.remote.EventUtil.setSuspended( true );
-        Processor.processMessage( messageObject );
-        Widget.flushGlobalQueues();
-        rap._.notify( "render" );
-        EventUtil.setSuspended( false );
-        ServerPush.getInstance().sendUICallBackRequest();
-        this.dispatchSimpleEvent( "received" );
-      } catch( ex ) {
-        ErrorHandler.processJavaScriptErrorInResponse( event.responseText, ex, event.target );
+      if(!this._isJsonResponse(event)) {
+        window.location.reload();
       }
+      else {
+        try {
+          var messageObject = JSON.parse( event.responseText );
+          rwt.remote.EventUtil.setSuspended( true );
+          Processor.processMessage( messageObject );
+          Widget.flushGlobalQueues();
+          rap._.notify( "render" );
+          EventUtil.setSuspended( false );
+          ServerPush.getInstance().sendUICallBackRequest();
+          this.dispatchSimpleEvent( "received" );
+        } catch( ex ) {
+          ErrorHandler.processJavaScriptErrorInResponse( event.responseText, ex, event.target );
+        }
+     }
       this._hideWaitHint();
     },
 
@@ -277,6 +282,10 @@ rwt.qx.Class.define( "rwt.remote.Server", {
 
     _isJsonResponse : function( event ) {
       var contentType = event.responseHeaders[ "Content-Type" ];
+      if(contentType == null) {
+    	// May not be set on Android 2 devices. Returning null to make it possible to distinguish between not set and wrong type
+    	return null;
+      }
       return contentType.indexOf( "application/json" ) !== -1;
     },
 

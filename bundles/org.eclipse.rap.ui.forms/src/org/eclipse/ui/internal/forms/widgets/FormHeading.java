@@ -574,7 +574,7 @@ public class FormHeading extends Canvas {
 	 *            the parent widget
 	 */
 	public FormHeading(Composite parent, int style) {
-		super(parent, style);
+		super(parent, SWT.NO_FOCUS | style);
 		setBackgroundMode(SWT.INHERIT_DEFAULT);
 // RAP [rh] Paint events missing
 //		addListener(SWT.Paint, new Listener() {

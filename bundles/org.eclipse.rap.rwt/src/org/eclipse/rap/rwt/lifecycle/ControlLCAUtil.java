@@ -26,6 +26,7 @@ import org.eclipse.rap.rwt.internal.util.ActiveKeysUtil;
 import org.eclipse.rap.rwt.internal.util.NumberFormatUtil;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.graphics.Cursor;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
@@ -655,6 +656,7 @@ public class ControlLCAUtil {
     result &= ( control.getStyle() & SWT.NO_FOCUS ) == 0;
     result &= control.getClass() != Composite.class;
     result &= control.getClass() != SashForm.class;
+    result &= control.getClass() != ScrolledComposite.class;
     return result;
   }
 

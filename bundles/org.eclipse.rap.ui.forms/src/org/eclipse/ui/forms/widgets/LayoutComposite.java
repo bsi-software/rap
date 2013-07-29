@@ -9,6 +9,7 @@
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 package org.eclipse.ui.forms.widgets;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.*;
 /**
@@ -21,7 +22,7 @@ import org.eclipse.swt.widgets.*;
  */
 /* package */class LayoutComposite extends Composite {
 	public LayoutComposite(Composite parent, int style) {
-		super(parent, style);
+		super(parent, SWT.NO_FOCUS | style);
 		setMenu(parent.getMenu());
 	}
 	public Point computeSize(int wHint, int hHint, boolean changed) {

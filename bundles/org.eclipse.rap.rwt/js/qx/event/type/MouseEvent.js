@@ -224,11 +224,11 @@ qx.Class.define("qx.event.type.MouseEvent",
     getPageX : qx.core.Variant.select("qx.client",
     {
       "mshtml" : function() {
-        return this.getDomEvent().clientX + qx.bom.Viewport.getScrollLeft(window);
+        return Math.round( this.getDomEvent().clientX + qx.bom.Viewport.getScrollLeft(window) );
       },
 
       "default" : function() {
-        return this.getDomEvent().pageX;
+        return Math.round( this.getDomEvent().pageX );
       }
     }),
 
@@ -242,11 +242,11 @@ qx.Class.define("qx.event.type.MouseEvent",
     getPageY : qx.core.Variant.select("qx.client",
     {
       "mshtml" : function() {
-        return this.getDomEvent().clientY + qx.bom.Viewport.getScrollTop(window);
+        return Math.round( this.getDomEvent().clientY + qx.bom.Viewport.getScrollTop(window) );
       },
 
       "default" : function() {
-        return this.getDomEvent().pageY;
+        return Math.round( this.getDomEvent().pageY );
       }
     }),
 

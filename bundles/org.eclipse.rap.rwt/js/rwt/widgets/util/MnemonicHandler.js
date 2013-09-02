@@ -29,8 +29,10 @@ rwt.qx.Class.define( "rwt.widgets.util.MnemonicHandler", {
 
     add : function( widget, listener ) {
       var root = widget.getFocusRoot();
-      this._registerFocusRoot( root );
-      this._map[ root.toHashCode() ][ widget.toHashCode() ] = [ widget, listener ];
+      if( root != null ) {  // TODO [tb] : this is for MenuBar items, handle them like Menu items
+        this._registerFocusRoot( root );
+        this._map[ root.toHashCode() ][ widget.toHashCode() ] = [ widget, listener ];
+      }
     },
 
     remove : function( widget ) {
@@ -117,6 +119,9 @@ rwt.qx.Class.define( "rwt.widgets.util.MnemonicHandler", {
           if( !onlyVisible || entry[ 0 ].isSeeable() ) {
             try{
               entry[ 1 ].call( entry[ 0 ], event );
+              if( event.success ) {
+                break;
+              }
             } catch( ex ) {
               var msg = "Could not handle mnemonic " + event.type + ". ";
               if( entry[ 0 ].isDisposed() ) {

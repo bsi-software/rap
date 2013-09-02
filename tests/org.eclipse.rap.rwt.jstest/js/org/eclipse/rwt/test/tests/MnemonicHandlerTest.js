@@ -10,6 +10,7 @@
 
 (function(){
 
+var MessageProcessor = rwt.remote.MessageProcessor;
 var TestUtil = org.eclipse.rwt.test.fixture.TestUtil;
 var DomEvent = rwt.event.DomEvent;
 
@@ -230,7 +231,46 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.MnemonicHandlerTest", {
 
       TestUtil.keyDown( widget, "B", DomEvent.CTRL_MASK );
       assertEquals( 0, TestUtil.getRequestsSend() );
+    },
+
+    testFireTrigger_successStopsTriggerEvent : function() {
+      handler.setActivator( "CTRL" );
+      success = true;
+      widget.focus();
+      var widgetTwo = TestUtil.createWidgetByProtocol( "w4", "w2" );
+      TestUtil.flush();
+      var secondLog = [];
+      handler.add( widgetTwo, function( event ) {
+        if( event.type === "trigger" ) {
+          secondLog.push( event );
+          event.success = true;
+        }
+      } );
+
+      TestUtil.keyDown( shell, "Control", DomEvent.CTRL_MASK );
+      TestUtil.keyDown( widget, "B", DomEvent.CTRL_MASK );
+
+      var totalSuccess = charLog.length + secondLog.length;
+      assertEquals( 1, totalSuccess );
+    },
+
+    testMenuBarWithMnemonicsDoesNotCrashWithoutParent : function() {
+      MessageProcessor.processOperationArray(
+        [ "create", "w4", "rwt.widgets.Menu", { "style" : [ "BAR" ] } ]
+      );
+      var itemProperties = { "style" : [ "CASCADE" ], "parent" : "w4", "index" : 0 };
+      MessageProcessor.processOperationArray(
+        [ "create", "w5", "rwt.widgets.MenuItem", itemProperties ]
+      );
+      var menuBar = rwt.remote.ObjectRegistry.getObject( "w4" );
+      var menuItem = rwt.remote.ObjectRegistry.getObject( "w5" );
+      menuItem.setText( "foo" );
+      menuItem.setMnemonicIndex( 1 );
+      MessageProcessor.processOperationArray(
+        [ "set", "w4", { "parent" : "w2" } ]
+      );
     }
+
 
   }
 

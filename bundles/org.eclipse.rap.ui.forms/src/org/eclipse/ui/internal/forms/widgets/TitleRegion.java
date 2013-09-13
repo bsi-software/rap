@@ -59,7 +59,7 @@ public class TitleRegion extends Canvas {
 	private static final int HMARGIN = 1;
 	private static final int VMARGIN = 5;
 	private static final int SPACING = 5;
-// RAP [rh] Unused code: was used by onPaint	
+// RAP [rh] Unused code: was used by onPaint
 //	private static final int ARC_WIDTH = 20;
 //	private static final int ARC_HEIGHT = 20;
 	private Image image;
@@ -77,7 +77,7 @@ public class TitleRegion extends Canvas {
 	private DragSource dragSource;
 	private Image dragImage;
 
-// RAP [rh] Unused code since no MouseTrack- and MouseMove events supported 	
+// RAP [rh] Unused code since no MouseTrack- and MouseMove events supported
 //	private class HoverListener implements MouseTrackListener,
 //			MouseMoveListener {
 //
@@ -114,7 +114,7 @@ public class TitleRegion extends Canvas {
 				firstTime = false;
 			} else {
 				Menu menu = menuManager.createContextMenu(menuHyperlink);
-// RAP [rh] map position of drop-down menu to the parents' origin 
+// RAP [rh] map position of drop-down menu to the parents' origin
         Point location = getDisplay().map( getParent(), null, getLocation() );
         location.y += this.getSize().y;
         menu.setLocation( location );
@@ -235,7 +235,7 @@ public class TitleRegion extends Canvas {
 	}
 
 	public TitleRegion(Composite parent) {
-		super(parent, SWT.NULL);
+		super(parent, SWT.NO_FOCUS);
 		titleLabel = new Label(this, SWT.WRAP);
 		titleLabel.setVisible(false);
 		titleCache = new SizeCache();
@@ -244,7 +244,7 @@ public class TitleRegion extends Canvas {
 		addListener(SWT.Dispose, new Listener() {
 			public void handleEvent(Event e) {
 				if (dragImage != null) {
-// RAP [rh] missing Image#dispose() API				  
+// RAP [rh] missing Image#dispose() API
 //					dragImage.dispose();
 					dragImage = null;
 				}
@@ -403,7 +403,7 @@ public class TitleRegion extends Canvas {
 		if (busyLabel == null) {
 			busyLabel = new BusyIndicator(this, SWT.NULL);
 			busyLabel.setBackground(getColor(FormHeading.COLOR_BASE_BG));
-// RAP [rh] missing MouseTrack- and MouseMove events			
+// RAP [rh] missing MouseTrack- and MouseMove events
 //			HoverListener listener = new HoverListener();
 //			busyLabel.addMouseTrackListener(listener);
 //			busyLabel.addMouseMoveListener(listener);
@@ -423,7 +423,7 @@ public class TitleRegion extends Canvas {
 		menuHyperlink.setBackground(getColor(FormHeading.COLOR_BASE_BG));
 		menuHyperlink.setDecorationColor(getForeground());
 		menuHyperlink.setHoverDecorationColor(getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND));
-// RAP [rh] missing MouseTrack- and MouseMove events, missing DnD support		
+// RAP [rh] missing MouseTrack- and MouseMove events, missing DnD support
 //		HoverListener listener = new HoverListener();
 //		menuHyperlink.addMouseTrackListener(listener);
 //		menuHyperlink.addMouseMoveListener(listener);
@@ -434,7 +434,7 @@ public class TitleRegion extends Canvas {
 	/**
 	 * Sets the form's busy state. Busy form will display 'busy' animation in
 	 * the area of the title image.
-	 * 
+	 *
 	 * @param busy
 	 *            the form's busy state
 	 */
@@ -463,7 +463,7 @@ public class TitleRegion extends Canvas {
 	 */
 	public int getFontHeight() {
 		if (fontHeight == -1) {
-			Font font = getFont();		
+			Font font = getFont();
 			GC gc = new GC(getDisplay());
 			gc.setFont(font);
 			FontMetrics fm = gc.getFontMetrics();

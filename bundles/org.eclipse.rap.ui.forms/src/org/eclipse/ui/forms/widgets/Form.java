@@ -88,7 +88,7 @@ import org.eclipse.ui.internal.forms.widgets.FormUtil;
  * desired layout manager explicitly.
  * <p>
  * Although the class is not final, it should not be subclassed.
- * 
+ *
  * @since 1.0
  * @noextend This class is not intended to be subclassed by clients.
  */
@@ -102,7 +102,7 @@ public class Form extends Composite {
 	private SizeCache headCache = new SizeCache();
 
 	private FormText selectionText;
-	
+
 	private MessageManager messageManager;
 
 	private class FormLayout extends Layout implements ILayoutExtension {
@@ -169,7 +169,7 @@ public class Form extends Composite {
 	public Form(Composite parent, int style) {
 // RAP [rh] SWT.NO_BACKGROUND not implemented
 //		super(parent, SWT.NO_BACKGROUND | style);
-		super(parent, style);
+		super(parent, SWT.NO_FOCUS | style);
 		super.setLayout(new FormLayout());
 		head = new FormHeading(this, SWT.NULL);
 		head.setMenu(parent.getMenu());
@@ -765,11 +765,11 @@ public class Form extends Composite {
 		}
 		this.selectionText = text;
 	}
-			
+
 	/**
 	 * Returns the message manager that will keep track of messages in this
-	 * form. 
-	 * 
+	 * form.
+	 *
 	 * @return the message manager instance
 	 */
 	public IMessageManager getMessageManager() {

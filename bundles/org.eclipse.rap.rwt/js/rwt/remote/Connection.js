@@ -280,6 +280,10 @@ rwt.qx.Class.define( "rwt.remote.Connection", {
 
     _isJsonResponse : function( event ) {
       var contentType = event.responseHeaders[ "Content-Type" ];
+      if(contentType == null) {
+    	// May not be set on Android 2 devices. Returning null to make it possible to distinguish between not set and wrong type
+    	return null;
+      }
       return contentType.indexOf( "application/json" ) !== -1;
     },
 

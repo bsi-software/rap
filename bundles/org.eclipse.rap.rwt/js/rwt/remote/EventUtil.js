@@ -251,6 +251,8 @@ rwt.qx.Class.define( "rwt.remote.EventUtil", {
       var lastMouseDown = rwt.remote.EventUtil._lastMouseDown;
       return    lastMouseDown.mouseUpCount === 1
              && lastMouseDown.widget === widget
+             && lastMouseDown.x === evt.getPageX()
+             && lastMouseDown.y === evt.getPageY()
              && lastMouseDown.button === rwt.event.MouseEvent.C_BUTTON_LEFT
              && lastMouseDown.button === evt.getButton();
     },

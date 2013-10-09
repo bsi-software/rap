@@ -1,0 +1,23 @@
+<html>
+<head>
+<title>iOS 7 Stacking Bug</title>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+
+<body>
+
+	<!-- IOS 7 BUG: On ios7 the red div covers every div beside the pink one. It works well on other browsers incl. desktop safari and ios6.-->
+	<!-- The bug can be solved in the following ways: Remove the z-indices. OR Remove webkit-overflow-scrolling. OR Remove overflow: hidden at the first div. OR add a second div on the same level as the second one. OR...-->
+	<!-- Fix for rap: Set z-index only if more than one div element is on the same level, see AdapterUtil.js -->
+	<div style="position: absolute; background-color: rgb(255, 0, 0); overflow: hidden;  z-index:1; left: 20px; width: 100px; height: 200px;">   	    
+		<div style="position: absolute; background-color: rgb(0, 0, 0); overflow: hidden; z-index:1; left: 20px; width: 70px; height: 172px;">			
+			<div style="position: absolute; background-color: rgb(255, 255, 0); width: 30px;  height: 72px; left: 0px; top: 100px;">
+				<div style="position: absolute; background-color: rgb(255, 100, 200); -webkit-overflow-scrolling: touch;  overflow-y: scroll; width: 15px; height: 15px;">
+				</div>
+			</div>
+		</div>
+		<!--<div style="position: absolute; background-color: rgb(0, 0, 0); overflow: hidden; z-index:0; left: 20px; width: 70px; height: 172px;"></div>-->
+	</div>
+
+</body>
+</html>

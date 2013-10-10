@@ -179,13 +179,12 @@ public class TreeColumnOperationHandler extends WidgetOperationHandler<TreeColum
     return getTreeAdapter( column ).getColumnLeft( column );
   }
 
-  private static ITreeAdapter getTreeAdapter( TreeColumn column ) {
-    return column.getParent().getAdapter( ITreeAdapter.class );
+  private static int getLeftOffset( TreeColumn column ) {
+    return getTreeAdapter( column ).getScrollLeft();
   }
 
-  private static int getLeftOffset( TreeColumn column ) {
-    ITreeAdapter adapter = column.getParent().getAdapter( ITreeAdapter.class );
-    return adapter.getScrollLeft();
+  private static ITreeAdapter getTreeAdapter( TreeColumn column ) {
+    return column.getParent().getAdapter( ITreeAdapter.class );
   }
 
   private static int arrayIndexOf( int[] array, int value ) {

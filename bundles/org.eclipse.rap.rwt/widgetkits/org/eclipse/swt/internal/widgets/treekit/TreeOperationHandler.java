@@ -139,7 +139,6 @@ public class TreeOperationHandler extends ControlOperationHandler<Tree> {
    */
   public void handleCallRenderToolTipText( Tree tree, JsonObject properties ) {
     ICellToolTipAdapter adapter = CellToolTipUtil.getAdapter( tree );
-    adapter.setCellToolTipText( null );
     ICellToolTipProvider provider = adapter.getCellToolTipProvider();
     if( provider != null ) {
       TreeItem item = getItem( tree, properties.get( "item" ).asString() );
@@ -159,11 +158,15 @@ public class TreeOperationHandler extends ControlOperationHandler<Tree> {
    * @param detail (string) "check" if checkbox is selected, "hyperlink" if RWT hyperlink is
    *        selected
    * @param item (string) id of selected item
+   * @param text (string) the value of href attribute or content of the selected RWT hyperlink
    */
   public void handleNotifySelection( Tree tree, JsonObject properties ) {
-    Event event = createSelectionEvent( SWT.Selection, properties );
-    event.item = getItem( tree, properties.get( EVENT_PARAM_ITEM ).asString() );
-    tree.notifyListeners( SWT.Selection, event );
+    TreeItem item = getItem( tree, properties.get( EVENT_PARAM_ITEM ).asString() );
+    if( item != null ) {
+      Event event = createSelectionEvent( SWT.Selection, properties );
+      event.item = item;
+      tree.notifyListeners( SWT.Selection, event );
+    }
   }
 
   /*

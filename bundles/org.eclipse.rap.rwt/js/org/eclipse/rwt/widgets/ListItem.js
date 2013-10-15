@@ -20,7 +20,12 @@ qx.Class.define("org.eclipse.rwt.widgets.ListItem", {
     this.initMinWidth();
     this.setHorizontalChildrenAlign( "left" );
     if( org.eclipse.rwt.Client.isMobileSafari() ) {
-      this.setStyleProperty( "webkitTransform", "translateZ(0)" ); // prevent rendering glitch with touch-scrolling
+      var version = navigator.appVersion.match(/OS (\d+)/);
+      version = parseInt(version[1]);
+      if(version <=6) {
+        // prevent rendering glitch with touch-scrolling. On ios 7 it leads to stacking issues, luckily it's not necessary anymore.
+        this.setStyleProperty( "webkitTransform", "translateZ(0)" );
+      }
     }
   },
 
@@ -57,10 +62,10 @@ qx.Class.define("org.eclipse.rwt.widgets.ListItem", {
     getLabel : function( value ) {
       return this.getCellContent( 0 );
     },
-    
+
     // NOTE: there are issues with list and markup based on the items width/height
     // MultiCellWidget might not be ideal since it tries to measure and layout its content
-    
+
     getCellWidth : function( cell, ignoreFlexible ) {
       var result;
       if( cell === 0 && !ignoreFlexible ) {// and markup enable
@@ -70,7 +75,7 @@ qx.Class.define("org.eclipse.rwt.widgets.ListItem", {
       }
       return result;
     },
-    
+
     getCellHeight : function( cell, ignoreFlexible ) {
       var result;
       if( cell === 0 && !ignoreFlexible ) { // and markup enabled
@@ -80,7 +85,7 @@ qx.Class.define("org.eclipse.rwt.widgets.ListItem", {
       }
       return result;
     },
-    
+
     cellIsDisplayable : function() {
       return true;
     },
@@ -97,6 +102,6 @@ qx.Class.define("org.eclipse.rwt.widgets.ListItem", {
       content = ( typeof content === "string" ) ? content.toLowerCase() : "";
       return input !== "" && content.indexOf( input ) === 0;
     }
-  
+
   }
 } );

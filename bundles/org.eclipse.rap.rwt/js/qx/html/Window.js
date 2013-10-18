@@ -61,6 +61,15 @@ qx.Class.define("qx.html.Window",
     {
       "mshtml|webkit" : function(vWindow)
       {
+        //necessary for ios 7 ipad landscape bug, see also rwt-index.html
+        if(navigator.userAgent.indexOf("iPad") > 0) {
+   	      var version = navigator.appVersion.match(/OS (\d+)/);
+          version = parseInt(version[1]);
+          if(version == 7) {
+            return vWindow.innerHeight;
+          }
+    	}
+
         if (vWindow.document.documentElement && vWindow.document.documentElement.clientHeight) {
           return vWindow.document.documentElement.clientHeight;
         } else if (vWindow.document.body) {

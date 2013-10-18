@@ -97,6 +97,21 @@
         var version = navigator.appVersion.match(/OS (\d+)/);
         version = parseInt(version[1]);
         if (version == 7 && navigator.userAgent.indexOf("iPad") > 0) {
+          //hack for ios 7 ipad landscape bug, see also Window.js
+          window.addEventListener('scroll', function(e) {
+            if (window.scrollY > 0 && window.scrollY <= 20) {
+              window.scrollTo(0, 0);
+            }
+            else {
+              var scrollToTop = function(e) {
+               	e.target.removeEventListener('blur',scrollToTop,false);
+                window.scrollTo(0,0);
+              };
+              //Keyboard fires a scroll event on show but not on hide. But we can detect it by adding a blur listener to the focused text field
+              document.activeElement.addEventListener('blur', scrollToTop, false);
+            }
+          }, false);
+
           //hack for ios 7 stacking bug -> avoid creating new stacking context by adding translate3d to every element
           var style = document.createElement( "style");
           style.type = 'text/css';

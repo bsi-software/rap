@@ -1151,8 +1151,14 @@ public class List extends Scrollable {
   }
 
   private int getItemWidth( String item ) {
-    int margin = getItemPadding().width;
-    return TextSizeUtil.stringExtent( getFont(), item ).x + margin;
+    int result = 0;
+    Font font = getFont();
+    if( markupEnabled ) {
+      result = TextSizeUtil.markupExtent( font, item, 0 ).x;
+    } else {
+      result = TextSizeUtil.stringExtent( font, item ).x;
+    }
+    return result + getItemPadding().width;
   }
 
   private int getMaxItemWidth() {
@@ -1192,10 +1198,10 @@ public class List extends Scrollable {
     int height = 0;
     if( getItemCount() > 0 ) {
       int availableWidth = getClientArea().width;
-      if( ( style & SWT.H_SCROLL ) != 0 ) {
-        width = Math.max( getMaxItemWidth(), availableWidth );
-      } else {
+      if( ( style & SWT.H_SCROLL ) == 0 && markupEnabled ) {
         width = availableWidth;
+      } else {
+        width = Math.max( getMaxItemWidth(), availableWidth );
       }
       height = getItemHeight();
     }

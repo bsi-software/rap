@@ -1354,8 +1354,31 @@ public class List_Test {
   }
 
   @Test
-  public void testLimitedItemDimensions() {
+  public void testItemDimensions_withMarkupEnabled() {
+    List list = new List( shell, SWT.H_SCROLL | SWT.V_SCROLL );
+    list.add( "<b>123</b>" );
+
+    int dim1 = list.getItemDimensions().x;
+    list.setData( RWT.MARKUP_ENABLED, Boolean.TRUE );
+    int dim2 = list.getItemDimensions().x;
+
+    assertTrue( dim1 > dim2 );
+  }
+
+  @Test
+  public void testItemDimensions_withoutHorizontalScrollbar() {
     List list = new List( shell, SWT.V_SCROLL );
+
+    list.setSize( 100, 100 );
+    list.add( "Very long list item" );
+
+    assertEquals( new Point( 148, 26 ), list.getItemDimensions() );
+  }
+
+  @Test
+  public void testItemDimensions_withoutHorizontalScrollbar_andMarkupEnabled() {
+    List list = new List( shell, SWT.V_SCROLL );
+    list.setData( RWT.MARKUP_ENABLED, Boolean.TRUE );
 
     list.setSize( 100, 100 );
     list.add( "Very long list item" );

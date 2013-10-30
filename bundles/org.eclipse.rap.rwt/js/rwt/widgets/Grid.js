@@ -171,6 +171,7 @@ rwt.qx.Class.define( "rwt.widgets.Grid", {
       }
       this._hasFixedColumns = map.splitContainer;
       this._config.baseAppearance = map.appearance;
+      this._config.rowTemplate = map.rowTemplate;
       this._rowContainer.setBaseAppearance( map.appearance );
       this.setAppearance( map.appearance );
     },
@@ -509,7 +510,7 @@ rwt.qx.Class.define( "rwt.widgets.Grid", {
         this._topItemIndex = 0;
         this._topItem = null;
       }
-      if( this._inServerResponse() ) {
+      if( this._inServerResponse() || !this.isSeeable() ) {
         this._scheduleUpdate( "topItem" );
       } else {
         this._sendTopItemIndexChange();
@@ -562,6 +563,8 @@ rwt.qx.Class.define( "rwt.widgets.Grid", {
           item.setExpanded( expanded );
         } else if( identifier[ 0 ] === "checkBox" || identifier[ 0 ] === "cellCheckBox" ) {
           this._toggleCheckSelection( item, identifier[ 1 ] );
+        } else if( identifier[ 0 ] === "selectableCell" ) {
+          this._sendSelectionEvent( item, false, "hyperlink", undefined, identifier[ 1 ] );
         } else if( this._isSelectionClick( identifier ) ) {
           this._onSelectionClick( event, item );
         }

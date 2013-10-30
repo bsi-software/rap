@@ -104,7 +104,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.GridRowTest", {
     },
 
     testRenderNoItem : function() {
-      row.renderItem( null );
+      row.renderItem( null, {}, false, null );
       assertEquals( 0, row._getTargetNode().childNodes.length );
     },
 
@@ -507,7 +507,6 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.GridRowTest", {
       var node = row._getTargetNode().childNodes[ 1 ];
       assertEquals( 3, parseInt( node.style.zIndex, 10 ) );
       assertEquals( "absolute", node.style.position );
-      assertEquals( "middle", node.style.verticalAlign );
       assertEquals( "nowrap", node.style.whiteSpace );
       assertEquals( "hidden", node.style.overflow );
       if( rwt.client.Client.isNewMshtml() ) {
@@ -531,7 +530,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.GridRowTest", {
       var item = this._createItem( tree );
       item.setTexts( [ "Test" ] );
       row.renderItem( item, tree._config, false, null );
-      var node = row._getTargetNode().childNodes[ 1 ];
+      var node = row.getElement();
       assertEquals( "line-through", node.style.textDecoration );
     },
 
@@ -822,7 +821,8 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.GridRowTest", {
       item.setForeground( "red" );
       row.renderItem( item, tree._config, false, null );
       var node = row._getTargetNode().childNodes[ 1 ];
-      assertEquals( "black", node.style.color );
+      assertEquals( "black", row.getElement().style.color );
+      assertTrue( "inherit" === node.style.color || "" === node.style.color );
     },
 
     testResetForeground : function( ) {
@@ -834,7 +834,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.GridRowTest", {
       assertEquals( "red", node.style.color );
       item.setForeground( null );
       row.renderItem( item, tree._config, false, null );
-      assertEquals( "black", node.style.color );
+      assertTrue( "inherit" === node.style.color || "" === node.style.color );
     },
 
     testRenderCellForeground : function() {
@@ -2002,10 +2002,12 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.GridRowTest", {
       row.renderItem( item, tree._config, false, null );
       var node = row._getTargetNode().childNodes[ 1 ];
       row.renderItem( item, tree._config, false, null );
-      assertEquals( "black", node.style.color );
+      assertEquals( "black", row.getElement().style.color );
+      assertTrue( "inherit" === node.style.color || "" === node.style.color );
       this._setItemForeground( "red" );
       row.renderItem( item, tree._config, false, null );
-      assertEquals( "red", node.style.color );
+      assertEquals( "red", row.getElement().style.color );
+      assertTrue( "inherit" === node.style.color || "" === node.style.color );
     },
 
     testSelectionForegroundTheming : function() {
@@ -2033,13 +2035,15 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.GridRowTest", {
       row.renderItem( item, tree._config, false, null );
       var nodes = row._getTargetNode().childNodes;
       assertEquals( 3, nodes.length );
-      assertEquals( "black", nodes[ 1 ].style.color );
-      assertEquals( "black", nodes[ 2 ].style.color );
+      assertEquals( "black", row.getElement().style.color );
+      assertTrue( "inherit" === nodes[ 1 ].style.color || "" === nodes[ 1 ].style.color );
+      assertTrue( "inherit" === nodes[ 2 ].style.color || "" === nodes[ 2 ].style.color );
 
       row.renderItem( item, tree._config, true, null );
 
+      assertEquals( "black", row.getElement().style.color );
       assertEquals( "white", nodes[ 1 ].style.color );
-      assertEquals( "black", nodes[ 2 ].style.color );
+      assertTrue( "inherit" === nodes[ 2 ].style.color || "" === nodes[ 2 ].style.color );
     },
 
     testSelectionWithItemForeground : function() {
@@ -2099,11 +2103,13 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.GridRowTest", {
       row.renderItem( item, tree._config, false, null );
       var nodes = row._getTargetNode().childNodes;
       assertEquals( 3, nodes.length );
-      assertEquals( "black", nodes[ 1 ].style.color );
-      assertEquals( "black", nodes[ 2 ].style.color );
+      assertEquals( "black", row.getElement().style.color );
+      assertTrue( "inherit" === nodes[ 1 ].style.color || "" === nodes[ 1 ].style.color );
+      assertTrue( "inherit" === nodes[ 2 ].style.color || "" === nodes[ 2 ].style.color );
       row.renderItem( item, tree._config, true, null );
-      assertEquals( "white", nodes[ 1 ].style.color );
-      assertEquals( "white", nodes[ 2 ].style.color );
+      assertEquals( "white", row.getElement().style.color );
+      assertTrue( "inherit" === nodes[ 1 ].style.color || "" === nodes[ 1 ].style.color );
+      assertTrue( "inherit" === nodes[ 2 ].style.color || "" === nodes[ 2 ].style.color );
     },
 
     tesFullSelecitonWithItemForeground : function() {
@@ -2196,7 +2202,8 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.GridRowTest", {
       item.setTexts( [ "Test1" ] );
       row.renderItem( item, tree._config, false, null );
       var node = row._getTargetNode().childNodes[ 1 ];
-      assertEquals( "red", node.style.color );
+      assertEquals( "red", row.getElement().style.color );
+      assertTrue( "inherit" === node.style.color || "" === node.style.color );
     },
 
     testInheritFont : function() {
@@ -2205,14 +2212,15 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.GridRowTest", {
       item.setTexts( [ "Test1" ] );
       row.renderItem( item, tree._config, false, null );
       var node = row._getTargetNode().childNodes[ 1 ];
-      var font = TestUtil.getElementFont( node );
+      var font = TestUtil.getElementFont( row.getElement() );
       assertTrue( font.indexOf( "monospace" ) != -1 );
       assertTrue( font.indexOf( "12px" ) != -1 );
+      assertTrue( node.style.font === "" || node.style.font === "inherit" );
     },
 
     testRenderNoItemNoThemingBackground: function() {
       this._setItemBackground( "blue" );
-      row.renderItem( null );
+      row.renderItem( null, {}, false, null );
       assertNull( row.getBackgroundColor() );
     },
 
@@ -2503,6 +2511,338 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.GridRowTest", {
       assertTrue( log > 0 );
     },
 
+    testRenderTemplate_CallRender : function() {
+      tree.setTreeColumn( -1 );
+      var item = this._createItem( tree );
+      row.setHeight( 15 );
+      var template = mockTemplate( [ 0, "text", 10, 20 ] );
+      var log = [];
+      var render = template.render;
+      template.render = function() {
+        log.push( rwt.util.Arrays.fromArguments( arguments ) );
+        render.apply( this, arguments );
+      };
+      tree.getRenderConfig().rowTemplate = template;
+
+      row.renderItem( item, tree._config, false, null );
+
+      assertEquals( 1, log.length );
+      assertEquals( 1, log[ 0 ].length );
+      var options = log[ 0 ][ 0 ];
+      assertIdentical( item, options.item );
+      assertEquals( [ 0, 0, 400, 15 ], options.bounds );
+      assertTrue( options.enabled );
+      assertIdentical( row._getTargetNode(), log[ 0 ][ 0 ].container.element );
+      assertIdentical( template, log[ 0 ][ 0 ].container.template );
+      assertEquals( 100, log[ 0 ][ 0 ].container.zIndexOffset );
+      assertEquals( row.isSeeable(), log[ 0 ][ 0 ].seeable );
+    },
+
+    testRenderTemplate_CallRenderForNullItem : function() {
+      tree.setTreeColumn( -1 );
+      row.setHeight( 15 );
+      var template = mockTemplate( [ 0, "text", 10, 20 ] );
+      var log = [];
+      var render = template.render;
+      template.render = function() {
+        log.push( rwt.util.Arrays.fromArguments( arguments ) );
+        render.apply( this, arguments );
+      };
+      tree.getRenderConfig().rowTemplate = template;
+
+      row.renderItem( null, tree._config, false, null );
+
+      var options = log[ 0 ][ 0 ];
+      assertNull( options.item );
+      assertEquals( [ 0, 0, 400, 15 ], options.bounds );
+      assertIdentical( row._getTargetNode(), log[ 0 ][ 0 ].container.element );
+      assertIdentical( template, log[ 0 ][ 0 ].container.template );
+    },
+
+    testRenderTemplate_EmptyTemplateRendersEmptyItem : function() {
+      tree.setTreeColumn( -1 );
+      var item = this._createItem( tree );
+      item.setTexts( [ "Test" ] );
+      tree.getRenderConfig().rowTemplate = mockTemplate();
+
+      row.renderItem( item, tree.getRenderConfig(), false, null );
+
+      assertEquals( 0, row._getTargetNode().childNodes.length );
+    },
+
+    testRenderTemplate_EmptyTemplateRendersItemBackground : function() {
+      tree.setTreeColumn( -1 );
+      var item = this._createItem( tree );
+      item.setBackground( "red" );
+
+      item.setTexts( [ "Test" ] );
+      tree.getRenderConfig().rowTemplate = mockTemplate();
+
+      row.renderItem( item, tree._config, false, null );
+
+      assertEquals( "red", row._getTargetNode().style.backgroundColor );
+    },
+
+    testRenderTemplate_EmptyTemplateRendersOverlay : function() {
+      tree.setTreeColumn( -1 );
+      tree.getRenderConfig().fullSelection = true;
+      var item = this._createItem( tree );
+      this._setOverlayBackground( "green" );
+
+      item.setTexts( [ "Test" ] );
+      tree.getRenderConfig().rowTemplate = mockTemplate();
+
+      row.renderItem( item, tree._config, false, null );
+
+      assertEquals( "green", row._overlayElement.style.backgroundColor );
+    },
+
+    testRenderTemplate_RenderTextCellLeft : function() {
+      tree.setTreeColumn( -1 );
+      var item = this._createItem( tree );
+      item.setTexts( [ "foo", "bar" ] );
+
+      tree.getRenderConfig().rowTemplate = mockTemplate( [ 0, "text", 10, 20 ] );
+
+      row.renderItem( item, tree._config, false, null );
+
+      var nodes = row._getTargetNode().childNodes;
+      assertEquals( 1, nodes.length );
+      assertEquals( 10, parseInt( nodes[ 0 ].style.left, 10 ) );
+    },
+
+    testRenderTemplate_RenderTextCellTop : function() {
+      tree.setTreeColumn( -1 );
+      var item = this._createItem( tree );
+      item.setTexts( [ "foo", "bar" ] );
+
+      tree.getRenderConfig().rowTemplate = mockTemplate( [ 0, "text", 10, 20 ] );
+
+      row.renderItem( item, tree._config, false, null );
+
+      var nodes = row._getTargetNode().childNodes;
+      assertEquals( 20, parseInt( nodes[ 0 ].style.top, 10 ) );
+    },
+
+    testRenderTemplate_RenderTextCellWidth : function() {
+      tree.setTreeColumn( -1 );
+      var item = this._createItem( tree );
+      item.setTexts( [ "foo", "bar" ] );
+
+      tree.getRenderConfig().rowTemplate = mockTemplate( [ 0, "text", 10, 20, 100, 12 ] );
+
+      row.renderItem( item, tree._config, false, null );
+
+      var nodes = row._getTargetNode().childNodes;
+      assertEquals( 100, parseInt( nodes[ 0 ].style.width, 10 ) );
+    },
+
+    testRenderTemplate_RenderTextCellHeight : function() {
+      tree.setTreeColumn( -1 );
+      var item = this._createItem( tree );
+      item.setTexts( [ "foo", "bar" ] );
+
+      tree.getRenderConfig().rowTemplate = mockTemplate( [ 0, "text", 10, 20, 100, 12 ] );
+
+      row.renderItem( item, tree._config, false, null );
+
+      var nodes = row._getTargetNode().childNodes;
+      assertEquals( 12, parseInt( nodes[ 0 ].style.height, 10 ) );
+    },
+
+    testRenderTemplate_RenderSingleCellText : function() {
+      tree.setTreeColumn( -1 );
+      var item = this._createItem( tree );
+      item.setTexts( [ "foo", "bar" ] );
+
+      tree.getRenderConfig().rowTemplate = mockTemplate( [ 1, "text", 10, 20 ] );
+
+      row.renderItem( item, tree._config, false, null );
+
+      var nodes = row._getTargetNode().childNodes;
+      assertEquals( "bar", nodes[ 0 ].innerHTML );
+    },
+
+    testRenderTemplate_RenderMultipleTextCells : function() {
+      tree.setTreeColumn( -1 );
+      var item = this._createItem( tree );
+      item.setTexts( [ "foo", "bar" ] );
+
+      tree.getRenderConfig().rowTemplate = mockTemplate( [ 0, "text", 1, 1, 1, 1 ],
+                                                         [ 1, "text", 1, 1, 1, 1 ] );
+      row.renderItem( item, tree._config, false, null );
+
+      var nodes = row._getTargetNode().childNodes;
+      assertEquals( 2, nodes.length );
+      assertEquals( "foo", nodes[ 0 ].innerHTML );
+      assertEquals( "bar", nodes[ 1 ].innerHTML );
+    },
+
+    testRenderTemplate_DoNotRenderEmptyTextCells : function() {
+      tree.setTreeColumn( -1 );
+      var item = this._createItem( tree );
+      item.setTexts( [ "foo", "bar" ] );
+
+      tree.getRenderConfig().rowTemplate = mockTemplate( [ null, "text", 1, 1, 1, 1 ],
+                                                         [ 1, "text", 1, 1, 1, 1 ] );
+      row.renderItem( item, tree._config, false, null );
+      var nodes = row._getTargetNode().childNodes;
+      assertEquals( 1, nodes.length );
+      assertEquals( "bar", nodes[ 0 ].innerHTML );
+    },
+
+    testRenderTemplate_DoNotRenderTextForNonTextCells : function() {
+      tree.setTreeColumn( -1 );
+      var item = this._createItem( tree );
+      item.setTexts( [ "foo", "bar" ] );
+
+      tree.getRenderConfig().rowTemplate = mockTemplate( [ 0, "asdf", 1, 1, 1, 1 ],
+                                                         [ 1, "text", 1, 1, 1, 1 ] );
+      row.renderItem( item, tree._config, false, null );
+
+      var nodes = row._getTargetNode().childNodes;
+      assertEquals( 1, nodes.length );
+      assertEquals( "bar", nodes[ 0 ].innerHTML );
+    },
+
+    testRenderTemplate_RenderTextCellBackground : function() {
+      tree.setTreeColumn( -1 );
+      var item = this._createItem( tree );
+      item.setTexts( [ "foo", "bar" ] );
+
+      tree.getRenderConfig().rowTemplate = mockTemplate( {
+        "type" : "text",
+        "background" : [ 255, 0, 0 ]
+      } );
+      row.renderItem( item, tree._config, false, null );
+
+      var color = row._getTargetNode().childNodes[ 0 ].style.backgroundColor;
+      assertEquals( [ 255, 0, 0 ], rwt.util.Colors.stringToRgb( color ) );
+    },
+
+    testRenderTemplate_getTargetIdentifier : function() {
+      tree.setTreeColumn( -1 );
+      var item = this._createItem( tree );
+      item.setTexts( [ "foo", "bar", "boo" ] );
+      tree.getRenderConfig().rowTemplate = mockTemplate(
+        { "name" : "fooName" },
+        { "selectable" : true },
+        { "name" : "barName", "selectable" : true }
+       );
+      var log = [];
+      row.addEventListener( "mousedown", function( event ) {
+        log.push( row.getTargetIdentifier( event ) );
+      } );
+
+      row.renderItem( item, tree._config, false, null );
+      TestUtil.clickDOM( row._getTargetNode().childNodes[ 0 ] );
+      TestUtil.clickDOM( row._getTargetNode().childNodes[ 1 ] );
+      TestUtil.clickDOM( row._getTargetNode().childNodes[ 2 ] );
+
+      assertEquals( [ "other" ], log[ 0 ] );
+      assertEquals( [ "selectableCell", null ], log[ 1 ] );
+      assertEquals( [ "selectableCell", "barName" ], log[ 2 ] );
+    },
+
+   // TODO : Should the cell have a transparent background if an overlay is present?
+   // NOTE: "Normal" cells consist of separate backround and foreground elements, overlay is between
+//    testRenderTemplate_RenderNotTextCellBackgroundIfOverlayIsUsed : function() {
+//      tree.setTreeColumn( -1 );
+//      var item = this._createItem( tree );
+//      item.setTexts( [ "foo", "bar" ] );
+//      this._setOverlayBackground( "green" );
+//
+//      tree.getRenderConfig().rowTemplate = mockTemplate( {
+//        "type" : "text",
+//        "background" : [ 255, 0, 0 ]
+//      } );
+//
+//      row.renderItem( item, tree._config, false, null );
+//
+//      var color = row._getTargetNode().childNodes[ 0 ].style.backgroundColor;
+//      assertTrue( color === "" || color === "transparent" );
+//    },
+
+    testRenderTemplate_ResetTextCellBackground : function() {
+      tree.setTreeColumn( -1 );
+      var item = this._createItem( tree );
+      tree.getRenderConfig().rowTemplate = mockTemplate( [ 0, "text", 1, 1, 1, 1 ] );
+      item.setTexts( [ "foo", "bar" ] );
+      item.setCellBackgrounds( [ "#ff00ff" ] );
+      row.renderItem( item, tree._config, false, null );
+
+      item.setCellBackgrounds( [ null ] );
+      row.renderItem( item, tree._config, false, null );
+
+      var color = row._getTargetNode().childNodes[ 0 ].style.backgroundColor;
+      assertTrue( color === "" || color === "transparent" );
+    },
+
+    testRenderTemplate_RenderImageCellContent : function() {
+      tree.setTreeColumn( -1 );
+      var item = this._createItem( tree );
+      item.setImages( [ "foo.jpg", "bar.jpg" ] );
+      tree.getRenderConfig().rowTemplate = mockTemplate( [ 1, "image", 10, 20, 30, 40 ] );
+
+      row.renderItem( item, tree._config, false, null );
+
+      var nodes = row._getTargetNode().childNodes;
+      var image = TestUtil.getCssBackgroundImage( nodes[ 0 ] );
+      assertTrue( image.indexOf( "bar.jpg" ) != -1 );
+    },
+
+    testRenderTemplate_RenderImageCellLeft : function() {
+      tree.setTreeColumn( -1 );
+      var item = this._createItem( tree );
+      item.setImages( [ "foo.jpg", "bar.jpg" ] );
+
+      tree.getRenderConfig().rowTemplate = mockTemplate( [ 0, "image", 10, 20 ] );
+
+      row.renderItem( item, tree._config, false, null );
+
+      var nodes = row._getTargetNode().childNodes;
+      assertEquals( 1, nodes.length );
+      assertEquals( 10, parseInt( nodes[ 0 ].style.left, 10 ) );
+    },
+
+    testRenderTemplate_RenderImageCellTop : function() {
+      tree.setTreeColumn( -1 );
+      var item = this._createItem( tree );
+      item.setImages( [ "foo.jpg", "bar.jpg" ] );
+
+      tree.getRenderConfig().rowTemplate = mockTemplate( [ 0, "image", 10, 20 ] );
+
+      row.renderItem( item, tree._config, false, null );
+
+      var nodes = row._getTargetNode().childNodes;
+      assertEquals( 20, parseInt( nodes[ 0 ].style.top, 10 ) );
+    },
+
+    testRenderTemplate_RenderImageCellWidth : function() {
+      tree.setTreeColumn( -1 );
+      var item = this._createItem( tree );
+      item.setImages( [ "foo.jpg", "bar.jpg" ] );
+
+      tree.getRenderConfig().rowTemplate = mockTemplate( [ 0, "image", 10, 20, 100, 12 ] );
+
+      row.renderItem( item, tree._config, false, null );
+
+      var nodes = row._getTargetNode().childNodes;
+      assertEquals( 100, parseInt( nodes[ 0 ].style.width, 10 ) );
+    },
+
+    testRenderTemplate_RenderImageCellHeight : function() {
+      tree.setTreeColumn( -1 );
+      var item = this._createItem( tree );
+      item.setImages( [ "foo.jpg", "bar.jpg" ] );
+
+      tree.getRenderConfig().rowTemplate = mockTemplate( [ 0, "image", 10, 20, 100, 12 ] );
+
+      row.renderItem( item, tree._config, false, null );
+
+      var nodes = row._getTargetNode().childNodes;
+      assertEquals( 12, parseInt( nodes[ 0 ].style.height, 10 ) );
+    },
 
      /////////
      // Helper
@@ -2752,5 +3092,32 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.GridRowTest", {
   }
 
 } );
+
+var mockTemplate = function() {
+  var cells = [];
+  for( var i = 0; i < arguments.length; i++ ) {
+    if( arguments[ i ] instanceof Array ) {
+      cells.push(  {
+        "bindingIndex" : arguments[ i ][ 0 ],
+        "type" : arguments[ i ][ 1 ],
+        "left" : arguments[ i ][ 2 ] || 0,
+        "top" : arguments[ i ][ 3 ] || 0,
+        "width" : arguments[ i ][ 4 ] || 0,
+        "height" : arguments[ i ][ 5 ] || 0
+      } );
+    } else {
+      var cellData =  {
+        "type" : "text",
+        "bindingIndex" : i,
+        "left" : 0,
+        "top" : 0,
+        "width" : 10,
+        "height" : 10
+      };
+      cells.push( rwt.util.Objects.mergeWith( cellData, arguments[ i ], true ) );
+    }
+  }
+  return new rwt.widgets.util.Template( cells );
+};
 
 }());

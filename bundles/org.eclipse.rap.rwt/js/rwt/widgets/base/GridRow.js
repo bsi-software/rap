@@ -16,8 +16,12 @@
 
 (function() {
 
+var INHERIT = rwt.client.Client.isMshtml() ? "" : "inherit";
+
 var Style = rwt.html.Style;
 var Variant = rwt.util.Variant;
+
+var renderer = rwt.widgets.util.CellRendererRegistry.getInstance().getAll();
 
 rwt.qx.Class.define( "rwt.widgets.base.GridRow", {
 
@@ -42,6 +46,8 @@ rwt.qx.Class.define( "rwt.widgets.base.GridRow", {
     this._miscNodes = [];
     this._usedMiscNodes = 0;
     this._cellsRendered = 0;
+    this._template = null;
+    this._templateContainer = null;
   },
 
   destruct : function() {
@@ -70,20 +76,31 @@ rwt.qx.Class.define( "rwt.widgets.base.GridRow", {
         var contentOnly = scrolling && !heightChanged;
         this._renderStates( item, config, renderSelected, hoverTarget );
         this._renderBackground( item, config, renderSelected );
+        // TODO [tb] : item foreground and font could be inherited
+        this._renderItemForeground( item, config );
+        this._renderItemFont( item, config );
         if( config.treeColumn !== -1 ) {
           this._renderIndention( item, config, hoverTarget );
         }
-        this._renderCheckBox( item, config, hoverTarget, contentOnly );
-        this._renderCells( item, config, renderSelected, hoverTarget, contentOnly );
+        if( config.rowTemplate ) {
+          this._renderTemplate( item, config, hoverTarget, renderSelected, contentOnly );
+        } else {
+          this._renderColumnModel( item, config, hoverTarget, renderSelected, contentOnly );
+        }
         this._renderOverlay( item, config );
         this._hideRemainingElements();
       } else {
+        var contentOnly = scrolling || !config;
         this.setBackgroundColor( null );
         this.setBackgroundImage( null );
         this.setBackgroundGradient( null );
-        this._clearContent( config );
-        if( !scrolling && config ) {
-          this._renderAllBounds( config );
+        if( config.rowTemplate ) {
+          this._renderTemplate( null, config, hoverTarget, false, contentOnly );
+        } else {
+          this._clearContent( config );
+          if( !contentOnly ) {
+            this._renderAllBounds( config );
+          }
         }
       }
       this.dispatchSimpleEvent( "itemRendered", item );
@@ -103,6 +120,11 @@ rwt.qx.Class.define( "rwt.widgets.base.GridRow", {
         while( node !== this.getElement() && result[ 0 ] === "other" ) { // Can be removed?
           if( this._treeColumnElements.indexOf( node ) != -1 ) {
             result = [ "treeColumn" ]; // TODO [tb] : now should be [ "label", 0 ] / [ "image", 0 ]
+          } else if( this._template ) {
+            var cell = this._template.getCellByElement( this._templateContainer, node );
+            if( cell !== -1 && this._template.isCellSelectable( cell ) ) {
+              result = [ "selectableCell", this._template.getCellName( cell ) ];
+            }
           }
           node = node.parentNode;
         }
@@ -125,6 +147,32 @@ rwt.qx.Class.define( "rwt.widgets.base.GridRow", {
     ////////////
     // internals
 
+    _renderColumnModel : function( item, config, hoverTarget, renderSelected, contentOnly ) {
+      this._renderCheckBox( item, config, hoverTarget, contentOnly );
+      this._renderCells( item, config, renderSelected, hoverTarget, contentOnly );
+    },
+
+    _renderTemplate : function( item, config, hoverTarget, renderSelected, contentOnly ) {
+      config.rowTemplate.render( {
+        "container" : this._getTemplateContainer( config ),
+        "item" : item,
+        "bounds" : [ 0, 0, this.getWidth(), this.getHeight() ],
+        "enabled" : config.enabled,
+        "seeable" : this.isSeeable()
+      } );
+      this._template = config.rowTemplate; // needed by getTargetIdentifier
+    },
+
+    _getTemplateContainer : function( config ) {
+      if( this._templateContainer == null ) {
+        this._templateContainer = config.rowTemplate.createContainer( {
+          "element" : this._getTargetNode(),
+          "zIndexOffset" : 100
+        } );
+      }
+      return this._templateContainer;
+    },
+
     _renderHeight : function( item, config ) {
       var result = false;
       var itemHeight = item.getOwnHeight();
@@ -145,9 +193,9 @@ rwt.qx.Class.define( "rwt.widgets.base.GridRow", {
       this._styleMap = this._getStyleMap();
       this.setState( "selected", selected );
       if( config.fullSelection ) {
-        this._overlayStyleMap = this._getOverlayStyleMap();
+        this._overlayStyleMap = this._getOverlayStyleMap( selected );
       } else {
-        this._overlayStyleMap = this._getTreeColumnStyleMap();
+        this._overlayStyleMap = this._getTreeColumnStyleMap( selected );
       }
     },
 
@@ -190,11 +238,15 @@ rwt.qx.Class.define( "rwt.widgets.base.GridRow", {
       return manager.styleFrom( this.getAppearance() + "-overlay", this.__states );
     },
 
-    _getTreeColumnStyleMap : function() {
+    _getTreeColumnStyleMap : function( selected ) {
       var manager = rwt.theme.AppearanceManager.getInstance();
-      var rowMap = manager.styleFrom( this.getAppearance(), this.__states );
       var overlayMap = manager.styleFrom( this.getAppearance() + "-overlay", this.__states );
-      overlayMap.rowForeground = rowMap.foreground;
+      if( selected ) {
+        var rowMap = manager.styleFrom( this.getAppearance(), this.__states );
+        overlayMap.rowForeground = rowMap.foreground;
+      } else {
+        overlayMap.rowForeground = "undefined";
+      }
       return overlayMap;
     },
 
@@ -219,7 +271,10 @@ rwt.qx.Class.define( "rwt.widgets.base.GridRow", {
       this.setBackgroundGradient( gradient !== "undefined" ? gradient : null );
     },
 
-    _hasOverlayBackground : function() {
+    _hasOverlayBackground : function( config ) {
+      if( !config.fullSelection && config.rowTemplate ) {
+        return false;
+      }
       var result =    this._overlayStyleMap.background !== "undefined"
                    || this._overlayStyleMap.backgroundImage !== null
                    || this._overlayStyleMap.backgroundGradient !== null;
@@ -349,7 +404,7 @@ rwt.qx.Class.define( "rwt.widgets.base.GridRow", {
     },
 
     _renderOverlay : function( item, config ) {
-      if( item && this._hasOverlayBackground() ) {
+      if( item && this._hasOverlayBackground( config ) ) {
         this._styleOverlay( item, config );
         this._layoutOverlay( item, config );
       } else if( this._overlayElement ){
@@ -505,9 +560,11 @@ rwt.qx.Class.define( "rwt.widgets.base.GridRow", {
     _renderCellImageBounds : function( item, cell, config ) {
       var element = this._cellImages[ cell ];
       if( element ) {
-        var left = this._getItemImageLeft( item, cell, config );
-        var width = this._getItemImageWidth( item, cell, config );
-        this._setBounds( element, left, 0, width, this.getHeight() );
+        if( item == null || !item.hasCellLayout ) {
+          var left = this._getItemImageLeft( item, cell, config );
+          var width = this._getItemImageWidth( item, cell, config );
+          this._setBounds( element, left, 0, width, this.getHeight() );
+        }
       }
     },
 
@@ -519,7 +576,7 @@ rwt.qx.Class.define( "rwt.widgets.base.GridRow", {
       var renderBounds = false;
       if( item.hasText( cell ) ) {
         renderBounds = isTreeColumn || !contentOnly || !this._cellLabels[ cell ];
-        element = this._getTextElement( cell, config );
+        element = this._getTextElement( cell );
         this._renderElementContent( element, item, cell, config.markupEnabled );
         if( renderBounds ) {
           element.style.textAlign = isTreeColumn ? "left" : this._getAlignment( cell, config );
@@ -527,7 +584,7 @@ rwt.qx.Class.define( "rwt.widgets.base.GridRow", {
         this._styleLabel( element, item, cell, config );
       } else if( this._cellLabels[ cell ] ) {
         renderBounds = isTreeColumn || !contentOnly;
-        element = this._getTextElement( cell, config );
+        element = this._getTextElement( cell );
         this._renderElementContent( element, null, -1, config.markupEnabled );
       }
       if( renderBounds ) {
@@ -539,46 +596,56 @@ rwt.qx.Class.define( "rwt.widgets.base.GridRow", {
     _renderCellLabelBounds : function( item, cell, config ) {
       var element = this._cellLabels[ cell ];
       if( element ) {
-        var left = this._getItemTextLeft( item, cell, config );
-        var width = this._getItemTextWidth( item, cell, config );
-        var top = this._getCellPadding( config )[ 0 ];
-        this._setBounds( element, left, top, width, this.getHeight() - top );
+        if( item == null || !item.hasCellLayout ) {
+          var left = this._getItemTextLeft( item, cell, config );
+          var width = this._getItemTextWidth( item, cell, config );
+          var top = this._getCellPadding( config )[ 0 ];
+          // TODO : for vertical center rendering line-height should also be set,
+          //        but not otherwise. Also not sure about bottom alignment.
+          this._setBounds( element, left, top, width, this.getHeight() - top );
+        }
       }
     },
 
-    _renderElementContent : Variant.select( "qx.client", {
-      "mshtml|newmshtml" : function( element, item, cell, markupEnabled ) {
-        if( markupEnabled ) {
-          var html = item ? item.getText( cell, false ) : "";
-          if( element.rap_Markup !== html ) {
-            element.innerHTML = html;
-            element.rap_Markup = html;
-          }
+    _renderElementContent : function( element, item, cell, markupEnabled ) {
+      var options = {
+        "markupEnabled" : markupEnabled,
+        "seeable" : this.isSeeable()
+      };
+      var escape = this._shouldEscapeText( options );
+      options.escaped = escape === false ? false : true;
+      renderer.text.renderContent( element,
+                                   item ? item.getText( cell, escape ) : null,
+                                   null,
+                                   options );
+    },
+
+    _shouldEscapeText : Variant.select( "qx.client", {
+      "mshtml|newmshtml" : function( options ) {
+        if( options.markupEnabled ) {
+          return false;
         } else {
-          // innerText is faster, but works correctly onlw when seeable
-          if( this.isSeeable() ) {
-            element.innerText = item ? item.getText( cell, false ) : "";
-          } else {
-            element.innerHTML = item ? item.getText( cell ) : "";
-          }
+          // IE can not escape propperly if element is not in DOM, escape this once
+          return options.seeable ? false : undefined;
         }
       },
-      "default" : function( element, item, cell, markupEnabled ) {
-        var html = item ? item.getText( cell, !markupEnabled ) : "";
-        if( markupEnabled ) {
-          if( html !== element.rap_Markup ) {
-            element.innerHTML = html;
-            element.rap_Markup = html;
-          }
-        } else {
-          element.innerHTML = html;
-        }
+      "default" : function( options ) {
+        return !options.markupEnabled;
       }
     } ),
 
     _styleLabel : function( element, item, cell, config ) {
       this._setForeground( element, this._getCellColor( item, cell, config ) );
-      this._setFont( element, this._getCellFont( item, cell, config ) );
+      this._setFont( element, item.getCellFont( cell ) );
+    },
+
+    _renderItemForeground : function( item, config ) {
+      this._setForeground( this.getElement(), this._getItemColor( item, config ) );
+    },
+
+    _renderItemFont : function( item, config ) {
+      var element = this.getElement();
+      this._setFont( element, config.font );
       this._setTextDecoration( element, this._styleMap.textDecoration );
       Style.setTextShadow( element, this._styleMap.textShadow );
     },
@@ -594,25 +661,39 @@ rwt.qx.Class.define( "rwt.widgets.base.GridRow", {
     },
 
     _getCellColor : function( item, cell, config ) {
-      var result = null;
-      var foreground = this._styleMap.foreground;
-      var overlayForeground = this._overlayStyleMap.foreground;
-      if( !config.fullSelection ) {
-        if( this._isTreeColumn( cell, config ) ){
-          foreground = this._overlayStyleMap.rowForeground;
-        } else {
-          overlayForeground = "undefined";
-        }
-      }
-      if( overlayForeground !== "undefined" ) {
-        result = overlayForeground;
-      } else if( config.enabled !== false && item.getCellForeground( cell ) ) {
+      var treeColumn = this._isTreeColumn( cell, config );
+      var allowOverlay = config.fullSelection || treeColumn;
+      var result = allowOverlay ? this._overlayStyleMap.foreground : "undefined";
+      if(    result === "undefined"
+          && config.enabled !== false
+          && item.getCellForeground( cell )
+      ) {
         result = item.getCellForeground( cell );
-      } else {
-        result = foreground;
-        if( result === "undefined" ) {
-          result = config.textColor;
-        }
+      }
+      if( result === "undefined" && treeColumn && !config.fullSelection ) {
+        // If there is no overlay the tree column foreground may still have a different color
+        // due to selection. In this case _overlayStyleMap has the tree column foreground color.
+        result = this._overlayStyleMap.rowForeground;
+      }
+       if( result === "undefined" ) {
+         result = INHERIT;
+      }
+      return result;
+    },
+
+    _getItemColor : function( item, config ) {
+      var result = "undefined";
+      if( config.fullSelection ) {
+        result = this._overlayStyleMap.foreground;
+      }
+      if( result === "undefined" ) {
+        result = this._styleMap.foreground;
+      }
+      if( result === "undefined" ) {
+        result = config.textColor;
+      }
+      if( result === "undefined" ) {
+        result = INHERIT;
       }
       return result;
     },
@@ -724,11 +805,10 @@ rwt.qx.Class.define( "rwt.widgets.base.GridRow", {
       rwt.html.Style.setBackgroundImage( element, src, enabled != null ? opacity : null);
     },
 
-    _getTextElement : function( cell, config ) {
+    _getTextElement : function( cell ) {
       var result = this._cellLabels[ cell ];
       if( !result ) {
         result = this._createElement( 3 );
-        result.style.verticalAlign = "middle";
         result.style.whiteSpace = "nowrap";
         if( rwt.client.Client.isNewMshtml() ) {
           result.style.backgroundColor = "rgba(0, 0, 0, 0)";

@@ -104,6 +104,64 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.GridTest", {
       widget.destroy();
     },
 
+    testCreateWithRowTemplateByProtocol : function() {
+      var shell = TestUtil.createShellByProtocol( "w2" );
+      var processor = rwt.remote.MessageProcessor;
+      var template = [];
+
+      processor.processOperationArray( [
+        "create",
+         "w3",
+        "rwt.widgets.Grid",
+        {
+          "style" : [],
+          "parent" : "w2",
+          "appearance": "table",
+          "selectionPadding" : [ 2, 4 ],
+          "rowTemplate" : template
+        }
+      ] );
+
+      var config = rwt.remote.ObjectRegistry.getObject( "w3" ).getRenderConfig();
+      assertTrue( config.rowTemplate instanceof rwt.widgets.util.Template );
+      assertIdentical( template, config.rowTemplate._cells );
+      shell.destroy();
+    },
+
+    testSendSelectionEventForClickableRowTemplateCell : function() {
+      var cellData = {
+        "type" : "text",
+        "bindingIndex" : 0,
+        "name" : "bar",
+        "selectable" : true,
+        "left" : 0,
+        "top" : 0,
+        "width" : 1,
+        "height" : 1
+      };
+      var template = new rwt.widgets.util.Template( [ cellData ] );
+      var tree = this._createDefaultTree( false, false, "rowTemplate", template );
+      tree.setHasSelectionListener( true );
+      tree.setItemCount( 1 );
+      var item = this._createItem( tree.getRootItem(), 0 );
+      item.setTexts( [ "foo" ] );
+      rwt.remote.ObjectRegistry.add( "w11", tree, gridHandler );
+      rwt.remote.ObjectRegistry.add( "w2", item, itemHandler );
+      TestUtil.flush();
+
+      var node = tree._rowContainer._getTargetNode().childNodes[ 0 ].childNodes[ 0 ];
+      TestUtil.clickDOM( node );
+
+      assertEquals( 1, TestUtil.getRequestsSend() );
+      var message = TestUtil.getMessageObject();
+      assertNull( message.findSetOperation( "w11", "selection" ) );
+      assertEquals( "w2", message.findNotifyProperty( "w11", "Selection", "item" ) );
+      assertEquals( "hyperlink", message.findNotifyProperty( "w11", "Selection", "detail" ) );
+      var text = message.findNotifyProperty( "w11", "Selection", "text" );
+      assertEquals( "bar", text );
+      tree.destroy();
+    },
+
     testSetItemCountByProtocol : function() {
       var shell = TestUtil.createShellByProtocol( "w2" );
       var widget = this._createDefaultTreeByProtocol( "w3", "w2", [] );
@@ -2903,8 +2961,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.GridTest", {
       var item = this._createItem( tree.getRootItem(), 0 );
       item.setTexts( [ "Test1" ] );
       TestUtil.flush();
-      var row = tree._rowContainer._children[ 0 ];
-      var node = row._getTargetNode().childNodes[ 0 ];
+      var node = tree._rowContainer._children[ 0 ].getElement();
       assertEquals( "red", node.style.color );
       tree.setTextColor( "blue" );
       TestUtil.flush();

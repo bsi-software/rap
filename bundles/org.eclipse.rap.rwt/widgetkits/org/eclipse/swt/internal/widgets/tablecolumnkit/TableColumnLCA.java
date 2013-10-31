@@ -21,6 +21,7 @@ import static org.eclipse.swt.internal.events.EventLCAUtil.isListening;
 
 import java.io.IOException;
 
+import org.eclipse.rap.rwt.RWT;
 import org.eclipse.rap.rwt.lifecycle.AbstractWidgetLCA;
 import org.eclipse.rap.rwt.lifecycle.WidgetLCAUtil;
 import org.eclipse.rap.rwt.remote.RemoteObject;
@@ -45,6 +46,7 @@ public final class TableColumnLCA extends AbstractWidgetLCA {
   static final String PROP_MOVEABLE = "moveable";
   static final String PROP_ALIGNMENT = "alignment";
   static final String PROP_FIXED = "fixed";
+  static final String PROP_WRAPPED = "wrapped";
   static final String PROP_SELECTION_LISTENER = "Selection";
 
   private static final int ZERO = 0;
@@ -64,6 +66,7 @@ public final class TableColumnLCA extends AbstractWidgetLCA {
     preserveProperty( column, PROP_MOVEABLE, column.getMoveable() );
     preserveProperty( column, PROP_ALIGNMENT, getAlignment( column ) );
     preserveProperty( column, PROP_FIXED, isFixed( column ) );
+    preserveProperty( column, PROP_WRAPPED, isWrapped( column ) );
     preserveListener( column, PROP_SELECTION_LISTENER, isListening( column, SWT.Selection ) );
   }
 
@@ -89,6 +92,7 @@ public final class TableColumnLCA extends AbstractWidgetLCA {
     renderProperty( column, PROP_MOVEABLE, column.getMoveable(), false );
     renderProperty( column, PROP_ALIGNMENT, getAlignment( column ), DEFAULT_ALIGNMENT );
     renderProperty( column, PROP_FIXED, isFixed( column ), false );
+    renderProperty( column, PROP_WRAPPED, isWrapped( column ), false );
     renderListener( column, PROP_SELECTION_LISTENER, isListening( column, SWT.Selection ), false );
   }
 
@@ -122,6 +126,19 @@ public final class TableColumnLCA extends AbstractWidgetLCA {
 
   private static boolean isFixed( TableColumn column ) {
     return getTableAdapter( column ).isFixedColumn( column );
+  }
+
+  private static boolean isWrapped( TableColumn column ) {
+    boolean result = false;
+    try {
+      Boolean data = (Boolean) column.getData( RWT.WRAPPED_COLUMN );
+      if ( data != null ) {
+        result = data.booleanValue();
+      }
+    } catch( ClassCastException ex ) {
+      // not a valid wrapped column value
+    }
+    return result;
   }
 
   private static ITableAdapter getTableAdapter( TableColumn column ) {

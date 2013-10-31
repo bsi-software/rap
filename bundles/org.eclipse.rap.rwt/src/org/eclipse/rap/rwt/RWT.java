@@ -459,6 +459,8 @@ public final class RWT {
    */
   public static final int HYPERLINK = 1 << 26;
 
+  public static final String WRAPPED_COLUMN = "org.eclipse.rap.rwt.wrappedColumn";
+
   /**
    * Returns the instance of the life cycle which is currently processed.
    *

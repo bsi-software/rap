@@ -368,6 +368,11 @@ rwt.qx.Class.define( "rwt.widgets.Grid", {
       this._scheduleUpdate();
     },
 
+    setWrappedColumn : function( column, value ) {
+    	this._config.wrappedColumn[ column ] = value;
+    	this._scheduleUpdate();
+    },
+
     setCellCheck : function( column, value ) {
       this._config.itemCellCheck[ column ] = value;
       this._scheduleUpdate();

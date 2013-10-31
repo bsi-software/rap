@@ -305,6 +305,16 @@ rwt.qx.Class.define( "rwt.widgets.GridColumn", {
       return this._isGroup;
     },
 
+    setWrapped : function( value ) {
+      this._grid.setWrappedColumn( this._index, value );
+      this._wrapped = value;
+      this._update();
+    },
+
+    isWrapped : function() {
+      return this._wrapped;
+    },
+
     /**
      * Implemented for UI testing. Implementation mostly identical to Widget.js
      */

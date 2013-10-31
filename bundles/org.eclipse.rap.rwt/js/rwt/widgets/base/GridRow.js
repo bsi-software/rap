@@ -576,7 +576,7 @@ rwt.qx.Class.define( "rwt.widgets.base.GridRow", {
       var renderBounds = false;
       if( item.hasText( cell ) ) {
         renderBounds = isTreeColumn || !contentOnly || !this._cellLabels[ cell ];
-        element = this._getTextElement( cell );
+        element = this._getTextElement( cell, config );
         this._renderElementContent( element, item, cell, config.markupEnabled );
         if( renderBounds ) {
           element.style.textAlign = isTreeColumn ? "left" : this._getAlignment( cell, config );
@@ -584,7 +584,7 @@ rwt.qx.Class.define( "rwt.widgets.base.GridRow", {
         this._styleLabel( element, item, cell, config );
       } else if( this._cellLabels[ cell ] ) {
         renderBounds = isTreeColumn || !contentOnly;
-        element = this._getTextElement( cell );
+        element = this._getTextElement( cell, config );
         this._renderElementContent( element, null, -1, config.markupEnabled );
       }
       if( renderBounds ) {
@@ -805,11 +805,11 @@ rwt.qx.Class.define( "rwt.widgets.base.GridRow", {
       rwt.html.Style.setBackgroundImage( element, src, enabled != null ? opacity : null);
     },
 
-    _getTextElement : function( cell ) {
+    _getTextElement : function( cell, config ) {
       var result = this._cellLabels[ cell ];
       if( !result ) {
         result = this._createElement( 3 );
-        result.style.whiteSpace = "nowrap";
+        result.style.whiteSpace = this._isWrappedColumn( cell, config );
         if( rwt.client.Client.isNewMshtml() ) {
           result.style.backgroundColor = "rgba(0, 0, 0, 0)";
         }
@@ -1079,6 +1079,10 @@ rwt.qx.Class.define( "rwt.widgets.base.GridRow", {
 
     _isTreeColumn : function( columnIndex, config ) {
       return columnIndex === config.treeColumn;
+    },
+
+    _isWrappedColumn : function ( column, config ) {
+      return config.wrappedColumn[ column ] ? "normal" : "nowrap";
     },
 
     //////////////

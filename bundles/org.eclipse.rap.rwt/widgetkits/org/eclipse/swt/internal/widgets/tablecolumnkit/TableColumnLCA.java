@@ -128,6 +128,9 @@ public final class TableColumnLCA extends AbstractWidgetLCA {
     return getTableAdapter( column ).isFixedColumn( column );
   }
 
+  /**
+   * Check if a value is available on the table column for the property {@link RWT#WRAPPED_COLUMN}
+   */
   private static boolean isWrapped( TableColumn column ) {
     boolean result = false;
     try {

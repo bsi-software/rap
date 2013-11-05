@@ -309,9 +309,14 @@ qx.Class.define( "org.eclipse.rwt.widgets.Tree", {
     },
 
     setBackgroundPosition : function( column, value ) {
-        this._config.backgroundPosition[ column ] = value;
-        this._scheduleUpdate();
-      },
+      this._config.backgroundPosition[ column ] = value;
+      this._scheduleUpdate();
+    },
+
+    setWrappedColumn : function( column, value ) {
+      this._config.wrappedColumn[ column ] = value;
+      this._scheduleUpdate();
+    },
 
     setLinesVisible : function( value ) {
       this._config.linesVisible = value;

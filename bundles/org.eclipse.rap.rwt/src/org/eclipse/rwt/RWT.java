@@ -388,6 +388,16 @@ public final class RWT {
   public static final String DEFAULT_THEME_ID = "org.eclipse.rap.rwt.theme.Default";
 
   /**
+   * This property is part of the extended RAP Web-2.0 API, but not part of the SWT API.
+   * Defines if a column is able to wrap text by setting the CSS property to
+   * <code>white-space : normal</code> or <code>white-space : nowrap</code> respectively.
+   * Used as property key when calling <code>TableColumn.setData(RWT.WRAPPED_COLUMN, value)</code>
+   *
+   * @since 2.2.0-M2 (backported)
+   */
+  public static final String WRAPPED_COLUMN = "org.eclipse.rap.rwt.wrappedColumn";
+
+  /**
    * Returns the instance of the life cycle which is currently processed.
    *
    * @return instance of {@link ILifeCycle}

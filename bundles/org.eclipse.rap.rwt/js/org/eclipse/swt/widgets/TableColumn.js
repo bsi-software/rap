@@ -22,8 +22,8 @@ qx.Class.define( "org.eclipse.swt.widgets.TableColumn", {
     this._table = parent;
     this._parentIsTree = parent.getAppearance() === "tree";
     this.setAppearance( this._parentIsTree ? "tree-column" : "table-column" );
-    this.setHorizontalChildrenAlign( qx.constant.Layout.ALIGN_LEFT ); 
-    this.setVerticalChildrenAlign( qx.constant.Layout.ALIGN_MIDDLE ); 
+    this.setHorizontalChildrenAlign( qx.constant.Layout.ALIGN_LEFT );
+    this.setVerticalChildrenAlign( qx.constant.Layout.ALIGN_MIDDLE );
     this.setOverflow( qx.constant.Style.OVERFLOW_HIDDEN );
     this._resizable = true;
     this._moveable = false;
@@ -35,7 +35,7 @@ qx.Class.define( "org.eclipse.swt.widgets.TableColumn", {
     this._initialLeft = 0;
     this._fixed = false;
     this._index = 0;
-    // Init width property, without this Table._updateScrollWidth would 
+    // Init width property, without this Table._updateScrollWidth would
     // accidentially calculate a width of "0auto"
     this.setWidth( 0 );
     // Init left property, seems to be null initially which breaks the markup produced by TableItem
@@ -78,17 +78,17 @@ qx.Class.define( "org.eclipse.swt.widgets.TableColumn", {
   },
 
   statics : {
-    RESIZE_CURSOR : 
-      (    org.eclipse.rwt.Client.isGecko() 
-        && ( org.eclipse.rwt.Client.getMajor() > 1 
-             || org.eclipse.rwt.Client.getMinor() >= 8 ) ) 
-        ? "ew-resize" 
+    RESIZE_CURSOR :
+      (    org.eclipse.rwt.Client.isGecko()
+        && ( org.eclipse.rwt.Client.getMajor() > 1
+             || org.eclipse.rwt.Client.getMinor() >= 8 ) )
+        ? "ew-resize"
         : "e-resize",
-        
+
     STATE_MOVING : "moving",
-    STATE_MOUSE_OVER : "mouseover"      
+    STATE_MOUSE_OVER : "mouseover"
   },
-   
+
   members : {
 
     setIndex : function( value ) {
@@ -164,11 +164,11 @@ qx.Class.define( "org.eclipse.swt.widgets.TableColumn", {
         this.addToQueue( "left" );
       }
     },
-    
+
     isFixed : function() {
       return this._fixed;
     },
-    
+
     _renderRuntimeLeft : function( value ) {
       var renderValue = value;
       if( this._fixed ) {
@@ -177,9 +177,18 @@ qx.Class.define( "org.eclipse.swt.widgets.TableColumn", {
       this.base( arguments, renderValue );
     },
 
+    setWrapped : function( value ) {
+      this._table.setWrappedColumn( this._index, value );
+      this._wrapped = value;
+    },
+
+    isWrapped : function() {
+      return this._wrapped;
+    },
+
     /////////////////////////////
     // Mouse listeners for resize
-    
+
     _onMouseDown : function( evt ) {
       if( !this._inMove && !this._inResize && evt.getButton() === "left" ) {
         var widgetUtil = org.eclipse.swt.WidgetUtil;
@@ -217,14 +226,14 @@ qx.Class.define( "org.eclipse.swt.widgets.TableColumn", {
         this._wasResizeOrMoveEvent = true;
         evt.stopPropagation();
         evt.preventDefault();
-        widgetUtil._fakeMouseEvent( evt.getTarget(), "mouseover" );        
+        widgetUtil._fakeMouseEvent( evt.getTarget(), "mouseover" );
       } else if( this._inMove ) {
         this._inMove = false;
         this.setCapture( false );
         this._handleZIndex();
         this.removeState( org.eclipse.swt.widgets.TableColumn.STATE_MOVING );
-        if(    this.getLeft() < this._initialLeft - 1 
-            || this.getLeft() > this._initialLeft + 1 ) 
+        if(    this.getLeft() < this._initialLeft - 1
+            || this.getLeft() > this._initialLeft + 1 )
         {
           this._wasResizeOrMoveEvent = true;
           // Fix for bugzilla 306842
@@ -278,7 +287,7 @@ qx.Class.define( "org.eclipse.swt.widgets.TableColumn", {
     _isResizeLocation : function( pageX ) {
       var result = false;
       if( this._resizable ) {
-        var columnRight 
+        var columnRight
           = qx.bom.element.Location.getLeft( this.getElement() ) + this.getWidth();
         if( pageX >= columnRight - 5 && pageX <= columnRight ) {
           result = true;
@@ -296,7 +305,7 @@ qx.Class.define( "org.eclipse.swt.widgets.TableColumn", {
     _handleZIndex : function() {
       var value = 1;
       if( this._inMove ) {
-        value = 1e8; 
+        value = 1e8;
       } else if( this._fixed ) {
         value = 1e7;
       }
@@ -313,7 +322,7 @@ qx.Class.define( "org.eclipse.swt.widgets.TableColumn", {
         req.send();
       }
     },
-    
+
     _sendMoved : function( left ) {
       if( !org.eclipse.swt.EventUtil.getSuspended() ) {
         var widgetManager = org.eclipse.swt.WidgetManager.getInstance();

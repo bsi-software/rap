@@ -613,7 +613,7 @@ qx.Class.define( "org.eclipse.rwt.widgets.TreeRow", {
       if( !result ) {
         result = this._createElement( 3 );
         result.style.verticalAlign = this._getVerticalAlignment( cell, config );
-        result.style.whiteSpace = "nowrap";
+        result.style.whiteSpace = this._isWrappedColumn( cell, config );
         if( org.eclipse.rwt.Client.isNewMshtml() ) {
           result.style.backgroundColor = "rgba(0, 0, 0, 0)";
         }
@@ -850,6 +850,10 @@ qx.Class.define( "org.eclipse.rwt.widgets.TreeRow", {
 
     _isTreeColumn : function( columnIndex, config ) {
       return columnIndex === config.treeColumn;
+    },
+
+    _isWrappedColumn : function ( column, config ) {
+      return config.wrappedColumn[ column ] ? "normal" : "nowrap";
     },
 
     //////////////

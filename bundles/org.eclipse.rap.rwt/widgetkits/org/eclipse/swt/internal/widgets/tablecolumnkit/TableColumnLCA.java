@@ -19,6 +19,7 @@ import static org.eclipse.rwt.lifecycle.WidgetLCAUtil.renderProperty;
 import java.io.IOException;
 import java.util.Arrays;
 
+import org.eclipse.rwt.RWT;
 import org.eclipse.rwt.internal.protocol.ClientObjectFactory;
 import org.eclipse.rwt.internal.protocol.IClientObject;
 import org.eclipse.rwt.internal.util.NumberFormatUtil;
@@ -43,6 +44,7 @@ public final class TableColumnLCA extends AbstractWidgetLCA {
   static final String PROP_ALIGNMENT = "alignment";
   static final String PROP_VERTICAL_ALIGNMENT = "verticalAlignment";
   static final String PROP_FIXED = "fixed";
+  static final String PROP_WRAPPED = "wrapped";
   static final String PROP_SELECTION_LISTENER = "selection";
   static final String PROP_BACKGROUND_POSITION = "backgroundPosition";
 
@@ -64,6 +66,7 @@ public final class TableColumnLCA extends AbstractWidgetLCA {
     preserveProperty( column, PROP_ALIGNMENT, getAlignment( column ) );
     preserveProperty( column, PROP_VERTICAL_ALIGNMENT, getVerticalAlignment( column ) );
     preserveProperty( column, PROP_FIXED, isFixed( column ) );
+    preserveProperty( column, PROP_WRAPPED, isWrapped( column ) );
     preserveProperty( column, PROP_BACKGROUND_POSITION, getBackgroundPosition( column ) );
     preserveListener( column, PROP_SELECTION_LISTENER, SelectionEvent.hasListener( column ) );
   }
@@ -122,6 +125,7 @@ public final class TableColumnLCA extends AbstractWidgetLCA {
     renderProperty( column, PROP_VERTICAL_ALIGNMENT, getVerticalAlignment( column ), DEFAULT_VERTICAL_ALIGNMENT );
     renderProperty( column, PROP_BACKGROUND_POSITION, getBackgroundPosition( column ), DEFAULT_BACKGROUND_POSITION );
     renderProperty( column, PROP_FIXED, isFixed( column ), false );
+    renderProperty( column, PROP_WRAPPED, isWrapped( column ), false );
     renderListener( column, PROP_SELECTION_LISTENER, SelectionEvent.hasListener( column ), false );
   }
 
@@ -151,7 +155,7 @@ public final class TableColumnLCA extends AbstractWidgetLCA {
     }
     return result;
   }
-  
+
   private static String getVerticalAlignment( TableColumn column ) {
     int verticalAlignment = column.getVerticalAlignment();
     String result = DEFAULT_VERTICAL_ALIGNMENT;
@@ -191,6 +195,22 @@ public final class TableColumnLCA extends AbstractWidgetLCA {
   private static boolean isFixed( TableColumn column ) {
     ITableAdapter adapter = column.getParent().getAdapter( ITableAdapter.class );
     return adapter.isFixedColumn( column );
+  }
+
+  /**
+   * Check if a value is available on the table column for the property {@link RWT#WRAPPED_COLUMN}
+   */
+  private static boolean isWrapped( TableColumn column ) {
+    boolean result = false;
+    try {
+      Boolean data = (Boolean) column.getData( RWT.WRAPPED_COLUMN );
+      if ( data != null ) {
+        result = data.booleanValue();
+      }
+    } catch( ClassCastException ex ) {
+      // not a valid wrapped column value
+    }
+    return result;
   }
 
   /////////////////////////////////

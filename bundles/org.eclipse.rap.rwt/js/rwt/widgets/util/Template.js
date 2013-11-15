@@ -68,6 +68,10 @@ rwt.widgets.util.Template.prototype = {
     return this._cells[ cell ].type;
   },
 
+  getCellData : function( cell ) {
+    return this._cells[ cell ];
+  },
+
   isCellSelectable : function( cell ) {
     return this._cells[ cell ].selectable === true;
   },
@@ -105,7 +109,7 @@ rwt.widgets.util.Template.prototype = {
     if( this._isBound( cell ) ) {
       return item.getText( this._getIndex( cell ), cellRenderOptions.escaped );
     } else {
-      return this._cells[ cell ].defaultText || "";
+      return this._cells[ cell ].text || "";
     }
   },
 
@@ -113,7 +117,7 @@ rwt.widgets.util.Template.prototype = {
     if( this._isBound( cell ) ) {
       return item.getImage( this._getIndex( cell ) );
     } else {
-      var defaultImage = this._cells[ cell ].defaultImage;
+      var defaultImage = this._cells[ cell ].image;
       return defaultImage ? defaultImage[ 0 ] : null;
     }
   },
@@ -172,6 +176,7 @@ rwt.widgets.util.Template.prototype = {
       }
     }
   },
+
   _renderAllContent : function( options ) {
     var cellRenderOptions = {
       "markupEnabled" : options.markupEnabled,
@@ -183,7 +188,6 @@ rwt.widgets.util.Template.prototype = {
       if( element ) {
         var cellRenderer = renderer[ this._cells[ i ].type ];
         var renderContent = cellRenderer.renderContent;
-        cellRenderOptions.escaped = cellRenderer.shouldEscapeText( options );
         // TODO : render styles only if changing
         this._renderBackground( element, this.getCellBackground( options.item, i ) );
         this._renderForeground( element, this.getCellForeground( options.item, i ) );
@@ -236,11 +240,12 @@ rwt.widgets.util.Template.prototype = {
   _getCellLeft : function( options, cell ) {
     var cellData = this._cells[ cell ];
     return   cellData.left !== undefined
-           ? cellData.left
-           : options.bounds[ 2 ] - cellData.width - cellData.right;
+           ? options.bounds[ 0 ] + cellData.left
+           : options.bounds[ 0 ] + options.bounds[ 2 ] - cellData.width - cellData.right;
   },
 
   _getCellTop : function( options, cell ) {
+    // TODO [tb] : render offset is currently not respected since widget uses it
     var cellData = this._cells[ cell ];
     return   cellData.top !== undefined
            ? cellData.top
@@ -267,7 +272,7 @@ rwt.widgets.util.Template.prototype = {
     } else if( this._isBound( cell ) ) {
       return item.hasText( this._getIndex( cell ) );
     } else {
-      return this._cells[ cell ].defaultText != null;
+      return this._cells[ cell ].text != null;
     }
   },
 
@@ -277,7 +282,7 @@ rwt.widgets.util.Template.prototype = {
     } else if( this._isBound( cell ) ) {
       return item.getImage( this._getIndex( cell ) ) !== null;
     } else {
-      return this._cells[ cell ].defaultImage != null;
+      return this._cells[ cell ].image != null;
     }
   },
 

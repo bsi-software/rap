@@ -17,10 +17,13 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.eclipse.rap.json.JsonArray;
 import org.eclipse.rap.json.JsonValue;
+import org.eclipse.rap.rwt.RWT;
 import org.eclipse.rap.rwt.internal.remote.RemoteObjectImpl;
 import org.eclipse.rap.rwt.internal.remote.RemoteObjectRegistry;
 import org.eclipse.rap.rwt.lifecycle.WidgetUtil;
+import org.eclipse.rap.rwt.template.Template;
 import org.eclipse.rap.rwt.testfixture.Fixture;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
@@ -32,12 +35,16 @@ import org.junit.Test;
 public class TemplateLCAUtil_Test {
 
   private Shell shell;
+  private Template template;
+  private RemoteObjectImpl remoteObject;
 
   @Before
   public void setUp() {
     Fixture.setUp();
     Display display = new Display();
     shell = new Shell( display );
+    template = new Template();
+    remoteObject = fakeRemoteObject();
   }
 
   @After
@@ -47,20 +54,16 @@ public class TemplateLCAUtil_Test {
 
   @Test
   public void testRenderRowTemplate() {
-    RowTemplate rowTemplate = new RowTemplate();
-    shell.setData( RowTemplate.ROW_TEMPLATE, rowTemplate );
-    JsonValue template = new TemplateSerializer( rowTemplate ).toJson();
-    RemoteObjectImpl remoteObject = fakeRemoteObject();
+    shell.setData( RWT.ROW_TEMPLATE, template );
 
     TemplateLCAUtil.renderRowTemplate( shell );
 
-    verify( remoteObject ).set( eq( "rowTemplate" ), eq( template ) );
+    verify( remoteObject ).set( eq( "rowTemplate" ), eq( new JsonArray() ) );
   }
 
   @Test
-  public void testRenderRowTemplateOnlyIfItsARowTemplate() {
-    shell.setData( RowTemplate.ROW_TEMPLATE, new Object() );
-    RemoteObjectImpl remoteObject = fakeRemoteObject();
+  public void testRenderRowTemplate_omitsUnknownTypes() {
+    shell.setData( RWT.ROW_TEMPLATE, new Object() );
 
     TemplateLCAUtil.renderRowTemplate( shell );
 
@@ -68,9 +71,7 @@ public class TemplateLCAUtil_Test {
   }
 
   @Test
-  public void testRenderRowTemplateOnlyIfPresent() {
-    RemoteObjectImpl remoteObject = fakeRemoteObject();
-
+  public void testRenderRowTemplate_omitsWidgetsWithoutRowTemplate() {
     TemplateLCAUtil.renderRowTemplate( shell );
 
     verify( remoteObject, never() ).set( eq( "rowTemplate" ), any( JsonValue.class ) );
@@ -82,4 +83,5 @@ public class TemplateLCAUtil_Test {
     RemoteObjectRegistry.getInstance().register( remoteObject );
     return remoteObject;
   }
+
 }

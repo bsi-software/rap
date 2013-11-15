@@ -153,10 +153,19 @@ rwt.qx.Class.define( "rwt.widgets.base.GridRow", {
     },
 
     _renderTemplate : function( item, config, hoverTarget, renderSelected, contentOnly ) {
+      var hasIndention =    item
+                         && typeof config.treeColumn === "number"
+                         && config.treeColumn > -1;
+      var xOffset = hasIndention ? this._correctOffset( 0, item, config ) : 0;
       config.rowTemplate.render( {
         "container" : this._getTemplateContainer( config ),
         "item" : item,
-        "bounds" : [ 0, 0, this.getWidth(), this.getHeight() ],
+        "bounds" : [
+          xOffset,
+          0,
+          this.getWidth() - xOffset,
+          this.getHeight()
+        ],
         "enabled" : config.enabled,
         "seeable" : this.isSeeable()
       } );
@@ -610,29 +619,14 @@ rwt.qx.Class.define( "rwt.widgets.base.GridRow", {
     _renderElementContent : function( element, item, cell, markupEnabled ) {
       var options = {
         "markupEnabled" : markupEnabled,
-        "seeable" : this.isSeeable()
+        "seeable" : this.isSeeable(),
+        "removeNewLines" : true
       };
-      var escape = this._shouldEscapeText( options );
-      options.escaped = escape === false ? false : true;
       renderer.text.renderContent( element,
-                                   item ? item.getText( cell, escape ) : null,
+                                   item ? item.getText( cell ) : null,
                                    null,
                                    options );
     },
-
-    _shouldEscapeText : Variant.select( "qx.client", {
-      "mshtml|newmshtml" : function( options ) {
-        if( options.markupEnabled ) {
-          return false;
-        } else {
-          // IE can not escape propperly if element is not in DOM, escape this once
-          return options.seeable ? false : undefined;
-        }
-      },
-      "default" : function( options ) {
-        return !options.markupEnabled;
-      }
-    } ),
 
     _styleLabel : function( element, item, cell, config ) {
       this._setForeground( element, this._getCellColor( item, cell, config ) );

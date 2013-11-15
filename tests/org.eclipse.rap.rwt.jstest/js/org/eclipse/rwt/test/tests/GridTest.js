@@ -124,6 +124,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.GridTest", {
 
       var config = rwt.remote.ObjectRegistry.getObject( "w3" ).getRenderConfig();
       assertTrue( config.rowTemplate instanceof rwt.widgets.util.Template );
+      assertFalse( config.fullSelection );
       assertIdentical( template, config.rowTemplate._cells );
       shell.destroy();
     },
@@ -156,10 +157,24 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.GridTest", {
       var message = TestUtil.getMessageObject();
       assertNull( message.findSetOperation( "w11", "selection" ) );
       assertEquals( "w2", message.findNotifyProperty( "w11", "Selection", "item" ) );
-      assertEquals( "hyperlink", message.findNotifyProperty( "w11", "Selection", "detail" ) );
+      assertEquals( "cell", message.findNotifyProperty( "w11", "Selection", "detail" ) );
       var text = message.findNotifyProperty( "w11", "Selection", "text" );
       assertEquals( "bar", text );
       tree.destroy();
+    },
+
+    testGridWithRowTempalteLimitsRowWidth: function() {
+      var cellData = { "type" : "text", "left" : 0, "top" : 0, "width" : 1, "height" : 1 };
+      var template = new rwt.widgets.util.Template( [ cellData ] );
+      var tree = this._createDefaultTree( false, false, "rowTemplate", template );
+      tree.setItemCount( 1 );
+
+      tree.setWidth( 100 );
+      tree.setItemMetrics( 0, 0, 150, 0, 0, 0, 0 );
+      TestUtil.flush();
+
+      var row = tree._rowContainer.getChildren()[ 0 ];
+      assertEquals( 100, row.getWidth() );
     },
 
     testSetItemCountByProtocol : function() {

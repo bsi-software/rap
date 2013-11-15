@@ -8,12 +8,24 @@
  * Contributors:
  *    EclipseSource - initial API and implementation
  ******************************************************************************/
-package org.eclipse.rap.rwt.internal.template;
+package org.eclipse.swt.internal.widgets;
+
+import org.eclipse.rap.rwt.RWT;
+import org.eclipse.swt.widgets.Widget;
 
 
-public class TestCell extends Cell<TestCell> {
+public class MarkupUtil {
 
-  public TestCell( RowTemplate template, String type ) {
-    super( template, type );
+  public static boolean isMarkupEnabledFor( Widget widget ) {
+    return Boolean.TRUE.equals( widget.getData( RWT.MARKUP_ENABLED ) );
   }
+
+  public static boolean isToolTipMarkupEnabledFor( Widget widget ) {
+    return Boolean.TRUE.equals( widget.getData( RWT.TOOLTIP_MARKUP_ENABLED ) );
+  }
+
+  private MarkupUtil() {
+    // prevent instantiation
+  }
+
 }

@@ -104,23 +104,6 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.CellRendererRegistryTest", {
       assertIdentical( renderer, registry.getRendererFor( "foo" ) );
     },
 
-    testAddFunctionShouldEscapeText : function() {
-      registry.add(  {
-        "cellType" : "foo",
-        "contentType" : "bar",
-        "renderContent" : function(){}
-      } );
-      registry.add(  {
-        "cellType" : "foo2",
-        "contentType" : "bar",
-        "renderContent" : function(){},
-        "shouldEscapeText" : rwt.util.Functions.returnTrue
-      } );
-
-      assertFalse( registry.getRendererFor( "foo" ).shouldEscapeText() );
-      assertTrue( registry.getRendererFor( "foo2" ).shouldEscapeText() );
-    },
-
     testAddFunctionCreateElement : function() {
       registry.add(  {
         "cellType" : "foo",
@@ -231,6 +214,108 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.CellRendererRegistryTest", {
       registry.removeRendererFor( "foo" );
 
       assertNull( renderer, registry.getRendererFor( "foo" ) );
+    },
+
+    testTextRenderer_CreateElementSetsTextOverflow : function() {
+      var defaultRegistry = rwt.widgets.util.CellRendererRegistry.getInstance();
+      var create = defaultRegistry.getRendererFor( "text" ).createElement;
+      assertEquals( "ellipsis", create( {} ).style.textOverflow );
+    },
+
+    testTextRenderer_CreateElementSetsHorizontalAlignment : function() {
+      var defaultRegistry = rwt.widgets.util.CellRendererRegistry.getInstance();
+      var create = defaultRegistry.getRendererFor( "text" ).createElement;
+      assertEquals( "left", create( {} ).style.textAlign );
+      assertEquals( "left", create( { "horizontalAlignment" : "LEFT" } ).style.textAlign );
+      assertEquals( "center", create( { "horizontalAlignment" : "CENTER" } ).style.textAlign );
+      assertEquals( "right", create( { "horizontalAlignment" : "RIGHT" } ).style.textAlign );
+    },
+
+    testTextRenderer_CreateElementSetsWrap : function() {
+      var defaultRegistry = rwt.widgets.util.CellRendererRegistry.getInstance();
+      var create = defaultRegistry.getRendererFor( "text" ).createElement;
+      assertEquals( "nowrap", create( {} ).style.whiteSpace );
+      assertTrue( "nowrap" != create( { "wrap" : true } ).style.whiteSpace );
+    },
+
+    testImageRenderer_CreateElementSetsAlignmentLeftTop : function() {
+      var defaultRegistry = rwt.widgets.util.CellRendererRegistry.getInstance();
+      var create = defaultRegistry.getRendererFor( "image" ).createElement;
+
+      var element = create( {
+        "horizontalAlignment" : "LEFT",
+        "verticalAlignment" : "TOP"
+      } );
+
+      var position = element.style.backgroundPosition;
+      assertTrue( "left top" === position || "0% 0%" === position );
+    },
+
+    testImageRenderer_CreateElementSetsAlignmentCenterCenter : function() {
+      var defaultRegistry = rwt.widgets.util.CellRendererRegistry.getInstance();
+      var create = defaultRegistry.getRendererFor( "image" ).createElement;
+
+      var element = create( {
+        "horizontalAlignment" : "CENTER",
+        "verticalAlignment" : "CENTER"
+      } );
+
+      var position = element.style.backgroundPosition;
+      assertTrue( "center" === position || "center center" === position || "50% 50%" === position );
+    },
+
+    testImageRenderer_CreateElementSetsAlignmentDefault : function() {
+      var defaultRegistry = rwt.widgets.util.CellRendererRegistry.getInstance();
+      var create = defaultRegistry.getRendererFor( "image" ).createElement;
+
+      var element = create( { "alignment" : {} } );
+
+      var position = element.style.backgroundPosition;
+      assertTrue( "center" === position || "center center" === position || "50% 50%" === position );
+    },
+
+    testImageRenderer_CreateElementSetsAlignmentRightBottom : function() {
+      var defaultRegistry = rwt.widgets.util.CellRendererRegistry.getInstance();
+      var create = defaultRegistry.getRendererFor( "image" ).createElement;
+
+      var element = create( {
+        "horizontalAlignment" : "RIGHT",
+        "verticalAlignment" : "BOTTOM"
+      } );
+
+      var position = element.style.backgroundPosition;
+      assertTrue( "right bottom" === position || "100% 100%" === position );
+    },
+
+
+    testImageRenderer_CreateElementSetsScaleModeFit : function() {
+      var defaultRegistry = rwt.widgets.util.CellRendererRegistry.getInstance();
+      var create = defaultRegistry.getRendererFor( "image" ).createElement;
+
+      var element = create( {
+        "scaleMode" : "FIT",
+        "alignment" : { "RIGHT" : true, "BOTTOM" : true }
+      } );
+
+      var position = element.style.backgroundPosition;
+      var size = element.style.backgroundSize;
+      assertTrue( "center" === position || "center center" === position || "50% 50%" === position );
+      assertEquals( "contain", size );
+    },
+
+    testImageRenderer_CreateElementSetsScaleModeFill : function() {
+      var defaultRegistry = rwt.widgets.util.CellRendererRegistry.getInstance();
+      var create = defaultRegistry.getRendererFor( "image" ).createElement;
+
+      var element = create( {
+        "scaleMode" : "FILL",
+        "alignment" : { "RIGHT" : true, "BOTTOM" : true }
+      } );
+
+      var position = element.style.backgroundPosition;
+      var size = element.style.backgroundSize;
+      assertTrue( "center" === position || "center center" === position || "50% 50%" === position );
+      assertEquals( "cover", size );
     }
 
   }

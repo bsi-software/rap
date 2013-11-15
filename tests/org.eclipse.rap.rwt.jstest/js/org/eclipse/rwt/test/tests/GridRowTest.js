@@ -50,7 +50,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.GridRowTest", {
 
     testRenderItemWithoutMarkupEnabled : function() {
       var item = this._createItem( tree );
-      item.setTexts( [ "<b>Test</b>" ] );
+      item.setTexts( [ "<b>\nTest</b>" ] );
       row.renderItem( item, tree._config, false, null );
       assertEquals( 2, row._getTargetNode().childNodes.length );
       assertEquals( "&lt;b&gt;Test&lt;/b&gt;", row._getTargetNode().childNodes[ 1 ].innerHTML );
@@ -58,7 +58,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.GridRowTest", {
 
     testRenderItemWithMultipleSpacesWhileNotVisible_Bug395822 : function() {
       var item = this._createItem( tree );
-      item.setTexts( [ "Test   Test" ] );
+      item.setTexts( [ "Test\n   Test" ] );
       row.setDisplay( false );
 
       row.renderItem( item, tree._config, false, null );
@@ -2538,6 +2538,26 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.GridRowTest", {
       assertEquals( row.isSeeable(), log[ 0 ][ 0 ].seeable );
     },
 
+    testRenderTemplate_CallRenderWithIndention : function() {
+      tree.setTreeColumn( 0 );
+      var itemParent = this._createItem( tree );
+      var item = this._createItem( itemParent );
+      row.setHeight( 15 );
+      var template = mockTemplate( [ 0, "text", 10, 20 ] );
+      var log = [];
+      var render = template.render;
+      template.render = function() {
+        log.push( rwt.util.Arrays.fromArguments( arguments ) );
+        render.apply( this, arguments );
+      };
+      tree.getRenderConfig().rowTemplate = template;
+
+      row.renderItem( item, tree._config, false, null );
+
+      var options = log[ 0 ][ 0 ];
+      assertEquals( [ 32, 0, 368, 15 ], options.bounds );
+    },
+
     testRenderTemplate_CallRenderForNullItem : function() {
       tree.setTreeColumn( -1 );
       row.setHeight( 15 );
@@ -2663,6 +2683,22 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.GridRowTest", {
       assertEquals( "bar", nodes[ 0 ].innerHTML );
     },
 
+    testRenderTemplate_RenderSingleCellTextWithEscapedCharacters : function() {
+      tree.setTreeColumn( -1 );
+      var item = this._createItem( tree );
+      item.setTexts( [ "foo", "<b\n  ar&" ] );
+
+      tree.getRenderConfig().rowTemplate = mockTemplate( [ 1, "text", 10, 20 ] );
+
+      row.renderItem( item, tree._config, false, null );
+
+      var nodes = row._getTargetNode().childNodes;
+      var expected1 = "&lt;b<br/>&nbsp; ar&amp;";
+      var expected2 = "&lt;b<br>&nbsp; ar&amp;";
+      var html = nodes[ 0 ].innerHTML.toLowerCase();
+      assertTrue( expected1 === html || expected2 === html );
+    },
+
     testRenderTemplate_RenderMultipleTextCells : function() {
       tree.setTreeColumn( -1 );
       var item = this._createItem( tree );
@@ -2743,25 +2779,6 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.GridRowTest", {
       assertEquals( [ "selectableCell", null ], log[ 1 ] );
       assertEquals( [ "selectableCell", "barName" ], log[ 2 ] );
     },
-
-   // TODO : Should the cell have a transparent background if an overlay is present?
-   // NOTE: "Normal" cells consist of separate backround and foreground elements, overlay is between
-//    testRenderTemplate_RenderNotTextCellBackgroundIfOverlayIsUsed : function() {
-//      tree.setTreeColumn( -1 );
-//      var item = this._createItem( tree );
-//      item.setTexts( [ "foo", "bar" ] );
-//      this._setOverlayBackground( "green" );
-//
-//      tree.getRenderConfig().rowTemplate = mockTemplate( {
-//        "type" : "text",
-//        "background" : [ 255, 0, 0 ]
-//      } );
-//
-//      row.renderItem( item, tree._config, false, null );
-//
-//      var color = row._getTargetNode().childNodes[ 0 ].style.backgroundColor;
-//      assertTrue( color === "" || color === "transparent" );
-//    },
 
     testRenderTemplate_ResetTextCellBackground : function() {
       tree.setTreeColumn( -1 );

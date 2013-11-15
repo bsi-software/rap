@@ -34,9 +34,12 @@ rwt.qx.Class.define( "rwt.widgets.base.WidgetToolTip", {
     setToolTipText : function( widget, value ) {
       var toolTip = rwt.widgets.base.WidgetToolTip.getInstance();
       if( value != null && value !== "" ) {
-        var EncodingUtil = rwt.util.Encoding;
-        var text = EncodingUtil.escapeText( value, false );
-        text = EncodingUtil.replaceNewLines( text, "<br/>" );
+        var text = value;
+        if( widget.getUserData( "toolTipMarkupEnabled" ) !== true ) {
+          var EncodingUtil = rwt.util.Encoding;
+          var text = EncodingUtil.escapeText( text, false );
+          text = EncodingUtil.replaceNewLines( text, "<br/>" );
+        }
         widget.setToolTipText( text );
         widget.dispatchSimpleEvent( "updateToolTip", widget );
       } else {
@@ -74,6 +77,13 @@ rwt.qx.Class.define( "rwt.widgets.base.WidgetToolTip", {
       nullable : true,
       init : null,
       themeable : true
+    },
+
+    textAlign : {
+      check : [ "left", "center", "right" ],
+      init : "center",
+      themeable : true,
+      apply : "_applyTextAlign"
     }
 
   },
@@ -92,6 +102,10 @@ rwt.qx.Class.define( "rwt.widgets.base.WidgetToolTip", {
 
     _applyElement : function( value, old ) {
       this.base( arguments, value, old );
+    },
+
+    _applyTextAlign : function( value, old ) {
+      this._label.setHorizontalChildrenAlign( value );
     },
 
     _getPointerElement : function() {

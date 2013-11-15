@@ -53,9 +53,6 @@ rwt.widgets.util.CellRendererRegistry = function() {
   };
 
   var extendRenderer = function( renderer ) {
-    if( !renderer.shouldEscapeText ) {
-      renderer.shouldEscapeText = rwt.util.Functions.returnFalse;
-    }
     var innerCreateElement = renderer.createElement || defaultCreateElement;
     renderer.createElement = function( cellData ) {
       var result = innerCreateElement( cellData );
@@ -90,53 +87,59 @@ rwt.widgets.util.CellRendererRegistry.getInstance = function() {
 ///////////////////
 // default renderer
 
+var Encoding = rwt.util.Encoding;
+
+var escapeText = function( text, removeNewLines ) {
+  var result = Encoding.escapeText( text, false );
+  result = Encoding.replaceNewLines( result, removeNewLines ? "" : "<br/>" );
+  result = Encoding.replaceWhiteSpaces( result );
+  return result;
+};
+
+var alignmentStyleToCss = {
+  "LEFT" : "left",
+  "CENTER" : "center",
+  "RIGHT" : "right",
+  "TOP" : "top",
+  "BOTTOM" : "bottom"
+};
+
 rwt.widgets.util.CellRendererRegistry.getInstance().add( {
   "cellType" : "text",
   "contentType" : "text",
   "createElement" : function( cellData ) {
     var result = document.createElement( "div" );
-    result.style.whiteSpace = "nowrap";
+    result.style.textAlign = alignmentStyleToCss[ cellData.horizontalAlignment ] || "left";
+    result.style.whiteSpace = cellData.wrap ? "" : "nowrap";
+    result.style.textOverflow = "ellipsis";
     return result;
   },
-  "shouldEscapeText" : Variant.select( "qx.client", {
-    "mshtml|newmshtml" : function( options ) {
-      if( options.markupEnabled ) {
-        return false;
-      } else {
-        // IE can not escape propperly if element is not in DOM, escape this once
-        return options.seeable ? false : undefined;
-      }
-    },
-    "default" : function( options ) {
-      // TODO [tb] : returning true permanently escapes the text, might clash with custom renderer
-      return !options.markupEnabled;
-    }
-  } ),
   "renderContent" : Variant.select( "qx.client", {
     "mshtml|newmshtml" : function( element, content, cellData, options ) {
-      var html = content || "";
+      var text = content || "";
       if( options.markupEnabled ) {
-        if( element.rap_Markup !== html ) {
-          element.innerHTML = html;
-          element.rap_Markup = html;
+        if( element.rap_Markup !== text ) {
+          element.innerHTML = text;
+          element.rap_Markup = text;
         }
+      } else if( options.seeable ) {
+        if( options.removeNewLines ) {
+          text = Encoding.replaceNewLines( text, "" );
+        }
+        element.innerText = text; // considerably faster than innerHTML
       } else {
-        if( options.escaped ) {
-          element.innerHTML = html;
-        } else {
-          element.innerText = html;
-        }
+        element.innerHTML = escapeText( text, options.removeNewLines );
       }
     },
     "default" : function( element, content, cellData, options ) {
-      var html = content || "";
+      var text = content || "";
       if( options.markupEnabled ) {
-        if( html !== element.rap_Markup ) {
-          element.innerHTML = html;
-          element.rap_Markup = html;
+        if( text !== element.rap_Markup ) {
+          element.innerHTML = text;
+          element.rap_Markup = text;
         }
       } else {
-        element.innerHTML = html;
+        element.innerHTML = escapeText( text, options.removeNewLines );
       }
     }
   } )
@@ -152,7 +155,16 @@ rwt.widgets.util.CellRendererRegistry.getInstance().add( {
   "createElement" : function( cellData ) {
     var result = document.createElement( "div" );
     result.style.backgroundRepeat = "no-repeat";
-    result.style.backgroundPosition = "center";
+    var position = [ "center", "center" ];
+    if( cellData.scaleMode === "FIT" ) {
+      result.style.backgroundSize = "contain";
+    } else if( cellData.scaleMode === "FILL" ) {
+      result.style.backgroundSize = "cover";
+    } else {
+      position[ 0 ] = alignmentStyleToCss[ cellData.horizontalAlignment ] || "center";
+      position[ 1 ] = alignmentStyleToCss[ cellData.verticalAlignment ] || "center";
+    }
+    result.style.backgroundPosition = position.join( " " );
     return result;
   }
 } );

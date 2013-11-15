@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 EclipseSource and others.
+ * Copyright (c) 2012, 2013 EclipseSource and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -21,6 +21,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.eclipse.rap.rwt.SingletonUtil;
+import org.eclipse.swt.widgets.Widget;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.helpers.DefaultHandler;
@@ -32,6 +33,7 @@ public class MarkupValidator {
   public static final String MARKUP_VALIDATION_DISABLED
     = "org.eclipse.rap.rwt.markupValidationDisabled";
 
+  private static final String DTD = createDTD();
   private static final Map<String, String[]> SUPPORTED_ELEMENTS = createSupportedElementsMap();
   private final SAXParser saxParser;
 
@@ -45,6 +47,7 @@ public class MarkupValidator {
 
   public void validate( String text ) {
     StringBuilder markup = new StringBuilder();
+    markup.append( DTD );
     markup.append( "<html>" );
     markup.append( text );
     markup.append( "</html>" );
@@ -58,6 +61,10 @@ public class MarkupValidator {
     }
   }
 
+  public static boolean isValidationDisabledFor( Widget widget ) {
+    return Boolean.TRUE.equals( widget.getData( MARKUP_VALIDATION_DISABLED ) );
+  }
+
   private static SAXParser createSAXParser() {
     SAXParser result = null;
     SAXParserFactory parserFactory = SAXParserFactory.newInstance();
@@ -67,6 +74,23 @@ public class MarkupValidator {
       throw new RuntimeException( "Failed to create SAX parser", exception );
     }
     return result;
+  }
+
+  private static String createDTD() {
+    StringBuilder result = new StringBuilder();
+    result.append( "<!DOCTYPE html [" );
+    result.append( "<!ENTITY quot \"&#34;\">" );
+    result.append( "<!ENTITY amp \"&#38;\">" );
+    result.append( "<!ENTITY apos \"&#39;\">" );
+    result.append( "<!ENTITY lt \"&#60;\">" );
+    result.append( "<!ENTITY gt \"&#62;\">" );
+    result.append( "<!ENTITY nbsp \"&#160;\">" );
+    result.append( "<!ENTITY ensp \"&#8194;\">" );
+    result.append( "<!ENTITY emsp \"&#8195;\">" );
+    result.append( "<!ENTITY ndash \"&#8211;\">" );
+    result.append( "<!ENTITY mdash \"&#8212;\">" );
+    result.append( "]>" );
+    return result.toString();
   }
 
   private static Map<String, String[]> createSupportedElementsMap() {

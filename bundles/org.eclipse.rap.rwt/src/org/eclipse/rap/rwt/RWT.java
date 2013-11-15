@@ -314,7 +314,7 @@ public final class RWT {
    * Controls whether the use of <em>markup</em> in text is enabled. To enable
    * markup in text, this constant must be passed to <code>setData()</code> with
    * a value of <code>Boolean.TRUE</code>. The call to <code>setData()</code>
-   * must be placed directly after the control is created. Once, the markup in text
+   * must be placed directly after the control is created. Once the markup in text
    * is enabled it's not possible to disable it.
    * <p>
    * For example:
@@ -395,6 +395,19 @@ public final class RWT {
   public static final String MARKUP_ENABLED = "org.eclipse.rap.rwt.markupEnabled";
 
   /**
+   * Controls whether the use of <em>markup</em> in tooltip text is enabled. To enable
+   * markup in tooltip text, this constant must be passed to <code>setData()</code> with
+   * a value of <code>Boolean.TRUE</code>. The call to <code>setData()</code>
+   * must be placed directly after the control is created. Once, the markup in tooltip text
+   * is enabled it's not possible to disable it.
+   *
+   * @see Control#setData(String,Object)
+   * @see RWT#MARKUP_ENABLED
+   * @since 2.2
+   */
+  public static final String TOOLTIP_MARKUP_ENABLED = "org.eclipse.rap.rwt.tooltipMarkupEnabled";
+
+  /**
    * Controls the number of fixed columns. This constant must be passed to <code>setData()</code>
    * together with an <code>Integer</code> object. The given number of columns, starting
    * with the current leftmost one, will not scroll horizontally. The call to <code>setData()</code>
@@ -441,23 +454,70 @@ public final class RWT {
   public static final String CUSTOM_VARIANT = "org.eclipse.rap.rwt.customVariant";
 
   /**
-   * Used as extra detail information about the selection event.
-   * Indicates that a hyperlink (anchor) in the item markup text was clicked.
-   * The hyperlink must have it's target property set to "_rwt", otherwise there
-   * will be no selection event and the client will follow the URL given in the HREF attribute.
+   * Used to apply a row template to a control. Row templates replace the column layout model of a
+   * Tree or a Table with a custom presentation defined by an instance of
+   * {@link org.eclipse.rap.rwt.template.Template}. A template cell will display the content of an
+   * item's column when its <em>bindingIndex</em> is set to the corresponding column index.
+   * <p>
+   * To apply a row template on a control, use the control's <code>setData()</code> method with this
+   * constant as key:
+   * </p>
    *
-   * <p><b>Used By:</b><ul>
+   * <pre>
+   * Template template = new Template();
+   * // add cells to this template
+   * new TextCell().setBindingindex( 0 ).setTop( 10 ).setLeft( 20 ) ...;
+   * ...
+   * Table table = new Table(parent, SWT.FULL_SELECTION);
+   * // Add as many columns as needed to add multiple texts/images to items
+   * new TableColumn();
+   * ...
+   * table.setData(RWT.ROW_TEMPLATE, template);
+   * </pre>
+   * <p>
+   * The call to <code>setData()</code> must be placed directly after the control's creation. Once a
+   * template is applied to a control, the control will not be affected by changes to the template.
+   * </p>
+   * <p>
+   * Note that TableColumn/TreeColumn instances must be created in order to support multiple item
+   * texts/images. If the <code>SWT.FULL_SELECTION</code> style flag is not set, no selection will
+   * be displayed.
+   * </p>
+   * <p>
+   * <b>Supported by:</b>
+   * <ul>
    * <li><code>Table</code></li>
    * <li><code>Tree</code></li>
-   * <li><code>List</code></li>
-   * </ul></p>
+   * </ul>
+   * </p>
+   *
+   * @see org.eclipse.swt.widgets.Control#setData(String,Object)
+   * @see org.eclipse.rap.rwt.template.Template
+   * @since 2.2
+   */
+  public static final String ROW_TEMPLATE = "org.eclipse.rap.rwt.rowTemplate";
+
+  /**
+   * Used as <em>detail</em> information on a selection event to indicate that a hyperlink (anchor
+   * tag) in a markup text was selected instead of the widget that contains the markup. To enable
+   * selection events on markup hyperlinks, the <code>a</code> element must have it's
+   * <code>target</code> property set to “<code>_rwt</code>”.
    *
    * @see RWT#MARKUP_ENABLED
    * @see org.eclipse.swt.events.SelectionEvent#detail
-   * @see org.eclipse.swt.events.SelectionEvent#text
    * @since 2.1
    */
   public static final int HYPERLINK = 1 << 26;
+
+  /**
+   * Used as as <em>detail</em> information on a selection event to indicate that a selectable
+   * template cell was selected instead of the widget that contains the cell.
+   *
+   * @see org.eclipse.rap.rwt.template.Cell#setSelectable(boolean)
+   * @see org.eclipse.swt.events.SelectionEvent#detail
+   * @since 2.2
+   */
+  public static final int CELL = 1 << 27;
 
   /**
    * This property is part of the extended RAP Web-2.0 API, but not part of the SWT API.

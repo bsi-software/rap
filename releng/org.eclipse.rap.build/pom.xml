@@ -99,7 +99,7 @@
     <repository>
       <id>extra-dependencies-repository</id>
       <layout>p2</layout>
-      <url>http://build.eclipse.org/rt/rap/base-platforms/2.2/extra-dependencies</url>
+      <url>http://build.eclipse.org/rt/rap/base-platforms/2.2/extra-dependencies.unsigned.hamcrest</url>
     </repository>
   </repositories>
 
@@ -123,11 +123,11 @@
             <artifactId>tycho-buildtimestamp-jgit</artifactId>
             <version>${tycho-extras-version}</version>
           </dependency>
-          <dependency> 
-            <groupId>org.eclipse.tycho.extras</groupId> 
-            <artifactId>tycho-sourceref-jgit</artifactId> 
-            <version>${tycho-extras-version}</version> 
-          </dependency> 
+          <dependency>
+            <groupId>org.eclipse.tycho.extras</groupId>
+            <artifactId>tycho-sourceref-jgit</artifactId>
+            <version>${tycho-extras-version}</version>
+          </dependency>
         </dependencies>
         <configuration>
           <timestampProvider>jgit</timestampProvider>
@@ -137,9 +137,9 @@
           </jgit.ignore>
  -->
           <format>yyyyMMdd-HHmm</format>
-          <sourceReferences> 
-            <generate>true</generate> 
-          </sourceReferences> 
+          <sourceReferences>
+            <generate>true</generate>
+          </sourceReferences>
         </configuration>
       </plugin>
 
@@ -293,7 +293,7 @@
 
       <properties>
         <rap.version.base>2.2.0</rap.version.base>
-        <milestone.version>I</milestone.version>       
+        <milestone.version>I</milestone.version>
         <newVersion>${rap.version.base}.${maven.build.timestamp}-${milestone.version}</newVersion>
       </properties>
       <activation>

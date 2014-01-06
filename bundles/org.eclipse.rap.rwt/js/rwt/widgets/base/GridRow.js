@@ -30,9 +30,11 @@ rwt.qx.Class.define( "rwt.widgets.base.GridRow", {
   construct : function() {
     this.base( arguments );
     this.setSelectable( false ); // Prevents user from selecting text
+    this.setOverflow( "hidden" );
     this.setHeight( 16 );
     this._styleMap = {};
     this._overlayStyleMap = {};
+    this._elementStyleCache = {};
     this._variant = null;
     this._graphicsOverlay = null;
     this._expandElement = null;
@@ -167,6 +169,7 @@ rwt.qx.Class.define( "rwt.widgets.base.GridRow", {
           this.getHeight()
         ],
         "enabled" : config.enabled,
+        "markupEnabled" : config.markupEnabled,
         "seeable" : this.isSeeable()
       } );
       this._template = config.rowTemplate; // needed by getTargetIdentifier
@@ -193,6 +196,7 @@ rwt.qx.Class.define( "rwt.widgets.base.GridRow", {
     },
 
     _renderStates : function( item, config, selected, hoverTarget ) {
+      this.setState( "rowtemplate", config.rowTemplate != null );
       this.setState( "checked", item.isChecked() );
       this.setState( "grayed", item.isGrayed() );
       this.setState( "parent_unfocused", this._renderAsUnfocused( config ) );
@@ -434,7 +438,7 @@ rwt.qx.Class.define( "rwt.widgets.base.GridRow", {
     },
 
     _renderOverlayGradient : function( element, gradient ) {
-      if( rwt.client.Client.supportsCss3() ) {
+      if( rwt.client.Client.supportsCss3() || !rwt.graphics.GraphicsUtil.isSupported() ) {
         Style.setBackgroundGradient( element, gradient );
       } else {
         rwt.graphics.GraphicsUtil.setFillGradient( this._getOverlayShape(), gradient );
@@ -554,7 +558,7 @@ rwt.qx.Class.define( "rwt.widgets.base.GridRow", {
       if( source !== null ) {
         renderBounds = isTreeColumn || !contentOnly || !this._cellImages[ cell ];
         element = this._getCellImage( cell );
-        this._setImage( element, source, renderBounds ? config.enabled : null );
+        this._setImage( element, source[ 0 ], renderBounds ? config.enabled : null );
       } else if( this._cellImages[ cell ] ) {
         renderBounds = isTreeColumn || !contentOnly;
         element = this._getCellImage( cell );
@@ -639,9 +643,18 @@ rwt.qx.Class.define( "rwt.widgets.base.GridRow", {
 
     _renderItemFont : function( item, config ) {
       var element = this.getElement();
-      this._setFont( element, config.font );
-      this._setTextDecoration( element, this._styleMap.textDecoration );
-      Style.setTextShadow( element, this._styleMap.textShadow );
+      if( this._elementStyleCache.font !== config.font ) {
+        this._elementStyleCache.font = config.font;
+        this._setFont( element, config.font );
+      }
+      if( this._elementStyleCache.textDecoration !== this._styleMap.textDecoration ) {
+        this._elementStyleCache.textDecoration = this._styleMap.textDecoration;
+        this._setTextDecoration( element, this._styleMap.textDecoration );
+      }
+      if( this._elementStyleCache.textShadow !== this._styleMap.textShadow ) {
+        this._elementStyleCache.textShadow = this._styleMap.textShadow;
+        Style.setTextShadow( element, this._styleMap.textShadow );
+      }
     },
 
     _getCellBackgroundColor : function( item, cell, config ) {

@@ -172,6 +172,9 @@ rwt.qx.Class.define( "rwt.widgets.Grid", {
       this._hasFixedColumns = map.splitContainer;
       this._config.baseAppearance = map.appearance;
       this._config.rowTemplate = map.rowTemplate;
+      if( this._config.rowTemplate ) {
+        this.addState( "rowtemplate" );
+      }
       this._rowContainer.setBaseAppearance( map.appearance );
       this.setAppearance( map.appearance );
     },
@@ -315,13 +318,7 @@ rwt.qx.Class.define( "rwt.widgets.Grid", {
     },
 
     setScrollBarsVisible : function( horzVisible, vertVisible ) {
-      if( !horzVisible ) {
-        this._horzScrollBar.setValue( 0 );
-      }
       this._horzScrollBar.setVisibility( horzVisible );
-      if( !vertVisible ) {
-        this._vertScrollBar.setValue( 0 );
-      }
       this._vertScrollBar.setVisibility( vertVisible );
       this._layoutX();
       this._layoutY();
@@ -1096,7 +1093,7 @@ rwt.qx.Class.define( "rwt.widgets.Grid", {
           "item" : this._getItemId( item ),
           "detail" : detail,
           "index" : !isNaN( index ) ? index : undefined,
-          "text" : text
+          "text" : text != null ? text : undefined
         };
         if( defaultSelected ) {
           rwt.remote.EventUtil.notifyDefaultSelected( this, properties );
@@ -1362,6 +1359,7 @@ rwt.qx.Class.define( "rwt.widgets.Grid", {
       this._horzScrollBar.setWidth( width );
       this._rowContainer.setWidth( width );
       this._updateScrollWidth();
+      this._scheduleUpdate();
     },
 
     _layoutY : function() {

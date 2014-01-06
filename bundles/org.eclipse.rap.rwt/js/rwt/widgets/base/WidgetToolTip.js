@@ -23,8 +23,11 @@ rwt.qx.Class.define( "rwt.widgets.base.WidgetToolTip", {
     this._showTimer.addEventListener( "interval", this._onshowtimer, this );
     this._hideTimer = new rwt.client.Timer();
     this._hideTimer.addEventListener( "interval", this._onhidetimer, this );
-    this.addEventListener( "mouseover", this._onmouseover );
-    this.addEventListener( "mouseout", this._onmouseover );
+    this._lastWidget = null;
+    this._fallbackMode = false;
+    this.addEventListener( "mouseover", this._onMouseOver );
+    this.addEventListener( "mouseout", this._onMouseOver );
+    this.addEventListener( "mouseup", this._onMouseUp );
     this._currentConfig = {};
     this.setRestrictToPageOnOpen( false );
   },
@@ -100,6 +103,14 @@ rwt.qx.Class.define( "rwt.widgets.base.WidgetToolTip", {
       }
     },
 
+    getLastWidget : function() {
+      return this._lastWidget;
+    },
+
+    getFocusRoot : function() {
+      return null; // prevent setting clientDocument as a focused widget
+    },
+
     _applyElement : function( value, old ) {
       this.base( arguments, value, old );
     },
@@ -143,7 +154,8 @@ rwt.qx.Class.define( "rwt.widgets.base.WidgetToolTip", {
     },
 
     _startShowTimer : function() {
-      if( this._config.appearOn === "enter" && this._allowQuickAppear() ) {
+      if(     this._allowQuickAppear()
+          && ( this._config.appearOn === "enter" || this._lastWidget == this.getBoundToWidget() )  ) {
         this._onshowtimer();
       } else {
         if( !this._showTimer.getEnabled() ) {
@@ -175,10 +187,23 @@ rwt.qx.Class.define( "rwt.widgets.base.WidgetToolTip", {
       }
     },
 
-    _onmouseover : function( event ) {
+    _onMouseOver : function( event ) {
       if( this._pointer && this._pointer === event.getDomTarget() ) {
         return;
       }
+      if( this.getElement().getElementsByTagName( "a" ).length > 0 ) {
+        return;
+      }
+      this._quickHide();
+    },
+
+    _onMouseUp : function() {
+      rwt.client.Timer.once( function() {
+        this._quickHide();
+      }, this, 100 );
+    },
+
+    _quickHide : function() {
       if( this._disappearAnimation && this._disappearAnimation.getDefaultRenderer().isActive() ) {
         this._disappearAnimation.getDefaultRenderer().setActive( false );
         this.hide();
@@ -190,9 +215,18 @@ rwt.qx.Class.define( "rwt.widgets.base.WidgetToolTip", {
 
     _handleMouseMove : function( event ) {
       if( this.getBoundToWidget() ) {
-        if( this.isSeeable() ) {
-          if( this._config.disappearOn === "move" ) {
+        if( this.isSeeable() && !this._hideTimer.getEnabled() ) {
+          if( this._config.disappearOn === "move" || this._fallbackMode ) {
             this._startHideTimer();
+          } else if( this._config.disappearOn === "exitTargetBounds" ) {
+            var bounds = this._getTargetBounds();
+            var x = event.getPageX();
+            var y = event.getPageY();
+            if(    ( x < bounds.left ) || ( x > ( bounds.left + bounds.width ) )
+                || ( y < bounds.top ) || ( y > ( bounds.top + bounds.height ) ) )
+            {
+              this._startHideTimer();
+            }
           }
         } else {
           if( this._config.appearOn === "rest" ) {
@@ -203,6 +237,7 @@ rwt.qx.Class.define( "rwt.widgets.base.WidgetToolTip", {
     },
 
     _onshowtimer : function( e ) {
+      this._lastWidget = this.getBoundToWidget();
       this._stopShowTimer();
       this._stopHideTimer();
       this._updateTextInternal();
@@ -234,7 +269,8 @@ rwt.qx.Class.define( "rwt.widgets.base.WidgetToolTip", {
     },
 
     _afterAppearLayout : function() {
-      var targetBounds = this._getWidgetBounds();
+      var targetBounds = this._getTargetBounds();
+      this._fallbackMode = this._computeFallbackMode( targetBounds );
       var docDimension = this._getDocumentDimension();
       var selfDimension = this._getOwnDimension();
       var newPosition = this._getPositionAfterAppear( targetBounds, docDimension, selfDimension );
@@ -251,7 +287,9 @@ rwt.qx.Class.define( "rwt.widgets.base.WidgetToolTip", {
 
     _renderPointer : function( target, self ) {
       var pointers = this.getPointers();
-      var enabled = this._config.position && this._config.position !== "mouse" && pointers;
+      var enabled =    this._config.position
+                    && this._config.position !== "mouse" && pointers
+                    && !this._fallbackMode;
       this._getPointerElement().style.display = "none";
       if( enabled ) {
         var direction = this._getDirection( target, self );
@@ -270,32 +308,22 @@ rwt.qx.Class.define( "rwt.widgets.base.WidgetToolTip", {
     _renderPointerUp : function( target, self ) {
       var pointer = this.getPointers()[ 0 ];
       var element = this._getPointerElement();
-      var targetCenter = this._getBoundsCenter( target );
       rwt.html.Style.setBackgroundImage( element, pointer[ 0 ] );
       element.style.width = pointer[ 1 ] + "px";
       element.style.height = pointer[ 2 ] + "px";
       element.style.top = ( -1 * pointer[ 2 ] ) + "px";
-      if( this._config.position === "align-left" ) {
-        element.style.left = this.getPaddingLeft() + "px";
-      } else {
-        element.style.left = Math.round( targetCenter.left - self.left - pointer[ 1 ] / 2 ) + "px";
-      }
+      this._renderPointerHorizontalAlign( target, self, pointer );
       element.style.display = "";
     },
 
     _renderPointerDown : function( target, self ) {
       var pointer = this.getPointers()[ 2 ];
       var element = this._getPointerElement();
-      var targetCenter = this._getBoundsCenter( target );
       rwt.html.Style.setBackgroundImage( element, pointer[ 0 ] );
       element.style.width = pointer[ 1 ] + "px";
       element.style.height = pointer[ 2 ] + "px";
       element.style.top = self.height + "px";
-      if( this._config.position === "align-left" ) {
-        element.style.left = this.getPaddingLeft() + "px";
-      } else {
-        element.style.left = Math.round( targetCenter.left - self.left - pointer[ 1 ] / 2 ) + "px";
-      }
+      this._renderPointerHorizontalAlign( target, self, pointer );
       element.style.display = "";
     },
 
@@ -323,6 +351,20 @@ rwt.qx.Class.define( "rwt.widgets.base.WidgetToolTip", {
       element.style.display = "";
     },
 
+    _renderPointerHorizontalAlign : function( target, self, pointer ) {
+      var element = this._getPointerElement();
+      if( this._config.position === "align-left" ) {
+        var targetedLeft =   target.left
+                           + this._targetDistance
+                           + this._cachedBorderLeft
+                           + this.getPaddingLeft();
+        element.style.left = Math.round( targetedLeft - self.left ) + "px";
+      } else {
+        var targetCenter = this._getBoundsCenter( target );
+        element.style.left = Math.round( targetCenter.left - self.left - pointer[ 1 ] / 2 ) + "px";
+      }
+    },
+
     _getDirection : function( target, self ) {
       var targetBetweenSelfX = target.left >= self.left && target.left <= ( self.left + self.width );
       var selfBetweenTargetX = self.left >= target.left && self.left <= ( target.left + target.width );
@@ -344,25 +386,57 @@ rwt.qx.Class.define( "rwt.widgets.base.WidgetToolTip", {
       this._label.setCellContent( 0, this.getBoundToWidget().getToolTipText() );
     },
 
+    _computeFallbackMode : function( target ) {
+      var doc = this._getDocumentDimension();
+      var right = target.left + target.width;
+      var bottom = target.top + target.height;
+      if( target.left < 0 || target.top < 0 || right > doc.width || bottom > doc.height ) {
+        return true;
+      }
+      var display = this.getElement().style.display;
+      this.getElement().style.display = "none";
+      var targetElements = [
+        document.elementFromPoint( target.left + target.width / 2 , target.top + 1 ),
+        document.elementFromPoint( right - 1, target.top + target.height / 2 ),
+        document.elementFromPoint( target.left + target.width / 2, bottom - 1 ),
+        document.elementFromPoint( target.left + 1, target.top + target.height / 2 )
+      ];
+      this.getElement().style.display = display;
+      var boundWidget = this.getBoundToWidget();
+      for( var i = 0; i < 4; i++ ) {
+        var widget = rwt.event.EventHandlerUtil.getOriginalTargetObject( targetElements[ i ] );
+        if(    widget == null
+            || !( boundWidget === widget || boundWidget.contains( widget ) ) )
+        {
+          return true;
+        }
+      }
+      return false; // all four edges are visible on screen
+    },
+
     getText : function() {
       return this._label.getCellContent( 0 );
     },
 
     _getPositionAfterAppear : function( target, doc, self ) {
       var result;
-      switch( this._config.position ) {
-        case "horizontal-center":
-          result = this._positionHorizontalCenter( target, doc, self );
-        break;
-        case "align-left":
-          result = this._positionAlignLeft( target, doc, self );
-        break;
-        case "vertical-center":
-          result = this._positionVerticalCenter( target, doc, self );
-        break;
-        default:
-          result = this._positionMouseRelative( target, doc, self );
-        break;
+      if( !this._fallbackMode ) {
+        switch( this._config.position ) {
+          case "horizontal-center":
+            result = this._positionHorizontalCenter( target, doc, self );
+          break;
+          case "align-left":
+            result = this._positionAlignLeft( target, doc, self );
+          break;
+          case "vertical-center":
+            result = this._positionVerticalCenter( target, doc, self );
+          break;
+          default:
+            result = this._positionMouseRelative( target, doc, self );
+          break;
+        }
+      } else {
+        result = this._positionMouseRelative( target, doc, self );
       }
       result[ 0 ] = Math.max( 0, Math.min( result[ 0 ], doc.width - self.width ) );
       result[ 1 ] = Math.max( 0, Math.min( result[ 1 ], doc.height - self.height ) );
@@ -432,7 +506,7 @@ rwt.qx.Class.define( "rwt.widgets.base.WidgetToolTip", {
       return Math.round( target.top + ( target.height / 2 ) - self.height / 2 );
     },
 
-    _getWidgetBounds : function() {
+    _getTargetBounds : function() {
       var widget = this.getBoundToWidget();
       var location = rwt.html.Location.get( widget.getElement() );
       var result = {

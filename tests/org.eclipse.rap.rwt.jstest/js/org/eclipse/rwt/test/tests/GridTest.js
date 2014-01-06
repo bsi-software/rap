@@ -122,8 +122,10 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.GridTest", {
         }
       ] );
 
-      var config = rwt.remote.ObjectRegistry.getObject( "w3" ).getRenderConfig();
+      var grid = rwt.remote.ObjectRegistry.getObject( "w3" );
+      var config = grid.getRenderConfig();
       assertTrue( config.rowTemplate instanceof rwt.widgets.util.Template );
+      assertTrue( grid.hasState( "rowtemplate" ) );
       assertFalse( config.fullSelection );
       assertIdentical( template, config.rowTemplate._cells );
       shell.destroy();
@@ -160,6 +162,38 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.GridTest", {
       assertEquals( "cell", message.findNotifyProperty( "w11", "Selection", "detail" ) );
       var text = message.findNotifyProperty( "w11", "Selection", "text" );
       assertEquals( "bar", text );
+      tree.destroy();
+    },
+
+    testSendSelectionEventForClickableRowTemplateCell_withoutName : function() {
+      var cellData = {
+        "type" : "text",
+        "bindingIndex" : 0,
+        "selectable" : true,
+        "left" : 0,
+        "top" : 0,
+        "width" : 1,
+        "height" : 1
+      };
+      var template = new rwt.widgets.util.Template( [ cellData ] );
+      var tree = this._createDefaultTree( false, false, "rowTemplate", template );
+      tree.setHasSelectionListener( true );
+      tree.setItemCount( 1 );
+      var item = this._createItem( tree.getRootItem(), 0 );
+      item.setTexts( [ "foo" ] );
+      rwt.remote.ObjectRegistry.add( "w11", tree, gridHandler );
+      rwt.remote.ObjectRegistry.add( "w2", item, itemHandler );
+      TestUtil.flush();
+
+      var node = tree._rowContainer._getTargetNode().childNodes[ 0 ].childNodes[ 0 ];
+      TestUtil.clickDOM( node );
+
+      assertEquals( 1, TestUtil.getRequestsSend() );
+      var message = TestUtil.getMessageObject();
+      assertNull( message.findSetOperation( "w11", "selection" ) );
+      assertEquals( "w2", message.findNotifyProperty( "w11", "Selection", "item" ) );
+      assertEquals( "cell", message.findNotifyProperty( "w11", "Selection", "detail" ) );
+      assertTrue( message.findNotifyProperty( "w11", "Selection", "text" ) === undefined );
       tree.destroy();
     },
 
@@ -497,6 +531,24 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.GridTest", {
       shell.destroy();
     },
 
+    testSetCellToolTipTextByProtocol_withFixedColumns : function() {
+      var widget = this._createDefaultTree( false, false, "fixedColumns", 1 );
+      TestUtil.protocolSet( "w3", { "enableCellToolTip" : true } );
+      this._fillTree( widget, 10 );
+      TestUtil.flush();
+      var row = widget.getRowContainer().getSubContainer( 0 ).getFirstChild();
+
+      TestUtil.fakeMouseEvent( row, "mouseover", 10, 10 );
+      TestUtil.fakeMouseEvent( row, "mousemove", 10, 10 );
+      TestUtil.forceInterval( rwt.widgets.base.WidgetToolTip.getInstance()._showTimer );
+      TestUtil.protocolSet( "w3", { "cellToolTipText" : "foo" } );
+
+      var labelObject = rwt.widgets.base.WidgetToolTip.getInstance()._label;
+      assertEquals( "foo", labelObject.getCellContent( 0 ) );
+      assertEquals( "", row.getToolTipText() );
+      widget.destroy();
+    },
+
     testSetCellToolTipTextByProtocol_ToolTipHasBeenUbound : function() {
       var shell = TestUtil.createShellByProtocol( "w2" );
       shell.setLocation( 0, 0 );
@@ -514,7 +566,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.GridTest", {
       TestUtil.fakeMouseEvent( shell, "mouseover", 10, 10 );
       TestUtil.fakeMouseEvent( shell, "mousemove", 10, 10 );
       TestUtil.forceInterval( rwt.widgets.base.WidgetToolTip.getInstance()._hideTimer );
-      TestUtil.protocolSet( "w3", { "cellToolTipText" : "foo && <> \"\n bar" } );
+      TestUtil.protocolSet( "w3", { "cellToolTipText" : "foo" } );
 
       assertFalse( rwt.widgets.base.WidgetToolTip.getInstance().isSeeable() );
       assertNull( rwt.widgets.base.WidgetToolTip.getInstance().getBoundToWidget() );
@@ -539,10 +591,55 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.GridTest", {
       TestUtil.fakeMouseEvent( row, "mouseover", 30, 10 );
       TestUtil.fakeMouseEvent( row, "mousemove", 30, 10 );
       TestUtil.forceInterval( rwt.widgets.base.WidgetToolTip.getInstance()._showTimer );
-      TestUtil.protocolSet( "w3", { "cellToolTipText" : "foo && <> \"\n bar" } );
+      TestUtil.protocolSet( "w3", { "cellToolTipText" : "foo" } );
 
       var left = rwt.widgets.base.WidgetToolTip.getInstance().getLeft();
       assertEquals( 1 + 2 + 20 + 4, left );
+      shell.destroy();
+    },
+
+    testSetCellToolTipTextByProtocol_PositionIsColumnAligned_withFixedColumns : function() {
+      var widget = this._createDefaultTree( false, false, "fixedColumns", 1 );
+      widget.setLocation( 2, 0 );
+      widget.setBorder( null );
+      TestUtil.protocolSet( "w3", { "enableCellToolTip" : true } );
+      this._fillTree( widget, 10 );
+      widget.setColumnCount( 2 );
+      widget.setItemMetrics( 0, 0, 20, 0, 0, 0, 20, 0, 10 );
+      widget.setItemMetrics( 1, 20, 20, 0, 0, 20, 20, 0, 10 );
+      TestUtil.flush();
+      var rowContainer = widget.getRowContainer();
+      rowContainer._splitOffset = 20;
+      var row = rowContainer.getSubContainer( 1 ).getFirstChild();
+
+      TestUtil.fakeMouseEvent( row, "mouseover", 30, 10 );
+      TestUtil.fakeMouseEvent( row, "mousemove", 30, 10 );
+      TestUtil.forceInterval( rwt.widgets.base.WidgetToolTip.getInstance()._showTimer );
+      TestUtil.protocolSet( "w3", { "cellToolTipText" : "foo" } );
+
+      var left = rwt.widgets.base.WidgetToolTip.getInstance().getLeft();
+      assertEquals( 2 + 4, left );
+      widget.destroy();
+    },
+
+    testSetCellToolTipTextByProtocol_NoCrashWhenAnotherToolTipIsVisible : function() {
+      rwt.widgets.util.GridCellToolTipSupport._cell = [ null, null, null ];
+      var shell = TestUtil.createShellByProtocol( "w2" );
+      rwt.widgets.base.WidgetToolTip.setToolTipText( shell, "foo" );
+      var widget = this._createDefaultTreeByProtocol( "w3", "w2", [] );
+      TestUtil.protocolSet( "w3", { "enableCellToolTip" : true } );
+      this._fillTree( widget, 10 );
+      widget.setColumnCount( 2 );
+      widget.setItemMetrics( 0, 0, 20, 0, 0, 0, 20, 0, 10 );
+      widget.setItemMetrics( 1, 20, 20, 0, 0, 20, 20, 0, 10 );
+      TestUtil.flush();
+      var row = widget.getRowContainer().getFirstChild();
+
+      TestUtil.fakeMouseEvent( shell, "mouseover", 30, 10 );
+      rwt.widgets.base.WidgetToolTip.getInstance()._onshowtimer();
+      TestUtil.fakeMouseEvent( row, "mouseover", 30, 10 );
+      TestUtil.fakeMouseEvent( row, "mousemove", 30, 10 ); // can crash if _cell is not set
+
       shell.destroy();
     },
 
@@ -684,6 +781,26 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.GridTest", {
       var node = tree._rowContainer.getElement();
       assertEquals( 400, parseInt( node.style.height, 10 ) );
       assertEquals( 700, parseInt( node.style.width, 10 ) );
+      tree.destroy();
+    },
+
+    testRenderItemsOnResizeWidth : function() {
+      var tree = new rwt.widgets.Grid( { "appearance": "tree" } );
+      this._fakeAppearance();
+      tree.addToDocument();
+      tree.setWidth( 300 );
+      tree.setHeight( 300 );
+      TestUtil.flush();
+      var log = [];
+      var row = tree.getRowContainer().getChildren()[ 0 ];
+      row.addEventListener( "itemRendered", function( event ) {
+        log.push( event );
+      } );
+
+      tree.setWidth( 700 );
+      TestUtil.flush();
+
+      assertEquals( 1, log.length );
       tree.destroy();
     },
 
@@ -2425,7 +2542,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.GridTest", {
       tree.setItemCount( 1 );
       var item = this._createItem( tree.getRootItem(), 0 );
       item.setTexts( [ "bla" ] );
-      item.setImages( [ "bla.jpg" ] );
+      item.setImages( [ [ "bla.jpg", 10, 10 ] ] );
       assertNull( tree._rowContainer._hoverElement );
       TestUtil.flush();
       var rowNode = tree._rowContainer._children[ 0 ]._getTargetNode();
@@ -4454,6 +4571,28 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.GridTest", {
       tree.destroy();
     },
 
+    // see bug 419982
+    testSetTopItemIndexAndScrollBarsVisibilityTogether : function() {
+      var shell = TestUtil.createShellByProtocol( "w2" );
+      var widget = this._createDefaultTreeByProtocol( "w3", "w2", [] );
+      var hScroll = this._createScrollBarByProtocol( "s1", "w3", [ "HORIZONTAL" ] );
+      var vScroll = this._createScrollBarByProtocol( "s2", "w3", [ "VERTICAL" ] );
+      widget.setItemCount( 10 );
+      widget.setItemHeight( 20 );
+      TestUtil.flush();
+
+      TestUtil.protocolSet( "w3", { "topItemIndex" : 3 } );
+      TestUtil.protocolSet( "s1", { "visibility" : true } );
+      TestUtil.protocolSet( "s2", { "visibility" : true } );
+
+      assertEquals( 60, widget._vertScrollBar.getValue() );
+      assertEquals( 3, widget.getTopItemIndex() );
+      shell.destroy();
+      widget.destroy();
+      hScroll.destroy();
+      vScroll.destroy();
+    },
+
     /////////
     // helper
 
@@ -4470,6 +4609,19 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.GridTest", {
           "indentionWidth" : 16,
           "checkBoxMetrics" : [ 5, 16 ],
           "bounds" : [ 0, 0, 100, 100 ]
+        }
+      } );
+      return rwt.remote.ObjectRegistry.getObject( id );
+    },
+
+    _createScrollBarByProtocol : function( id, parentId, styles ) {
+      rwt.remote.MessageProcessor.processOperation( {
+        "target" : id,
+        "action" : "create",
+        "type" : "rwt.widgets.ScrollBar",
+        "properties" : {
+          "style" : styles,
+          "parent" : parentId
         }
       } );
       return rwt.remote.ObjectRegistry.getObject( id );

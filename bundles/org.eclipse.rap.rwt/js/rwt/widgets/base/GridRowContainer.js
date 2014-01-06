@@ -1,12 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2012 EclipseSource and others.
+ * Copyright (c) 2011, 2013 EclipseSource and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   EclipseSource - initial API and implementation
+ *    EclipseSource - initial API and implementation
  ******************************************************************************/
 
 rwt.qx.Class.define( "rwt.widgets.base.GridRowContainer", {
@@ -223,6 +223,9 @@ rwt.qx.Class.define( "rwt.widgets.base.GridRowContainer", {
     },
 
     _getGridBorder : function( state ) {
+      if( this._config.rowTemplate ) {
+        state.rowtemplate = true;
+      }
       var tvGrid = new rwt.theme.ThemeValues( state );
       var cssElement = rwt.util.Strings.toFirstUp( this._baseAppearance ) + "-GridLine";
       var gridColor = tvGrid.getCssColor( cssElement, "color" );

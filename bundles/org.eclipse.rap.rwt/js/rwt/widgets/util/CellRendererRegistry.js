@@ -145,13 +145,60 @@ rwt.widgets.util.CellRendererRegistry.getInstance().add( {
   } )
 } );
 
+var setImage = function( element, content, cellData, options ) {
+  var opacity = options.enabled ? 1 : 0.3;
+  var src = content ? content[ 0 ] : null;
+  rwt.html.Style.setBackgroundImage( element, src, opacity );
+};
+
+var imgHtml = function( path, left, top, width, height ) {
+  return   "<img style=\"position:absolute;width:"
+         + width
+         + "px;height:"
+         + height
+         + "px;left:"
+         + left
+         + "px;top:"
+         + top
+         + "px;\" src=\""
+         + path
+         + "\">";
+};
+
 rwt.widgets.util.CellRendererRegistry.getInstance().add( {
   "cellType" : "image",
   "contentType" : "image",
-  "renderContent" : function( element, content, cellData, options ) {
-    var opacity = options.enabled ? 1 : 0.3;
-    rwt.html.Style.setBackgroundImage( element, content, opacity );
-  },
+  "renderContent" : rwt.util.Variant.select( "qx.client", {
+    "default" : setImage,
+    "mshtml" : function( element, content, cellData, options ) {
+      if( !cellData.scaleMode || cellData.scaleMode === "NONE" ) {
+        setImage( element, content, cellData, options );
+      } else {
+        if( content ) {
+          var fit = cellData.scaleMode === "FIT";
+          var fill = cellData.scaleMode === "FILL";
+          var path = rwt.html.Style._resolveResource( content[ 0 ] );
+          var width = options.width;
+          var height = options.height;
+          var left = 0;
+          var top = 0;
+          if( fit || fill ) {
+            var imageWiderThanCell = options.width / options.height > content[ 1 ] / content[ 2 ];
+            if( ( fit && imageWiderThanCell ) || ( fill && !imageWiderThanCell ) ) {
+              width = Math.round( content[ 1 ] * height / content[ 2 ] );
+              left = Math.round( ( options.width - width ) / 2 );
+            } else  {
+              height = Math.round( content[ 2 ] * width / content[ 1 ] );
+              top = Math.round( ( options.height - height ) / 2 );
+            }
+          }
+          element.innerHTML = imgHtml( path, left, top, width, height );
+        } else {
+          element.innerHTML = "";
+        }
+      }
+    }
+  } ),
   "createElement" : function( cellData ) {
     var result = document.createElement( "div" );
     result.style.backgroundRepeat = "no-repeat";
@@ -160,6 +207,8 @@ rwt.widgets.util.CellRendererRegistry.getInstance().add( {
       result.style.backgroundSize = "contain";
     } else if( cellData.scaleMode === "FILL" ) {
       result.style.backgroundSize = "cover";
+    } else if( cellData.scaleMode === "STRETCH" ) {
+      result.style.backgroundSize = "100% 100%";
     } else {
       position[ 0 ] = alignmentStyleToCss[ cellData.horizontalAlignment ] || "center";
       position[ 1 ] = alignmentStyleToCss[ cellData.verticalAlignment ] || "center";

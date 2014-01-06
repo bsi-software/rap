@@ -18,6 +18,8 @@ import org.eclipse.swt.graphics.Image;
 
 /**
  * Defines a region in a template that displays an image.
+ *
+ * @since 2.2
  */
 public class ImageCell extends Cell<ImageCell> {
 
@@ -35,10 +37,14 @@ public class ImageCell extends Cell<ImageCell> {
      */
     FIT,
     /**
-     * The image is scaled to the minimum size required to cover the entire cell.
-     * The aspect ratio is preserved.
+     * The image is scaled to the minimum size required to cover the entire cell. The aspect ratio
+     * is preserved.
      */
-    FILL
+    FILL,
+    /**
+     * The image is scaled to the exact bounds of the cell. The aspect ratio is not preserved.
+     */
+    STRETCH
   }
 
   private static final String TYPE_IMAGE = "image";

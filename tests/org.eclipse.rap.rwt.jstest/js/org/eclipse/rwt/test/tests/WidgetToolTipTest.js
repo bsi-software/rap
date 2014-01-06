@@ -23,6 +23,11 @@ var widget;
 var offset = 4;
 var overlap = 4;
 
+// force creation
+toolTip.show();
+TestUtil.flush();
+toolTip.hide();
+
 rwt.qx.Class.define( "org.eclipse.rwt.test.tests.WidgetToolTipTest", {
   extend : rwt.qx.Object,
 
@@ -116,6 +121,19 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.WidgetToolTipTest", {
     },
 
     testPosition_MouseRelative : function() {
+      WidgetToolTip.setToolTipText( widget, "foobar" );
+      TestUtil.hoverFromTo( document.body, widget.getElement() );
+
+      TestUtil.fakeMouseEvent( widget, "mousemove", 110, 20 );
+      showToolTip();
+
+      assertEquals( 111, parseInt( toolTip._style.left, 10 ) );
+      assertEquals( 40, parseInt( toolTip._style.top, 10 ) );
+    },
+
+    testPosition_MouseRelativeByFallback : function() {
+      config = { "position" : "horizontal-center" };
+      toolTip._computeFallbackMode = rwt.util.Functions.returnTrue;
       WidgetToolTip.setToolTipText( widget, "foobar" );
       TestUtil.hoverFromTo( document.body, widget.getElement() );
 
@@ -261,6 +279,24 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.WidgetToolTipTest", {
                   - parseInt( toolTip._style.left, 10 )
                   - parseInt( toolTip._style.width, 10 );
       assertEquals( 0, right );
+    },
+
+    testPosition_HorizontalCenterRestrictToPageRightAdjustPointer : function() {
+      config = { "position" : "align-left" };
+      toolTip.setPaddingLeft( 12 );
+      toolTip.setPointers( [ [ "foo.gif", 10, 20 ], null, null, null ] );
+      WidgetToolTip.setToolTipText( widget, "foobarfoobarfoobarfoobar" );
+      var totalWidth = rwt.widgets.base.ClientDocument.getInstance().getClientWidth();
+      widget.setLeft( totalWidth - 30  );
+      TestUtil.hoverFromTo( document.body, widget.getElement() );
+
+      TestUtil.fakeMouseEvent( widget, "mousemove", 110, 20 );
+      showToolTip();
+
+      var pointer = toolTip._getPointerElement();
+      var actual = rwt.html.Location.get( pointer ).left;
+      var expected = rwt.html.Location.get( widget.getElement() ).left + overlap + 1 + 12;
+      assertEquals( expected, actual );
     },
 
     testPosition_MouseRelativeRestrictToPageBottom : function() {
@@ -480,6 +516,116 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.WidgetToolTipTest", {
       toolTip.setAnimation( {} );
     },
 
+    testHideOnMouseMoveInFallbackMode : function() {
+      toolTip._computeFallbackMode = rwt.util.Functions.returnTrue;
+      config = { "disappearOn" : "exit" };
+      WidgetToolTip.setToolTipText( widget, "test1" );
+      TestUtil.hoverFromTo( document.body, widget.getElement() );
+      showToolTip();
+
+      TestUtil.mouseMove( widget );
+
+      assertTrue( toolTip._hideTimer.getEnabled() );
+    },
+
+    testDoNotHideOnMouseOverIfAnchorIsPresent : function() {
+      config = { "disappearOn" : "exit" };
+      widget.setUserData( "toolTipMarkupEnabled", true );
+      WidgetToolTip.setToolTipText( widget, "<a>test1</a>" );
+      toolTip.setAnimation( { "fadeOut" : [ 400, "linear" ] } );
+      TestUtil.hoverFromTo( document.body, widget.getElement() );
+      showToolTip();
+
+      TestUtil.hoverFromTo( widget.getElement(), document.body );
+      TestUtil.hoverFromTo( document.body, toolTip.getElement() );
+      TestUtil.hoverFromTo( toolTip.getElement(), toolTip._label.getElement() );
+
+      assertFalse( toolTip._hideTimer.getEnabled() );
+      assertFalse( toolTip._disappearAnimation.isStarted() );
+      assertTrue( toolTip.isSeeable() );
+      assertIdentical( widget, toolTip.getBoundToWidget() );
+      toolTip.setAnimation( {} );
+    },
+
+    testDoNotHideOnMouseDownOnToolTipLabel : function() {
+      config = { "disappearOn" : "exit" };
+      widget.setUserData( "toolTipMarkupEnabled", true );
+      widget.focus(); // focus change can close a tooltip
+      WidgetToolTip.setToolTipText( widget, "<a>test1</a>" );
+      toolTip.setAnimation( { "fadeOut" : [ 400, "linear" ] } );
+      TestUtil.hoverFromTo( document.body, widget.getElement() );
+      showToolTip();
+
+      var a = toolTip.getElement().getElementsByTagName( "a" )[ 0 ];
+      TestUtil.fakeMouseEventDOM( a, "mousedown" );
+
+      assertFalse( toolTip._hideTimer.getEnabled() );
+      assertFalse( toolTip._disappearAnimation.isStarted() );
+      assertTrue( toolTip.isSeeable() );
+      assertIdentical( widget, toolTip.getBoundToWidget() );
+      toolTip.setAnimation( {} );
+    },
+
+    testHideOnMouseUpOnToolTip : function() {
+      config = { "disappearOn" : "exit" };
+      widget.setUserData( "toolTipMarkupEnabled", true );
+      widget.focus(); // focus change can close a tooltip
+      WidgetToolTip.setToolTipText( widget, "<a>test1</a>" );
+      toolTip.setAnimation( { "fadeOut" : [ 400, "linear" ] } );
+      TestUtil.hoverFromTo( document.body, widget.getElement() );
+      showToolTip();
+
+      var a = toolTip.getElement().getElementsByTagName( "a" )[ 0 ];
+      TestUtil.fakeMouseEventDOM( a, "mousedown" );
+      TestUtil.fakeMouseEventDOM( a, "mouseup" );
+      TestUtil.forceTimerOnce();
+
+      assertFalse( toolTip.isSeeable() );
+      toolTip.setAnimation( {} );
+    },
+
+    testHideOnExitTargetBoundsLeft: function() {
+      config = { "disappearOn" : "exitTargetBounds" };
+      WidgetToolTip.setToolTipText( widget, "test1" );
+      widget.getToolTipTargetBounds = function() {
+        return { "top" : 2, "left" : 2, "width" : 10, "height" : 10 };
+      };
+      var inTarget = [
+        10 + 1 + 100 + 3,
+        20 + 1 + 10 + 3
+      ];
+      TestUtil.fakeMouseEvent( widget, "mouseover", inTarget[ 0 ], inTarget[ 1 ] );
+      showToolTip();
+
+      TestUtil.fakeMouseEvent( widget, "mousemove", inTarget[ 0 ] + 2 , inTarget[ 1 ] );
+      assertTrue( toolTip.isSeeable() );
+      TestUtil.fakeMouseEvent( widget, "mousemove", inTarget[ 0 ] + 2 , inTarget[ 1 ] - 2 );
+      TestUtil.forceInterval( toolTip._hideTimer );
+
+      assertFalse( toolTip.isSeeable() );
+    },
+
+    testHideOnExitTargetBoundsRight: function() {
+      config = { "disappearOn" : "exitTargetBounds" };
+      WidgetToolTip.setToolTipText( widget, "test1" );
+      widget.getToolTipTargetBounds = function() {
+        return { "top" : 2, "left" : 2, "width" : 10, "height" : 10 };
+      };
+      var inTarget = [
+        10 + 1 + 100 + 3,
+        20 + 1 + 10 + 3
+      ];
+      TestUtil.fakeMouseEvent( widget, "mouseover", inTarget[ 0 ], inTarget[ 1 ] );
+      showToolTip();
+
+      TestUtil.fakeMouseEvent( widget, "mousemove", inTarget[ 0 ] + 2 , inTarget[ 1 ] );
+      assertTrue( toolTip.isSeeable() );
+      TestUtil.fakeMouseEvent( widget, "mousemove", inTarget[ 0 ] + 2 , inTarget[ 1 ] + 12 );
+      TestUtil.forceInterval( toolTip._hideTimer );
+
+      assertFalse( toolTip.isSeeable() );
+    },
+
     testStopHideTimerWhenReAppearWhileVisible : function() {
       var widget2 = new rwt.widgets.base.Label( "Hello World 2" );
       widget2.addToDocument();
@@ -652,6 +798,20 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.WidgetToolTipTest", {
       showToolTip();
       toolTip.setPointers( [ null, null, null, null ] );
       TestUtil.fakeMouseEvent( widget, "mousemove", 110, 20 );
+      showToolTip();
+
+      var pointer = toolTip._getPointerElement();
+      assertEquals( "none", pointer.style.display );
+    },
+
+    testPointer_setDisplayNoneOnFallbackMode : function() {
+      toolTip._computeFallbackMode = rwt.util.Functions.returnTrue;
+      config = { "position" : "horizontal-center" };
+      WidgetToolTip.setToolTipText( widget, "foobar" );
+      var image = [ "foo.gif", 10, 20 ];
+
+      toolTip.setPointers( [ image, image, image, image ] );
+      TestUtil.hoverFromTo( document.body, widget.getElement() );
       showToolTip();
 
       var pointer = toolTip._getPointerElement();
@@ -904,6 +1064,78 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.WidgetToolTipTest", {
       toolTip.setTextAlign( "left" );
 
       assertEquals( "left", toolTip._label.getHorizontalChildrenAlign() );
+    },
+
+    testComputeFallbackMode_Obscured : function() {
+      config = { "position" : "horizontal-center" };
+      delete toolTip._computeFallbackMode; // overwritten by TestRunner
+      WidgetToolTip.setToolTipText( widget, "foobarfoobarfoobarfoobar" );
+      TestUtil.hoverFromTo( document.body, widget.getElement() );
+      shell.setSpace( 0, 102, 0, 102 );
+      widget.setBorder( new rwt.html.Border( 1, "rounded", "black", 15 ) );
+      widget.setSpace( 0, 100, 0, 100 );
+      var ontop = this._createWidget( 0, 0, 50, 50, "foo" );
+      shell.setZIndex( 10000000 );
+      ontop.setZIndex( 10000000 );
+      ontop.setBackgroundColor( "white" ); // transparent would be ignored by older IE
+      var doc = rwt.widgets.base.ClientDocument.getInstance();
+      var ontopTo = function( x, y ) {
+        ontop.setLeft( x );
+        ontop.setTop( y );
+        TestUtil.flush();
+        return toolTip._getTargetBounds();
+      };
+
+      assertFalse( toolTip._computeFallbackMode( ontopTo( 20, 20 ) ) );
+      assertFalse( toolTip._computeFallbackMode( ontopTo( 101, 0 ) ) );
+      assertFalse( toolTip._computeFallbackMode( ontopTo( 0, 101 ) ) );
+      assertTrue( toolTip._computeFallbackMode( ontopTo( 30, 0 ) ) );
+      assertTrue( toolTip._computeFallbackMode( ontopTo( -40, 30 ) ) );
+      assertTrue( toolTip._computeFallbackMode( ontopTo( 30, -40 ) ) );
+      assertTrue( toolTip._computeFallbackMode( ontopTo( 30, 90 ) ) );
+      assertTrue( toolTip._computeFallbackMode( ontopTo( 90, 30 ) ) );
+    },
+
+    testComputeFallbackMode_WidgetOutOfDocument : function() {
+      config = { "position" : "horizontal-center" };
+      delete toolTip._computeFallbackMode; // overwritten by TestRunner
+      WidgetToolTip.setToolTipText( widget, "foobarfoobarfoobarfoobar" );
+      TestUtil.hoverFromTo( document.body, widget.getElement() );
+      widget.setSpace( 0, 100, 0, 100 );
+      widget.setBorder( new rwt.html.Border( 1, "rounded", "black", 15 ) );
+      shell.setZIndex( 10000000 );
+      var doc = rwt.widgets.base.ClientDocument.getInstance();
+      var shellTo = function( x, y ) {
+        shell.setSpace( x, 102, y, 102 );
+        TestUtil.flush();
+        return toolTip._getTargetBounds();
+      };
+
+      assertFalse( toolTip._computeFallbackMode( shellTo( 0, 0 ) ) );
+      assertFalse( toolTip._computeFallbackMode( shellTo( doc.getClientWidth() - 102, 0 ) ) );
+      assertFalse( toolTip._computeFallbackMode( shellTo( 0, doc.getClientHeight() - 102 ) ) );
+      assertTrue( toolTip._computeFallbackMode( shellTo( -3, 0 ) ) );
+      assertTrue( toolTip._computeFallbackMode( shellTo( 0, -3 ) ) );
+      assertTrue( toolTip._computeFallbackMode( shellTo( doc.getClientWidth() - 90, 0 ) ) );
+      assertTrue( toolTip._computeFallbackMode( shellTo( 0, doc.getClientHeight() - 90 ) ) );
+    },
+
+    testComputeFallbackMode_ObscuredByToolTip : function() {
+      delete toolTip._computeFallbackMode; // overwritten by TestRunner
+      WidgetToolTip.setToolTipText( widget, "foobarfoobarfoobarfoobar" );
+      shell.setSpace( 0, 102, 0, 102 );
+      widget.setSpace( 0, 50, 0, 10 );
+      shell.setZIndex( 10000000 );
+      toolTip.setMousePointerOffsetX( 1 );
+      toolTip.setMousePointerOffsetY( 1 );
+      TestUtil.hoverFromTo( document.body, widget.getElement() );
+
+      TestUtil.fakeMouseEvent( widget, "mousemove", 20, 3 );
+      showToolTip();
+
+      assertFalse( toolTip._computeFallbackMode( toolTip._getTargetBounds() ) );
+      toolTip.resetMousePointerOffsetX();
+      toolTip.resetMousePointerOffsetY();
     }
 
   }

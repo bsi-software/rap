@@ -292,10 +292,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.CellRendererRegistryTest", {
       var defaultRegistry = rwt.widgets.util.CellRendererRegistry.getInstance();
       var create = defaultRegistry.getRendererFor( "image" ).createElement;
 
-      var element = create( {
-        "scaleMode" : "FIT",
-        "alignment" : { "RIGHT" : true, "BOTTOM" : true }
-      } );
+      var element = create( { "scaleMode" : "FIT" } );
 
       var position = element.style.backgroundPosition;
       var size = element.style.backgroundSize;
@@ -307,15 +304,165 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.CellRendererRegistryTest", {
       var defaultRegistry = rwt.widgets.util.CellRendererRegistry.getInstance();
       var create = defaultRegistry.getRendererFor( "image" ).createElement;
 
-      var element = create( {
-        "scaleMode" : "FILL",
-        "alignment" : { "RIGHT" : true, "BOTTOM" : true }
-      } );
+      var element = create( { "scaleMode" : "FILL" } );
 
       var position = element.style.backgroundPosition;
       var size = element.style.backgroundSize;
       assertTrue( "center" === position || "center center" === position || "50% 50%" === position );
       assertEquals( "cover", size );
+    },
+
+    testImageRenderer_CreateElementSetsScaleModeStretch : function() {
+      var defaultRegistry = rwt.widgets.util.CellRendererRegistry.getInstance();
+      var create = defaultRegistry.getRendererFor( "image" ).createElement;
+
+      var element = create( { "scaleMode" : "STRETCH" } );
+
+      var position = element.style.backgroundPosition;
+      var size = element.style.backgroundSize;
+      assertTrue( "center" === position || "center center" === position || "50% 50%" === position );
+      assertTrue( "100% 100%" === size || "100%" === size );
+    },
+
+    testImageRenderer_RenderImageNoScale : function() {
+      var defaultRegistry = rwt.widgets.util.CellRendererRegistry.getInstance();
+      var renderer = defaultRegistry.getRendererFor( "image" );
+      var cellData = { "scaleMode" : "NONE" };
+      var element = renderer.createElement( cellData );
+
+      renderer.renderContent( element, [ "foo.jpg", 10, 15 ], cellData, { "enabled" : true } );
+
+      var url = TestUtil.getCssBackgroundImage( element );
+      assertTrue( url.indexOf( "foo.jpg" ) != -1 );
+    },
+
+    testImageRenderer_RenderImageScaleStretch : function() {
+      var defaultRegistry = rwt.widgets.util.CellRendererRegistry.getInstance();
+      var renderer = defaultRegistry.getRendererFor( "image" );
+      var cellData = { "scaleMode" : "STRETCH" };
+      var options = { "enabled" : true, "width" : 20, "height" : 40 };
+      var element = renderer.createElement( cellData );
+
+      renderer.renderContent( element, [ "foo.jpg", 10, 15 ], cellData, options );
+
+      if( rwt.client.Client.isMshtml() ) {
+        var img = element.firstChild;
+        assertEquals( "img", img.tagName.toLowerCase() );
+        assertEquals( "20px", img.style.width );
+        assertEquals( "40px", img.style.height );
+      } else {
+        var url = TestUtil.getCssBackgroundImage( element );
+        assertTrue( url.indexOf( "foo.jpg" ) != -1 );
+      }
+    },
+
+    testImageRenderer_RenderImageScaleFitWidth : function() {
+      var defaultRegistry = rwt.widgets.util.CellRendererRegistry.getInstance();
+      var renderer = defaultRegistry.getRendererFor( "image" );
+      var cellData = { "scaleMode" : "FIT" };
+      var element = renderer.createElement( cellData );
+      var options = { "enabled" : true, "width" : 20, "height" : 40 };
+
+      renderer.renderContent( element, [ "foo.jpg", 10, 15 ], cellData, options );
+
+      if( rwt.client.Client.isMshtml() ) {
+        var img = element.firstChild;
+        assertEquals( "img", img.tagName.toLowerCase() );
+        assertEquals( "absolute", img.style.position );
+        assertEquals( "20px", img.style.width );
+        assertEquals( "30px", img.style.height );
+        assertEquals( "0px", img.style.left );
+        assertEquals( "5px", img.style.top );
+      } else {
+        var url = TestUtil.getCssBackgroundImage( element );
+        assertTrue( url.indexOf( "foo.jpg" ) != -1 );
+      }
+    },
+
+    testImageRenderer_RenderImageScaleFitHeight : function() {
+      var defaultRegistry = rwt.widgets.util.CellRendererRegistry.getInstance();
+      var renderer = defaultRegistry.getRendererFor( "image" );
+      var cellData = { "scaleMode" : "FIT" };
+      var element = renderer.createElement( cellData );
+      var options = { "enabled" : true, "width" : 20, "height" : 10 };
+
+      renderer.renderContent( element, [ "foo.jpg", 10, 15 ], cellData, options );
+
+      if( rwt.client.Client.isMshtml() ) {
+        var img = element.firstChild;
+        assertEquals( "img", img.tagName.toLowerCase() );
+        assertEquals( "absolute", img.style.position );
+        assertEquals( "7px", img.style.width );
+        assertEquals( "10px", img.style.height );
+        assertEquals( "7px", img.style.left );
+        assertEquals( "0px", img.style.top );
+      } else {
+        var url = TestUtil.getCssBackgroundImage( element );
+        assertTrue( url.indexOf( "foo.jpg" ) != -1 );
+      }
+    },
+
+    testImageRenderer_RenderImageScaleFillWidth : function() {
+      var defaultRegistry = rwt.widgets.util.CellRendererRegistry.getInstance();
+      var renderer = defaultRegistry.getRendererFor( "image" );
+      var cellData = { "scaleMode" : "FILL" };
+      var element = renderer.createElement( cellData );
+      var options = { "enabled" : true, "width" : 20, "height" : 20 };
+
+      renderer.renderContent( element, [ "foo.jpg", 10, 15 ], cellData, options );
+
+      if( rwt.client.Client.isMshtml() ) {
+        var img = element.firstChild;
+        assertEquals( "img", img.tagName.toLowerCase() );
+        assertEquals( "absolute", img.style.position );
+        assertEquals( "20px", img.style.width );
+        assertEquals( "30px", img.style.height );
+        assertEquals( "0px", img.style.left );
+        assertEquals( "-5px", img.style.top );
+      } else {
+        var url = TestUtil.getCssBackgroundImage( element );
+        assertTrue( url.indexOf( "foo.jpg" ) != -1 );
+      }
+    },
+
+    testImageRenderer_RenderImageScaleFillHeight : function() {
+      var defaultRegistry = rwt.widgets.util.CellRendererRegistry.getInstance();
+      var renderer = defaultRegistry.getRendererFor( "image" );
+      var cellData = { "scaleMode" : "FILL" };
+      var element = renderer.createElement( cellData );
+      var options = { "enabled" : true, "width" : 5, "height" : 10 };
+
+      renderer.renderContent( element, [ "foo.jpg", 10, 15 ], cellData, options );
+
+      if( rwt.client.Client.isMshtml() ) {
+        var img = element.firstChild;
+        assertEquals( "img", img.tagName.toLowerCase() );
+        assertEquals( "absolute", img.style.position );
+        assertEquals( "7px", img.style.width );
+        assertEquals( "10px", img.style.height );
+        assertEquals( "-1px", img.style.left );
+        assertEquals( "0px", img.style.top );
+      } else {
+        var url = TestUtil.getCssBackgroundImage( element );
+        assertTrue( url.indexOf( "foo.jpg" ) != -1 );
+      }
+    },
+
+    testImageRenderer_ResetImageScaleStretch : function() {
+      var defaultRegistry = rwt.widgets.util.CellRendererRegistry.getInstance();
+      var renderer = defaultRegistry.getRendererFor( "image" );
+      var cellData = { "scaleMode" : "STRETCH" };
+      var element = renderer.createElement( cellData );
+      renderer.renderContent( element, [ "foo.jpg", 10, 15 ], cellData, { "enabled" : true } );
+
+      renderer.renderContent( element, null, cellData, { "enabled" : true } );
+
+      if( rwt.client.Client.isMshtml() ) {
+        assertEquals( 0, element.childNodes.length );
+      } else {
+        var url = TestUtil.getCssBackgroundImage( element );
+        assertEquals( "", url );
+      }
     }
 
   }

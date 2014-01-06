@@ -28,8 +28,9 @@ rwt.qx.Class.define( "rwt.runtime.System", {
       rwt.html.EventRegistration.addEventListener( window, "load", this._onloadWrapped );
       rwt.html.EventRegistration.addEventListener( window, "beforeunload", this._onbeforeunloadWrapped );
       rwt.html.EventRegistration.addEventListener( window, "unload", this._onunloadWrapped );
-      this._applyPatches();
       rwt.graphics.GraphicsUtil.init();
+      this._applyPatches();
+      this._insertStyleSheets();
       var eventHandler = rwt.event.EventHandler;
       eventHandler.setAllowContextMenu( rwt.widgets.Menu.getAllowContextMenu );
       eventHandler.setMenuManager( rwt.widgets.util.MenuManager.getInstance() );
@@ -64,15 +65,27 @@ rwt.qx.Class.define( "rwt.runtime.System", {
     },
 
     _applyPatches : function() {
-      if( !rwt.client.Client.supportsCss3() ) {
-        rwt.qx.Class.patch( rwt.widgets.base.Parent, rwt.widgets.util.GraphicsMixin );
-        rwt.qx.Class.patch( rwt.widgets.base.BasicText, rwt.widgets.util.GraphicsMixin );
-        rwt.qx.Class.patch( rwt.widgets.base.GridRow, rwt.widgets.util.GraphicsMixin );
-        rwt.qx.Class.patch( rwt.widgets.base.MultiCellWidget, rwt.widgets.util.GraphicsMixin );
-      } else {
-        rwt.qx.Class.patch( rwt.widgets.ProgressBar, rwt.widgets.util.GraphicsMixin );
+      if( rwt.graphics.GraphicsUtil.isSupported() ) {
+        if( !rwt.client.Client.supportsCss3() ) {
+          rwt.qx.Class.patch( rwt.widgets.base.Parent, rwt.widgets.util.GraphicsMixin );
+          rwt.qx.Class.patch( rwt.widgets.base.BasicText, rwt.widgets.util.GraphicsMixin );
+          rwt.qx.Class.patch( rwt.widgets.base.GridRow, rwt.widgets.util.GraphicsMixin );
+          rwt.qx.Class.patch( rwt.widgets.base.MultiCellWidget, rwt.widgets.util.GraphicsMixin );
+        } else {
+          rwt.qx.Class.patch( rwt.widgets.ProgressBar, rwt.widgets.util.GraphicsMixin );
+        }
       }
       rwt.qx.Class.patch( rwt.event.DomEvent, rwt.event.DomEventPatch );
+    },
+
+    _insertStyleSheets : function() {
+      if( rwt.client.Client.getBrowser() === "safari" && rwt.client.Client.getVersion() >= 537 ) {
+        // see Bug 422693 - Invisible Elements in RAP Demo with Safari 7
+        var style = document.createElement( "style" );
+        style.type = 'text/css';
+        style.innerHTML = "div { -webkit-transform: translate3d(0, 0, 0); }";
+        document.getElementsByTagName( "head" )[ 0 ].appendChild( style );
+      }
     },
 
     getStartupTime : function() {

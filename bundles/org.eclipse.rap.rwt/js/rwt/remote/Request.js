@@ -24,6 +24,7 @@ rwt.remote.Request = function( url, method, responseType ) {
   this._success = null;
   this._error = null;
   this._data = null;
+  this._timeout = null;
   this._responseType = responseType;
   this._request = rwt.remote.Request.createXHR();
 };
@@ -73,6 +74,15 @@ rwt.remote.Request.prototype = {
       return this._async;
     },
 
+    setTimeout : function( value ) {
+      this._timeout = value;
+    },
+
+    getTimeout : function() {
+      return this._timeout;
+    },
+
+
     setSuccessHandler : function( handler, context ) {
       this._success = function(){ handler.apply( context, arguments ); };
     },
@@ -98,12 +108,21 @@ rwt.remote.Request.prototype = {
       if( this._shouldUseStateListener() ) {
         this._request.onreadystatechange = rwt.util.Functions.bind( this._onReadyStateChange, this );
       }
+
+      var that = this;
+      if( this._timeout > 0 ) {
+        setTimeout(function() {
+          if( that._request != null ) {
+    	    that._request.abort();
+          }
+        }, this._timeout);
+      }
     },
 
     _shouldUseStateListener : function() {
       var result = true;
       if( !this._async && Client.isGecko() && Client.getMajor() < 4 ) {
-        // see Bug 398951 - RAP does not start in Firefox 3.x 
+        // see Bug 398951 - RAP does not start in Firefox 3.x
         result = false;
       }
       return result;

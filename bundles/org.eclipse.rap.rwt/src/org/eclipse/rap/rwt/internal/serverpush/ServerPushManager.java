@@ -32,8 +32,10 @@ import org.eclipse.swt.internal.SerializableCompatibility;
 public final class ServerPushManager implements SerializableCompatibility {
 
   private static final int DEFAULT_REQUEST_CHECK_INTERVAL = 30000;
+  private static final int DEFAULT_REQUEST_TIMEOUT = -1;
   private static final String FORCE_PUSH = ServerPushManager.class.getName() + "#forcePush";
-
+  private static final String REQUEST_START_TIME = ServerPushManager.class.getName()
+                                                   + "#blockStartTime";
   private final ServerPushActivationTracker serverPushActivationTracker;
   private final SerializableLock lock;
   // Flag that indicates whether a request is processed. In that case no
@@ -42,6 +44,7 @@ public final class ServerPushManager implements SerializableCompatibility {
   // indicates whether the display has runnables to execute
   private boolean hasRunnables;
   private int requestCheckInterval;
+  private int requestTimeout;
   private transient ServerPushRequestTracker serverPushRequestTracker;
 
   private ServerPushManager() {
@@ -49,6 +52,7 @@ public final class ServerPushManager implements SerializableCompatibility {
     serverPushActivationTracker = new ServerPushActivationTracker();
     uiThreadRunning = false;
     requestCheckInterval = DEFAULT_REQUEST_CHECK_INTERVAL;
+    requestTimeout = DEFAULT_REQUEST_TIMEOUT;
     serverPushRequestTracker = new ServerPushRequestTracker();
   }
 
@@ -90,6 +94,10 @@ public final class ServerPushManager implements SerializableCompatibility {
     this.requestCheckInterval = requestCheckInterval;
   }
 
+  public void setRequestTimeout( int requestTimeout ) {
+    this.requestTimeout = requestTimeout;
+  }
+
   public void notifyUIThreadStart() {
     synchronized( lock ) {
       uiThreadRunning = true;
@@ -127,6 +135,9 @@ public final class ServerPushManager implements SerializableCompatibility {
   }
 
   void processRequest( HttpServletResponse response ) {
+    if( requestTimeout >= 0 ) {
+      ContextProvider.getUISession().setAttribute( REQUEST_START_TIME, new Long( System.currentTimeMillis() ) );
+    }
     synchronized( lock ) {
       if( isCallBackRequestBlocked() ) {
         releaseBlockedRequest();
@@ -153,7 +164,9 @@ public final class ServerPushManager implements SerializableCompatibility {
 
   private boolean canReleaseBlockedRequest( HttpServletResponse response, long requestStartTime ) {
     boolean result = false;
-    if( !mustBlockCallBackRequest() ) {
+    if( isTimeoutReached() ) {
+      result = true;
+    } else if( !mustBlockCallBackRequest() ) {
       result = true;
     } else if( isSessionExpired( requestStartTime ) ) {
       result = true;
@@ -183,6 +196,19 @@ public final class ServerPushManager implements SerializableCompatibility {
     TerminationListener result = new TerminationListener( uiSession );
     result.attach();
     return result;
+  }
+
+  private boolean isTimeoutReached() {
+    if( requestTimeout < 0 ) {
+      return false;
+    }
+    Long startTime = (Long)ContextProvider.getUISession().getAttribute( REQUEST_START_TIME );
+    if( startTime != null) {
+      if( System.currentTimeMillis() - startTime.longValue() >= requestTimeout ) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private static boolean isSessionExpired( long requestStartTime ) {
@@ -223,12 +249,12 @@ public final class ServerPushManager implements SerializableCompatibility {
   private static class TerminationListener
     implements UISessionListener, ApplicationContextListener, SerializableCompatibility
   {
+
     // TODO [rst] If the system is changed to destroy UISessions on ApplicationContext deactivation
-    //            we won't need an ApplicationContextListener anymore
+    // we won't need an ApplicationContextListener anymore
     // see bug 422472: ServerPush request is not released when web application is stopped
     // and bug 411102: Application context is not active in UISessionListener#beforeDestroy under
-    //                 some constellations
-
+    // some constellations
     private transient final Thread currentThread;
     private transient final UISession uiSession;
 
@@ -254,7 +280,5 @@ public final class ServerPushManager implements SerializableCompatibility {
     public void beforeDestroy( ApplicationContextEvent event ) {
       currentThread.interrupt();
     }
-
   }
-
 }

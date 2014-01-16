@@ -658,39 +658,37 @@ rwt.qx.Class.define( "rwt.widgets.Grid", {
     },
 
     _onKeyPress : function( event ) {
-      if( this._focusItem != null ) {
-        switch( event.getKeyIdentifier() ) {
-          case "Enter":
-            this._handleKeyEnter( event );
-          break;
-          case "Space":
-            this._handleKeySpace( event );
-          break;
-          case "Up":
-            this._handleKeyUp( event );
-          break;
-          case "Down":
-            this._handleKeyDown( event );
-          break;
-          case "PageUp":
-            this._handleKeyPageUp( event );
-          break;
-          case "PageDown":
-            this._handleKeyPageDown( event );
-          break;
-          case "Home":
-            this._handleKeyHome( event );
-          break;
-          case "End":
-            this._handleKeyEnd( event );
-          break;
-          case "Left":
-            this._handleKeyLeft( event );
-          break;
-          case "Right":
-            this._handleKeyRight( event );
-          break;
-        }
+      switch( event.getKeyIdentifier() ) {
+        case "Enter":
+          this._handleKeyEnter( event );
+        break;
+        case "Space":
+          this._handleKeySpace( event );
+        break;
+        case "Up":
+          this._handleKeyUp( event );
+        break;
+        case "Down":
+          this._handleKeyDown( event );
+        break;
+        case "PageUp":
+          this._handleKeyPageUp( event );
+        break;
+        case "PageDown":
+          this._handleKeyPageDown( event );
+        break;
+        case "Home":
+          this._handleKeyHome( event );
+        break;
+        case "End":
+          this._handleKeyEnd( event );
+        break;
+        case "Left":
+          this._handleKeyLeft( event );
+        break;
+        case "Right":
+          this._handleKeyRight( event );
+        break;
       }
       this._stopKeyEvent( event );
     },
@@ -734,23 +732,33 @@ rwt.qx.Class.define( "rwt.widgets.Grid", {
     },
 
     _handleKeyEnter : function( event ) {
-      this._sendSelectionEvent( this._focusItem, true, null );
+      if( this._focusItem != null ) {
+        this._sendSelectionEvent( this._focusItem, true, null );
+      }
     },
 
     _handleKeySpace : function( event ) {
-      if( event.isCtrlPressed() || !this.isItemSelected( this._focusItem ) ) {
-        // NOTE: When space does not change the selection, the SWT Tree still fires an selection
-        //       event, while the Table doesnt. Table behavior is used since it makes more sense.
-        var itemIndex = this._focusItem.getFlatIndex();
-        this._handleKeyboardSelect( event, this._focusItem, itemIndex );
-      }
-      if( this._config.hasCheckBoxes ) {
-        this._toggleCheckSelection( this._focusItem );
+      if( this._focusItem != null ) {
+        if( event.isCtrlPressed() || !this.isItemSelected( this._focusItem ) ) {
+          // NOTE: When space does not change the selection, the SWT Tree still fires an selection
+          //       event, while the Table doesnt. Table behavior is used since it makes more sense.
+          var itemIndex = this._focusItem.getFlatIndex();
+          this._handleKeyboardSelect( event, this._focusItem, itemIndex );
+        }
+        if( this._config.hasCheckBoxes ) {
+          this._toggleCheckSelection( this._focusItem );
+        }
       }
     },
 
     _handleKeyUp : function( event ) {
-      var item = this._focusItem.getPreviousItem();
+      var item;
+      if( this._focusItem != null ) {
+        item = this._focusItem.getPreviousItem();
+      }
+      else {
+      	item = this._topItem;
+      }
       if( item != null ) {
         var itemIndex = item.getFlatIndex();
         this._handleKeyboardSelect( event, item, itemIndex );
@@ -758,7 +766,13 @@ rwt.qx.Class.define( "rwt.widgets.Grid", {
     },
 
     _handleKeyDown : function( event ) {
-      var item = this._focusItem.getNextItem();
+      var item;
+      if( this._focusItem != null ) {
+        item = this._focusItem.getNextItem();
+      }
+      else {
+    	item = this._topItem;
+      }
       if( item != null ) {
         var itemIndex = item.getFlatIndex();
         this._handleKeyboardSelect( event, item, itemIndex );
@@ -766,43 +780,62 @@ rwt.qx.Class.define( "rwt.widgets.Grid", {
     },
 
     _handleKeyPageUp : function( event ) {
-      var oldOffset = this._focusItem.getOffset();
-      var diff = this._rowContainer.getHeight();
-      var newOffset = Math.max( 0, oldOffset - diff );
-      var item = this._rootItem.findItemByOffset( newOffset );
-      if( newOffset !== 0 ) {
-        item = item.getNextItem();
+      var refItem = this._focusItem;
+      if( refItem == null ) {
+        refItem = this._topItem;
       }
-      var itemIndex = item.getFlatIndex();
-      this._handleKeyboardSelect( event, item, itemIndex );
+      if( refItem != null) {
+        var oldOffset = refItem.getOffset();
+        var diff = this._rowContainer.getHeight();
+        var newOffset = Math.max( 0, oldOffset - diff );
+        var item = this._rootItem.findItemByOffset( newOffset );
+        if( newOffset !== 0 ) {
+          item = item.getNextItem();
+        }
+        var itemIndex = item.getFlatIndex();
+        this._handleKeyboardSelect( event, item, itemIndex );
+      }
     },
 
     _handleKeyPageDown : function( event ) {
-      var oldOffset = this._focusItem.getOffset();
-      var diff = this._rowContainer.getHeight();
-      var max = this.getRootItem().getOffsetHeight() - 1;
-      var newOffset = Math.min( max, oldOffset + diff );
-      var item = this._rootItem.findItemByOffset( newOffset );
-      if( newOffset !== max ) {
-        item = item.getPreviousItem();
+      var refItem = this._focusItem;
+      if( refItem == null ) {
+        refItem = this._topItem;
       }
-      var itemIndex = item.getFlatIndex();
-      this._handleKeyboardSelect( event, item, itemIndex );
+      if( refItem != null) {
+        var oldOffset = refItem.getOffset();
+        var diff = this._rowContainer.getHeight();
+        var max = this.getRootItem().getOffsetHeight() - 1;
+        var newOffset = Math.min( max, oldOffset + diff );
+        var item = this._rootItem.findItemByOffset( newOffset );
+        if( newOffset !== max ) {
+          item = item.getPreviousItem();
+        }
+        var itemIndex = item.getFlatIndex();
+        this._handleKeyboardSelect( event, item, itemIndex );
+      }
     },
 
     _handleKeyHome : function( event ) {
       var item = this.getRootItem().getChild( 0 );
-      this._handleKeyboardSelect( event, item, 0 );
+      if( item != null ) {
+        this._handleKeyboardSelect( event, item, 0 );
+      }
     },
 
     _handleKeyEnd : function( event ) {
       var item = this.getRootItem().getLastChild();
-      var itemIndex = this.getRootItem().getVisibleChildrenCount() - 1;
-      this._handleKeyboardSelect( event, item, itemIndex );
+      if( item != null ) {
+        var itemIndex = this.getRootItem().getVisibleChildrenCount() - 1;
+        this._handleKeyboardSelect( event, item, itemIndex );
+      }
     },
 
     _handleKeyLeft : function( event ) {
-      if( this._focusItem.isExpanded() ) {
+      if( this._focusItem == null ) {
+        this._handleKeyDown ( event );
+      }
+      else if( this._focusItem.isExpanded() ) {
         this._focusItem.setExpanded( false );
       } else if( !this._focusItem.getParent().isRootItem() ) {
         var item = this._focusItem.getParent();
@@ -812,7 +845,10 @@ rwt.qx.Class.define( "rwt.widgets.Grid", {
     },
 
     _handleKeyRight : function( event ) {
-      if( this._focusItem.hasChildren() ) {
+      if( this._focusItem == null ) {
+    	this._handleKeyDown ( event );
+      }
+      else if( this._focusItem.hasChildren() ) {
         if( !this._focusItem.isExpanded() ) {
           this._focusItem.setExpanded( true );
         } else {

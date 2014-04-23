@@ -261,6 +261,16 @@ rwt.qx.Class.define( "rwt.widgets.GridColumn", {
     isGroup : function() {
       return this._isGroup;
     },
+    
+    setWrapped : function( value ) {
+      this._grid.setWrappedColumn( this._index, value );
+      this._wrapped = value;
+      this._update();
+    },
+
+    isWrapped : function() {
+      return this._wrapped;
+    },
 
     _update : function() {
       this.dispatchSimpleEvent( "update" );

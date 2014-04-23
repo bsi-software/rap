@@ -42,6 +42,7 @@ rwt.remote.HandlerRegistry.add( "rwt.widgets.GridColumn", {
     "moveable",
     "alignment",
     "fixed",
+    "wrapped",
     "group",
     "customVariant",
     "visibility",

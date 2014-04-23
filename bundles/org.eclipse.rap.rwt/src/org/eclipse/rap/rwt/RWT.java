@@ -510,6 +510,16 @@ public final class RWT {
   public static final int HYPERLINK = 1 << 26;
 
   /**
+   * This property is part of the extended RAP Web-2.0 API, but not part of the SWT API.
+   * Defines if a column is able to wrap text by setting the CSS property to
+   * <code>white-space : normal</code> or <code>white-space : nowrap</code> respectively.
+   * Used as property key when calling <code>TableColumn.setData(RWT.WRAPPED_COLUMN, value)</code>
+   *
+   * @since 2.2.0-M2
+   */
+  public static final String WRAPPED_COLUMN = "org.eclipse.rap.rwt.wrappedColumn";
+
+  /**
    * Used as as <em>detail</em> information on a selection event to indicate that a selectable
    * template cell was selected instead of the widget that contains the cell.
    *

@@ -18,7 +18,6 @@ rwt.qx.Class.define( "rwt.widgets.Menu", {
     this._openTimer = new rwt.client.Timer( 250 );
     this._closeTimer = new rwt.client.Timer( 250 );
     this._layout = new rwt.widgets.base.VerticalBoxLayout();
-    this._preItem = null;
     this._menuLayoutScheduled = false;
     this._opener = null;
     this._mnemonics = false;
@@ -50,7 +49,7 @@ rwt.qx.Class.define( "rwt.widgets.Menu", {
     // needed if menu is disposed while scheduled to be shown (beforeAppear already called):
     rwt.widgets.util.MenuManager.getInstance().remove( this );
     this._makeInactive();
-    this._disposeObjects( "_openTimer", "_closeTimer", "_preItem", "_animation" );
+    this._disposeObjects( "_openTimer", "_closeTimer", "_animation" );
     this._disposeFields( "_layout", "_opener", "_hoverItem", "_openItem" );
   },
 
@@ -580,24 +579,17 @@ rwt.qx.Class.define( "rwt.widgets.Menu", {
       if( !rwt.remote.EventUtil.getSuspended() ) {
         var remoteObject = rwt.remote.Connection.getInstance().getRemoteObject( this );
         if( remoteObject.isListening( "Show" ) ) {
-          // create preliminary item
-          if( this._preItem == null ) {
-            this._preItem = new rwt.widgets.MenuItem( "push" );
-            this._preItem.setText( "..." );
-            this._preItem.setEnabled( false );
-            this.addMenuItemAt( this._preItem, 0 );
-          }
           // hide all but the preliminary item
           var items = this._layout.getChildren();
           for( var i = 0; i < items.length; i++ ) {
             var item = items[ i ];
             item.setDisplay( false );
           }
-          this._preItem.setDisplay( true );
           this._itemsHiddenFlag = true;
           if( this.getWidth() < 60 ) {
             this.setWidth( 60 );
           }
+          this.setDisplay( false );
           //this.setDisplay( true ); //wouldn't be called if display was false
           // send event
           remoteObject.notify( "Show" );
@@ -621,10 +613,9 @@ rwt.qx.Class.define( "rwt.widgets.Menu", {
         for( var i = 0; i < items.length; i++ ) {
           items[ i ].setDisplay( true );
         }
-        if( this._preItem ) {
-          this._preItem.setDisplay( false );
-        }
+        this.setDisplay( true );
         this._itemsHiddenFlag = false;
+
       } else {
         this.hide();
       }

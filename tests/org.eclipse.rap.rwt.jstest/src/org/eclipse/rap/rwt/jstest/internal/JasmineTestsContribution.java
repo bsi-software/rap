@@ -36,7 +36,11 @@ public class JasmineTestsContribution implements TestContribution {
     "spec/DropDownSynchronizer.spec.js",
     "spec/WidgetProxyFactory.spec.js",
     "spec/RWTQuery.spec.js",
-    "spec/Numbers.spec.js"
+    "spec/Numbers.spec.js",
+    "spec/Strings.spec.js",
+    "spec/Arrays.spec.js",
+    "spec/Objects.spec.js",
+    "spec/Colors.spec.js"
   };
 
   public String getName() {

@@ -220,33 +220,37 @@ rwt.qx.Class.define( "rwt.widgets.Text", {
     },
 
     _oninputDomTextarea : function( event ) {
-      var maxLength = this.getMaxLength();
-      var fireEvents = true;
-      if( maxLength != null ) {
-        var value = this._inputElement.value;
-        if( value.length > this.getMaxLength() ) {
-          var oldValue = this.getValue();
-          // NOTE [tb] : When pasting strings, this might not always
-          //             behave like SWT. There is no reliable fix for that.
-          var position = this._getSelectionStart();
-          if( oldValue.length == ( value.length - 1 ) ) {
-            // The user added one character, undo.
-            this._inputElement.value = oldValue;
-            this._setSelectionStart( position - 1 );
-            this._setSelectionLength( 0 );
-          } else if( value.length >= oldValue.length && value != oldValue) {
-            // The user pasted a string, shorten:
-            this._inputElement.value = value.slice( 0, this.getMaxLength() );
-            this._setSelectionStart( Math.min( position, this.getMaxLength() ) );
-            this._setSelectionLength( 0 );
-          }
-          if( this._inputElement.value == oldValue ) {
-            fireEvents = false;
+      try {
+        var maxLength = this.getMaxLength();
+        var fireEvents = true;
+        if( maxLength != null ) {
+          var value = this._inputElement.value;
+          if( value.length > this.getMaxLength() ) {
+            var oldValue = this.getValue();
+            // NOTE [tb] : When pasting strings, this might not always
+            //             behave like SWT. There is no reliable fix for that.
+            var position = this._getSelectionStart();
+            if( oldValue.length == ( value.length - 1 ) ) {
+              // The user added one character, undo.
+              this._inputElement.value = oldValue;
+              this._setSelectionStart( position - 1 );
+              this._setSelectionLength( 0 );
+            } else if( value.length >= oldValue.length && value != oldValue) {
+              // The user pasted a string, shorten:
+              this._inputElement.value = value.slice( 0, this.getMaxLength() );
+              this._setSelectionStart( Math.min( position, this.getMaxLength() ) );
+              this._setSelectionLength( 0 );
+            }
+            if( this._inputElement.value == oldValue ) {
+              fireEvents = false;
+            }
           }
         }
-      }
-      if( fireEvents ) {
-        this._oninputDom( event );
+        if( fireEvents ) {
+          this._oninputDom( event );
+        }
+      } catch( ex ) {
+        rwt.runtime.ErrorHandler.processJavaScriptError( ex );
       }
     },
 
@@ -380,6 +384,7 @@ rwt.qx.Class.define( "rwt.widgets.Text", {
       this._inputElement.onpropertychange = null;
       this._inputElement = null;
       this._firstInputFixApplied = false;
+      this._textColor = null;
       this._applyElement( this.getElement(), null );
       this._afterAppear();
       this._postApply();
@@ -459,6 +464,7 @@ rwt.qx.Class.define( "rwt.widgets.Text", {
           var style = this._messageElement.style;
           style.position = "absolute";
           style.outline = "none";
+          style.overflow = "hidden";
           var styleMap = this._getMessageStyle();
           style.color = styleMap.textColor || "";
           style.left = styleMap.paddingLeft + "px";

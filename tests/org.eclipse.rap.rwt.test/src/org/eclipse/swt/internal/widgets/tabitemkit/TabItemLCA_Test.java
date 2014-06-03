@@ -13,7 +13,9 @@ package org.eclipse.swt.internal.widgets.tabitemkit;
 import static org.eclipse.rap.rwt.internal.lifecycle.WidgetUtil.getId;
 import static org.eclipse.rap.rwt.internal.lifecycle.WidgetUtil.registerDataKeys;
 import static org.eclipse.rap.rwt.testfixture.Fixture.getProtocolMessage;
+import static org.eclipse.rap.rwt.testfixture.TestMessage.getParent;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -24,9 +26,9 @@ import org.eclipse.rap.json.JsonObject;
 import org.eclipse.rap.rwt.RWT;
 import org.eclipse.rap.rwt.internal.lifecycle.WidgetAdapter;
 import org.eclipse.rap.rwt.internal.lifecycle.WidgetUtil;
+import org.eclipse.rap.rwt.internal.protocol.Operation.CreateOperation;
 import org.eclipse.rap.rwt.testfixture.Fixture;
-import org.eclipse.rap.rwt.testfixture.Message;
-import org.eclipse.rap.rwt.testfixture.Message.CreateOperation;
+import org.eclipse.rap.rwt.testfixture.TestMessage;
 import org.eclipse.rap.rwt.testfixture.internal.TestUtil;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
@@ -89,20 +91,20 @@ public class TabItemLCA_Test {
   public void testRenderCreate() throws IOException {
     lca.renderInitialization( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( item );
     assertEquals( "rwt.widgets.TabItem", operation.getType() );
-    assertEquals( getId( item ), operation.getProperty( "id" ).asString() );
-    assertEquals( 0, operation.getProperty( "index" ).asInt() );
+    assertEquals( getId( item ), operation.getProperties().get( "id" ).asString() );
+    assertEquals( 0, operation.getProperties().get( "index" ).asInt() );
   }
 
   @Test
   public void testRenderParent() throws IOException {
     lca.renderInitialization( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( item );
-    assertEquals( WidgetUtil.getId( item.getParent() ), operation.getParent() );
+    assertEquals( getId( item.getParent() ), getParent( operation ) );
   }
 
   @Test
@@ -111,7 +113,7 @@ public class TabItemLCA_Test {
 
     lca.renderChanges( item );
 
-    Message message = getProtocolMessage();
+    TestMessage message = getProtocolMessage();
     assertTrue( "foo", message.findSetProperty( item, "toolTipMarkupEnabled" ).asBoolean() );
   }
 
@@ -122,7 +124,7 @@ public class TabItemLCA_Test {
 
     lca.renderChanges( item );
 
-    Message message = getProtocolMessage();
+    TestMessage message = getProtocolMessage();
     assertNull( message.findSetOperation( item, "toolTipMarkupEnabled" ) );
   }
 
@@ -130,9 +132,9 @@ public class TabItemLCA_Test {
   public void testRenderInitialToolTip() throws IOException {
     lca.render( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( item );
-    assertTrue( operation.getPropertyNames().indexOf( "toolTip" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "toolTip" ) );
   }
 
   @Test
@@ -140,7 +142,7 @@ public class TabItemLCA_Test {
     item.setToolTipText( "foo" );
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( "foo", message.findSetProperty( item, "toolTip" ).asString() );
   }
 
@@ -153,7 +155,7 @@ public class TabItemLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( item, "toolTip" ) );
   }
 
@@ -161,9 +163,9 @@ public class TabItemLCA_Test {
   public void testRenderInitialText() throws IOException {
     lca.render( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( item );
-    assertTrue( operation.getPropertyNames().indexOf( "text" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "text" ) );
   }
 
   @Test
@@ -171,7 +173,7 @@ public class TabItemLCA_Test {
     item.setText( "foo" );
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( "foo", message.findSetProperty( item, "text" ).asString() );
   }
 
@@ -180,7 +182,7 @@ public class TabItemLCA_Test {
     item.setText( "foo&bar" );
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( "foobar", message.findSetProperty( item, "text" ).asString() );
   }
 
@@ -193,7 +195,7 @@ public class TabItemLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( item, "text" ) );
   }
 
@@ -201,7 +203,7 @@ public class TabItemLCA_Test {
   public void testRenderInitialImage() throws IOException {
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( item, "image" ) );
   }
 
@@ -212,7 +214,7 @@ public class TabItemLCA_Test {
     item.setImage( image );
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     String imageLocation = ImageFactory.getImagePath( image );
     JsonArray expected = new JsonArray().add( imageLocation ).add( 100 ).add( 50 );
     assertEquals( expected, message.findSetProperty( item, "image" ) );
@@ -228,7 +230,7 @@ public class TabItemLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( item, "image" ) );
   }
 
@@ -243,7 +245,7 @@ public class TabItemLCA_Test {
     item.setImage( null );
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonObject.NULL, message.findSetProperty( item, "image" ) );
   }
 
@@ -251,9 +253,9 @@ public class TabItemLCA_Test {
   public void testRenderInitialControl() throws IOException {
     lca.render( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( item );
-    assertTrue( operation.getPropertyNames().indexOf( "control" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "control" ) );
   }
 
   @Test
@@ -264,7 +266,7 @@ public class TabItemLCA_Test {
     item.setControl( content );
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( contentId, message.findSetProperty( item, "control" ).asString() );
   }
 
@@ -278,7 +280,7 @@ public class TabItemLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( item, "control" ) );
   }
 
@@ -286,7 +288,7 @@ public class TabItemLCA_Test {
   public void testRenderInitialMnemonicIndex() throws IOException {
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( item, "mnemonicIndex" ) );
   }
 
@@ -295,7 +297,7 @@ public class TabItemLCA_Test {
     item.setText( "te&st" );
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( 2, message.findSetProperty( item, "mnemonicIndex" ).asInt() );
   }
 
@@ -309,7 +311,7 @@ public class TabItemLCA_Test {
     item.setText( "aa&bb" );
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( 2, message.findSetProperty( item, "mnemonicIndex" ).asInt() );
   }
 
@@ -322,7 +324,7 @@ public class TabItemLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( item, "mnemonicIndex" ) );
   }
 
@@ -334,7 +336,7 @@ public class TabItemLCA_Test {
 
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     JsonObject data = ( JsonObject )message.findSetProperty( item, "data" );
     assertEquals( "string", data.get( "foo" ).asString() );
     assertEquals( 1, data.get( "bar" ).asInt() );
@@ -350,7 +352,7 @@ public class TabItemLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( 0, message.getOperationCount() );
   }
 

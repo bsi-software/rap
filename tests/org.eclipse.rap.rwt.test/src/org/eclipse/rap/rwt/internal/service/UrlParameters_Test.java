@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013 EclipseSource and others.
+ * Copyright (c) 2013, 2014 EclipseSource and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,13 +10,16 @@
  ******************************************************************************/
 package org.eclipse.rap.rwt.internal.service;
 
+import static org.eclipse.rap.rwt.internal.protocol.ClientMessageConst.QUERY_STRING;
+import static org.eclipse.rap.rwt.internal.protocol.ClientMessageConst.RWT_INITIALIZE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 import java.util.Map;
 
-import org.eclipse.rap.rwt.internal.protocol.ClientMessageConst;
+import org.eclipse.rap.rwt.internal.protocol.RequestMessage;
 import org.eclipse.rap.rwt.testfixture.Fixture;
+import org.eclipse.rap.rwt.testfixture.TestMessage;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,10 +40,11 @@ public class UrlParameters_Test {
 
   @Test
   public void testMerge_InitialPostRequest() {
-    Fixture.fakeHeadParameter( ClientMessageConst.RWT_INITIALIZE, true );
-    Fixture.fakeHeadParameter( ClientMessageConst.QUERY_STRING, "key1=value1&key2=value2" );
+    RequestMessage message = new TestMessage();
+    fakeInitializeParameter( message );
+    fakeQueryString( message, "key1=value1&key2=value2" );
 
-    UrlParameters.merge();
+    UrlParameters.merge( message );
 
     assertEquals( "value1", ContextProvider.getRequest().getParameter( "key1" ) );
     assertEquals( "value2", ContextProvider.getRequest().getParameter( "key2" ) );
@@ -48,9 +52,10 @@ public class UrlParameters_Test {
 
   @Test
   public void testMerge_NotInitialPostRequest() {
-    Fixture.fakeHeadParameter( ClientMessageConst.QUERY_STRING, "key1=value1&key2=value2" );
+    RequestMessage message = new TestMessage();
+    fakeQueryString( message, "key1=value1&key2=value2" );
 
-    UrlParameters.merge();
+    UrlParameters.merge( message );
 
     assertNull( ContextProvider.getRequest().getParameter( "key1" ) );
     assertNull( ContextProvider.getRequest().getParameter( "key2" ) );
@@ -106,6 +111,14 @@ public class UrlParameters_Test {
     Map<String, String[]> parametersMap = UrlParameters.createParametersMap( queryString );
 
     assertEquals( "value/1", parametersMap.get( "key1" )[ 0 ] );
+  }
+
+  private static void fakeInitializeParameter( RequestMessage requestMessage ) {
+    requestMessage.getHead().set( RWT_INITIALIZE, true );
+  }
+
+  private static void fakeQueryString( RequestMessage requestMessage, String queryString ) {
+    requestMessage.getHead().set( QUERY_STRING, queryString );
   }
 
 }

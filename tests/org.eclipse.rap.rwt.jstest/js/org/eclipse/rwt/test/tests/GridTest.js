@@ -140,8 +140,8 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.GridTest", {
         "bindingIndex" : 0,
         "name" : "bar",
         "selectable" : true,
-        "left" : 0,
-        "top" : 0,
+        "left" : [ 0, 0 ],
+        "top" : [ 0, 0 ],
         "width" : 1,
         "height" : 1
       };
@@ -172,8 +172,8 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.GridTest", {
         "type" : "text",
         "bindingIndex" : 0,
         "name" : "bar",
-        "left" : 0,
-        "top" : 0,
+        "left" : [ 0, 0 ],
+        "top" : [ 0, 0 ],
         "width" : 1,
         "height" : 1
       };
@@ -202,8 +202,8 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.GridTest", {
         "type" : "text",
         "bindingIndex" : 0,
         "selectable" : true,
-        "left" : 0,
-        "top" : 0,
+        "left" : [ 0, 0 ],
+        "top" : [ 0, 0 ],
         "width" : 1,
         "height" : 1
       };
@@ -228,8 +228,8 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.GridTest", {
       tree.destroy();
     },
 
-    testGridWithRowTempalteLimitsRowWidth: function() {
-      var cellData = { "type" : "text", "left" : 0, "top" : 0, "width" : 1, "height" : 1 };
+    testGridWithRowTempalteLimitsRowWidth : function() {
+      var cellData = { "type" : "text", "left" : [ 0, 0 ], "top" : [ 0, 0 ], "width" : 1, "height" : 1 };
       var template = new rwt.widgets.util.Template( [ cellData ] );
       var tree = this._createDefaultTree( false, false, "rowTemplate", template );
       tree.setItemCount( 1 );
@@ -2666,6 +2666,21 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.GridTest", {
       rwt.remote.Connection.getInstance().send();
 
       assertEquals( 8, TestUtil.getMessageObject().findSetProperty( "w3", "topItemIndex" ) );
+      tree.destroy();
+    },
+
+    testFireTopItemChangedEventInResponse : function() {
+      var tree = this._createDefaultTree();
+      this._fillTree( tree, 100 );
+      var logger = TestUtil.getLogger();
+      tree.addEventListener( "topItemChanged", logger.log );
+      TestUtil.flush();
+
+      rwt.remote.EventUtil.setSuspended( true );
+      tree._vertScrollBar.setValue( 160 );
+      rwt.remote.EventUtil.setSuspended( false );
+
+      assertEquals( 1, logger.getLog().length );
       tree.destroy();
     },
 

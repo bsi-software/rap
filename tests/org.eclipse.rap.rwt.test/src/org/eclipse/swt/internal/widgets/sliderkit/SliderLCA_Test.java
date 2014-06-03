@@ -11,9 +11,12 @@
  ******************************************************************************/
 package org.eclipse.swt.internal.widgets.sliderkit;
 
-import static org.eclipse.rap.rwt.internal.protocol.RemoteObjectFactory.getRemoteObject;
 import static org.eclipse.rap.rwt.internal.lifecycle.WidgetUtil.getId;
+import static org.eclipse.rap.rwt.internal.protocol.RemoteObjectFactory.getRemoteObject;
+import static org.eclipse.rap.rwt.testfixture.TestMessage.getParent;
+import static org.eclipse.rap.rwt.testfixture.TestMessage.getStyles;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -21,17 +24,16 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import org.eclipse.rap.json.JsonObject;
 import org.eclipse.rap.json.JsonValue;
-import org.eclipse.rap.rwt.internal.remote.RemoteObjectRegistry;
 import org.eclipse.rap.rwt.internal.lifecycle.WidgetAdapter;
 import org.eclipse.rap.rwt.internal.lifecycle.WidgetUtil;
+import org.eclipse.rap.rwt.internal.protocol.Operation.CreateOperation;
+import org.eclipse.rap.rwt.internal.remote.RemoteObjectRegistry;
 import org.eclipse.rap.rwt.remote.OperationHandler;
 import org.eclipse.rap.rwt.testfixture.Fixture;
-import org.eclipse.rap.rwt.testfixture.Message;
-import org.eclipse.rap.rwt.testfixture.Message.CreateOperation;
+import org.eclipse.rap.rwt.testfixture.TestMessage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.graphics.Color;
@@ -147,7 +149,7 @@ public class SliderLCA_Test {
   public void testRenderCreate() throws IOException {
     lca.renderInitialization( slider );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( slider );
     assertEquals( "rwt.widgets.Slider", operation.getType() );
   }
@@ -176,9 +178,9 @@ public class SliderLCA_Test {
   public void testRenderParent() throws IOException {
     lca.renderInitialization( slider );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( slider );
-    assertEquals( WidgetUtil.getId( slider.getParent() ), operation.getParent() );
+    assertEquals( getId( slider.getParent() ), getParent( operation ) );
   }
 
   @Test
@@ -187,19 +189,18 @@ public class SliderLCA_Test {
 
     lca.renderInitialization( slider );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( slider );
-    Object[] styles = operation.getStyles();
-    assertTrue( Arrays.asList( styles ).contains( "HORIZONTAL" ) );
+    assertTrue( getStyles( operation ).contains( "HORIZONTAL" ) );
   }
 
   @Test
   public void testRenderInitialMinimum() throws IOException {
     lca.render( slider );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( slider );
-    assertTrue( operation.getPropertyNames().indexOf( "minimum" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "minimum" ) );
   }
 
   @Test
@@ -207,7 +208,7 @@ public class SliderLCA_Test {
     slider.setMinimum( 10 );
     lca.renderChanges( slider );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( 10, message.findSetProperty( slider, "minimum" ).asInt() );
   }
 
@@ -220,7 +221,7 @@ public class SliderLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( slider );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( slider, "minimum" ) );
   }
 
@@ -228,9 +229,9 @@ public class SliderLCA_Test {
   public void testRenderInitialMaxmum() throws IOException {
     lca.render( slider );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( slider );
-    assertTrue( operation.getPropertyNames().indexOf( "maximum" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "maximum" ) );
   }
 
   @Test
@@ -238,7 +239,7 @@ public class SliderLCA_Test {
     slider.setMaximum( 10 );
     lca.renderChanges( slider );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( 10, message.findSetProperty( slider, "maximum" ).asInt() );
   }
 
@@ -251,7 +252,7 @@ public class SliderLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( slider );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( slider, "maximum" ) );
   }
 
@@ -259,9 +260,9 @@ public class SliderLCA_Test {
   public void testRenderInitialSelection() throws IOException {
     lca.render( slider );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( slider );
-    assertTrue( operation.getPropertyNames().indexOf( "selection" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "selection" ) );
   }
 
   @Test
@@ -269,7 +270,7 @@ public class SliderLCA_Test {
     slider.setSelection( 10 );
     lca.renderChanges( slider );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( 10, message.findSetProperty( slider, "selection" ).asInt() );
   }
 
@@ -282,7 +283,7 @@ public class SliderLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( slider );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( slider, "selection" ) );
   }
 
@@ -290,9 +291,9 @@ public class SliderLCA_Test {
   public void testRenderInitialIncrement() throws IOException {
     lca.render( slider );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( slider );
-    assertTrue( operation.getPropertyNames().indexOf( "increment" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "increment" ) );
   }
 
   @Test
@@ -300,7 +301,7 @@ public class SliderLCA_Test {
     slider.setIncrement( 2 );
     lca.renderChanges( slider );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( 2, message.findSetProperty( slider, "increment" ).asInt() );
   }
 
@@ -313,7 +314,7 @@ public class SliderLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( slider );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( slider, "increment" ) );
   }
 
@@ -321,9 +322,9 @@ public class SliderLCA_Test {
   public void testRenderInitialPageIncrement() throws IOException {
     lca.render( slider );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( slider );
-    assertTrue( operation.getPropertyNames().indexOf( "pageIncrement" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "pageIncrement" ) );
   }
 
   @Test
@@ -331,7 +332,7 @@ public class SliderLCA_Test {
     slider.setPageIncrement( 20 );
     lca.renderChanges( slider );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( 20, message.findSetProperty( slider, "pageIncrement" ).asInt() );
   }
 
@@ -344,7 +345,7 @@ public class SliderLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( slider );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( slider, "pageIncrement" ) );
   }
 
@@ -352,9 +353,9 @@ public class SliderLCA_Test {
   public void testRenderInitialThumb() throws IOException {
     lca.render( slider );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( slider );
-    assertTrue( operation.getPropertyNames().indexOf( "thumb" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "thumb" ) );
   }
 
   @Test
@@ -362,7 +363,7 @@ public class SliderLCA_Test {
     slider.setThumb( 20 );
     lca.renderChanges( slider );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( 20, message.findSetProperty( slider, "thumb" ).asInt() );
   }
 
@@ -375,7 +376,7 @@ public class SliderLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( slider );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( slider, "thumb" ) );
   }
 
@@ -388,7 +389,7 @@ public class SliderLCA_Test {
     slider.addListener( SWT.Selection, mock( Listener.class ) );
     lca.renderChanges( slider );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.TRUE, message.findListenProperty( slider, "Selection" ) );
   }
 
@@ -403,7 +404,7 @@ public class SliderLCA_Test {
     slider.removeListener( SWT.Selection, listener );
     lca.renderChanges( slider );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.FALSE, message.findListenProperty( slider, "Selection" ) );
   }
 
@@ -417,7 +418,7 @@ public class SliderLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( slider );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findListenOperation( slider, "selection" ) );
   }
 

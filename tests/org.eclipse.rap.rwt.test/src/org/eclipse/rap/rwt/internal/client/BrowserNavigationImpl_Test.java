@@ -27,8 +27,8 @@ import org.eclipse.rap.rwt.client.service.BrowserNavigationListener;
 import org.eclipse.rap.rwt.lifecycle.PhaseId;
 import org.eclipse.rap.rwt.internal.lifecycle.ProcessActionRunner;
 import org.eclipse.rap.rwt.testfixture.Fixture;
-import org.eclipse.rap.rwt.testfixture.Message;
-import org.eclipse.rap.rwt.testfixture.Message.CallOperation;
+import org.eclipse.rap.rwt.testfixture.TestMessage;
+import org.eclipse.rap.rwt.internal.protocol.Operation.CallOperation;
 import org.eclipse.swt.widgets.Display;
 import org.junit.After;
 import org.junit.Before;
@@ -155,7 +155,7 @@ public class BrowserNavigationImpl_Test {
 
     Fixture.executeLifeCycleFromServerThread();
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.TRUE, message.findListenProperty( TYPE, "Navigation" ) );
   }
 
@@ -175,7 +175,7 @@ public class BrowserNavigationImpl_Test {
 
     Fixture.executeLifeCycleFromServerThread();
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.FALSE, message.findListenProperty( TYPE, "Navigation" ) );
   }
 
@@ -188,7 +188,7 @@ public class BrowserNavigationImpl_Test {
 
     Fixture.executeLifeCycleFromServerThread();
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findListenOperation( TYPE, "navigation" ) );
   }
 
@@ -198,10 +198,10 @@ public class BrowserNavigationImpl_Test {
 
     Fixture.executeLifeCycleFromServerThread();
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CallOperation operation = message.findCallOperation( TYPE, "addToHistory" );
-    assertEquals( "testId", operation.getProperty( "state" ).asString() );
-    assertEquals( "testText", operation.getProperty( "title" ).asString() );
+    assertEquals( "testId", operation.getParameters().get( "state" ).asString() );
+    assertEquals( "testText", operation.getParameters().get( "title" ).asString() );
   }
 
   @Test
@@ -212,7 +212,7 @@ public class BrowserNavigationImpl_Test {
     Fixture.fakeNewRequest();
     Fixture.executeLifeCycleFromServerThread();
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findCallOperation( TYPE, "addToHistory" ) );
   }
 
@@ -223,16 +223,16 @@ public class BrowserNavigationImpl_Test {
 
     Fixture.executeLifeCycleFromServerThread();
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CallOperation callOperation1 = ( CallOperation )message.getOperation( 0 );
     CallOperation callOperation2 = ( CallOperation )message.getOperation( 1 );
 
     assertEquals( "addToHistory", callOperation1.getMethodName() );
-    assertEquals( "testId1", callOperation1.getProperty( "state" ).asString() );
-    assertEquals( "testText1", callOperation1.getProperty( "title" ).asString() );
+    assertEquals( "testId1", callOperation1.getParameters().get( "state" ).asString() );
+    assertEquals( "testText1", callOperation1.getParameters().get( "title" ).asString() );
     assertEquals( "addToHistory", callOperation2.getMethodName() );
-    assertEquals( "testId2", callOperation2.getProperty( "state" ).asString() );
-    assertEquals( "testText2", callOperation2.getProperty( "title" ).asString() );
+    assertEquals( "testId2", callOperation2.getParameters().get( "state" ).asString() );
+    assertEquals( "testText2", callOperation2.getParameters().get( "title" ).asString() );
   }
 
 }

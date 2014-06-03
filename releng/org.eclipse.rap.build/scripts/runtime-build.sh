@@ -7,7 +7,7 @@
 ######################################################################
 # set up environment
 
-export MVN=${MVN:-"/opt/public/common/apache-maven-3.0.4/bin/mvn"}
+export MVN=${MVN:-"/opt/public/common/apache-maven-3.2.1/bin/mvn"}
 
 export MAVEN_LOCAL_REPO_PATH=${MAVEN_LOCAL_REPO_PATH:-"/shared/rt/rap/m2/repository"}
 echo "Local Maven repository location: ${MAVEN_LOCAL_REPO_PATH}"
@@ -18,7 +18,8 @@ else
   SIGNPROFILE=""
 fi
 
-basedirectory="$WORKSPACE/org.eclipse.rap/releng/org.eclipse.rap.build"
+basedirectory="$WORKSPACE/org.eclipse.rap"
+tempdirectory="$WORKSPACE/tmp"
 
 ######################################################################
 # clean up local Maven repository to circumvent p2 cache problems
@@ -33,7 +34,8 @@ done
 
 cd "$basedirectory"
 echo "Running maven on $PWD, $SIGNPROFILE"
-${MVN} -e clean package $SIGNPROFILE -Dmaven.repo.local=${MAVEN_LOCAL_REPO_PATH}
+mkdir -p "$tempdirectory"
+${MVN} -e clean package $SIGNPROFILE -Dmaven.repo.local=${MAVEN_LOCAL_REPO_PATH} -Djava.io.tmpdir="$tempdirectory"
 exitcode=$?
 if [ "$exitcode" != "0" ]; then
   echo "Maven exited with error code " + $exitcode
@@ -42,7 +44,7 @@ fi
 ######################################################################
 # rename ZIP archive
 
-repoDirectory="$basedirectory"/repository.luna/target/repository
+repoDirectory="$basedirectory"/releng/org.eclipse.rap.build/repository.luna/target/repository
 VERSION=$(ls "$repoDirectory"/features/org.eclipse.rap.sdk.feature_*.jar | sed 's/.*_\([0-9.-]\+\)\..*\.jar/\1/')
 echo "Version is $VERSION"
 test -n "$VERSION" || exit 1
@@ -53,4 +55,4 @@ test -n "$TIMESTAMP" || exit 1
 # Example: rap-1.5.0-N-20110814-2110.zip
 zipFileName=rap-$VERSION-$BUILD_TYPE-$TIMESTAMP.zip
 
-mv "$basedirectory"/repository.luna/target/*.zip "$WORKSPACE/$zipFileName" || exit 1
+mv "$basedirectory"/releng/org.eclipse.rap.build/repository.luna/target/*.zip "$WORKSPACE/$zipFileName" || exit 1

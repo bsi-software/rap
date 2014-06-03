@@ -44,9 +44,8 @@
     this._.appearance = appearance;
     this._.customVariant = null;
     this._.styleMap = null;
-    this._.popup = createPopup.call( this ); // TODO: create on demand
-    this._.grid = createGrid( this._.popup, markupEnabled );
-    renderAppearance.call( this );
+    this._.popup = createPopup( appearance ); // TODO: create on demand
+    this._.grid = createGrid( this._.popup, markupEnabled, appearance );
     inheritParentStyling.call( this );
     this._.visibleItemCount = 5;
     this._.items = [];
@@ -162,7 +161,8 @@
     setCustomVariant : function( value ) {
       this._.customVariant = value;
       this._.styleMap = null;
-      renderAppearance.call( this );
+      this._.popup.setCustomVariant( value );
+      this._.grid.setCustomVariant( value );
     },
 
     show : function() {
@@ -230,6 +230,7 @@
     setColumns : function( columns ) {
       this._.columns = columns;
       this._.grid.setColumnCount( columns.length );
+      renderGridItems.call( this );
       if( this._.grid.isSeeable() ) {
         renderLayout.call( this );
       }
@@ -598,7 +599,7 @@
 
   var notify = function( type, event ) {
     var listeners = this._.events[ type ];
-    var eventProxy = rwt.util.Objects.merge( {
+    var eventProxy = rwt.util.Objects.mergeWith( {
       "widget" : this,
       "type" : eventTypes[ type ]
     }, event );
@@ -607,20 +608,21 @@
     }
   };
 
-  var createPopup = function() {
+  var createPopup = function( appearance ) {
     var result = new rwt.widgets.base.Popup();
     result.addToDocument();
     result.setBackgroundColor( "#ffffff" );
     result.setDisplay( false );
     result.setRestrictToPageOnOpen( false );
     result.setAutoHide( false );
+    result.setAppearance( appearance + "-popup" );
     return result;
   };
 
-  var createGrid = function( parent, markupEnabled ) {
+  var createGrid = function( parent, markupEnabled, appearance ) {
     var result = new rwt.widgets.Grid( {
       "fullSelection" : true,
-      "appearance" : "table",
+      "appearance" : appearance,
       "markupEnabled" : markupEnabled
     } );
     result.setLocation( 0, 0 );
@@ -634,16 +636,13 @@
     return result;
   };
 
-  var renderAppearance = function() {
-    this._.popup.setBorder( getStyleMap.call( this ).border );
-    this._.popup.setShadow( getStyleMap.call( this ).shadow );
-  };
-
   var inheritParentStyling = function() {
     this._.grid.setFont( this._.parent.getFont() );
     this._.grid.setTextColor( this._.parent.getTextColor() );
     this._.grid.setBackgroundColor( this._.parent.getBackgroundColor() );
-    this._.grid.setCursor( this._.parent.getCursor() );
+    // [if] "default" fallback is needed to suppress ibeam cursor shown in Chrome and IE, when no
+    // cursor (null) is set - bug 434311
+    this._.grid.setCursor( this._.parent.getCursor() || "default" );
   };
 
   var checkDisposed = function( dropdown ) {
@@ -697,16 +696,12 @@
       if( this._.customVariant ) {
         states[ this._.customVariant ] = true;
       }
-      this._.styleMap = manager.styleFrom( this._.appearance, states );
-      this._.styleMap.padding = getPadding();
+      this._.styleMap = {
+        "border" : manager.styleFrom( this._.appearance + "-popup", states ).border,
+        "padding" : manager.styleFrom( this._.appearance + "-cell", states ).padding
+      };
     }
     return this._.styleMap;
-  };
-
-  var getPadding = function() {
-    var manager = rwt.theme.AppearanceManager.getInstance();
-    var stylemap = manager.styleFrom( "list-item", {} );
-    return stylemap.padding || [ 5, 5, 5, 5 ];
   };
 
   var addMouseWheelEventFilter = function() {

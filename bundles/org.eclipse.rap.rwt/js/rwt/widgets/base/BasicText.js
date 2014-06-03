@@ -511,18 +511,13 @@ rwt.qx.Class.define( "rwt.widgets.base.BasicText", {
       }
     },
 
-    _applyTextColor : function( value, old ) {
-      this._styleTextColor( value );
-    },
-
-    _styleTextColor : function( value ) {
-      this.__textColor = value;
-      this._renderTextColor();
-    },
-
     _renderTextColor : function() {
       if( this.isCreated() ) {
-        this._inputElement.style.color = this.__textColor || "";
+        var color = this.getEnabled() ? this.getTextColor() : this.__theme$textColor;
+        if( this._textColor !== color ) {
+          this._textColor = color;
+          rwt.html.Style.setStyleProperty( this._inputElement, "color", color || "" );
+        }
       }
     },
 
@@ -629,8 +624,10 @@ rwt.qx.Class.define( "rwt.widgets.base.BasicText", {
 
     _oninputDom : rwt.util.Variant.select( "qx.client", {
       "mshtml" : function( event ) {
-        if( !this._inValueProperty && event.propertyName === "value" ) {
-          this._oninput();
+        if( event.propertyName === "value" ) {
+          if( !this._inValueProperty && this._inputElement.value !== this.getValue() ) {
+            this._oninput();
+          }
         }
       },
       "default" : function( event ) {

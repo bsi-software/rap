@@ -76,7 +76,7 @@ rwt.qx.Class.define( "rwt.widgets.MenuBar", {
     },
 
     addMenuItemAt : function( menuItem, index ) {
-      // seperator does not have this function:
+      // separator does not have this function:
       if( menuItem.setParentMenu ) {
         // it is essential that this happens before the menuItem is added
         menuItem.setParentMenu( this );
@@ -109,7 +109,7 @@ rwt.qx.Class.define( "rwt.widgets.MenuBar", {
         oldItem.setSubMenuOpen( false );
         oldItem.getMenu().hide();
       }
-      if( item != null && item != oldItem && item.getMenu() != null ) {
+      if( item != null && item != oldItem && item.getMenu() != null && item.getEnabled() ) {
         this._openItem = item;
         this.setActive( true );
         item.addState( "pressed" );

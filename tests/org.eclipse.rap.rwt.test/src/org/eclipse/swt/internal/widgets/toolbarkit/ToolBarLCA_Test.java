@@ -10,8 +10,10 @@
  ******************************************************************************/
 package org.eclipse.swt.internal.widgets.toolbarkit;
 
-import static org.eclipse.rap.rwt.internal.protocol.RemoteObjectFactory.getRemoteObject;
 import static org.eclipse.rap.rwt.internal.lifecycle.WidgetUtil.getId;
+import static org.eclipse.rap.rwt.internal.protocol.RemoteObjectFactory.getRemoteObject;
+import static org.eclipse.rap.rwt.testfixture.TestMessage.getParent;
+import static org.eclipse.rap.rwt.testfixture.TestMessage.getStyles;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -20,16 +22,15 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.List;
 
 import org.eclipse.rap.json.JsonObject;
 import org.eclipse.rap.rwt.RWT;
+import org.eclipse.rap.rwt.internal.protocol.Operation.CreateOperation;
 import org.eclipse.rap.rwt.internal.remote.RemoteObjectRegistry;
-import org.eclipse.rap.rwt.internal.lifecycle.WidgetUtil;
 import org.eclipse.rap.rwt.remote.OperationHandler;
 import org.eclipse.rap.rwt.testfixture.Fixture;
-import org.eclipse.rap.rwt.testfixture.Message;
-import org.eclipse.rap.rwt.testfixture.Message.CreateOperation;
+import org.eclipse.rap.rwt.testfixture.TestMessage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.internal.widgets.controlkit.ControlLCATestUtil;
 import org.eclipse.swt.widgets.Display;
@@ -77,12 +78,12 @@ public class ToolBarLCA_Test {
   public void testRenderCreate() throws IOException {
     lca.renderInitialization( toolBar );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( toolBar );
     assertEquals( "rwt.widgets.ToolBar", operation.getType() );
-    Object[] styles = operation.getStyles();
-    assertTrue( Arrays.asList( styles ).contains( "HORIZONTAL" ) );
-    assertFalse( Arrays.asList( styles ).contains( "H_SCROLL" ) );
+    List<String> styles = getStyles( operation );
+    assertTrue( styles.contains( "HORIZONTAL" ) );
+    assertFalse( styles.contains( "H_SCROLL" ) );
   }
 
   @Test
@@ -91,11 +92,11 @@ public class ToolBarLCA_Test {
 
     lca.renderInitialization( toolBar );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( toolBar );
-    Object[] styles = operation.getStyles();
-    assertTrue( Arrays.asList( styles ).contains( "VERTICAL" ) );
-    assertFalse( Arrays.asList( styles ).contains( "V_SCROLL" ) );
+    List<String> styles = getStyles( operation );
+    assertTrue( styles.contains( "VERTICAL" ) );
+    assertFalse( styles.contains( "V_SCROLL" ) );
   }
 
   @Test
@@ -104,10 +105,9 @@ public class ToolBarLCA_Test {
 
     lca.renderInitialization( toolBar );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( toolBar );
-    Object[] styles = operation.getStyles();
-    assertTrue( Arrays.asList( styles ).contains( "FLAT" ) );
+    assertTrue( getStyles( operation ).contains( "FLAT" ) );
   }
 
   @Test
@@ -134,18 +134,18 @@ public class ToolBarLCA_Test {
   public void testRenderParent() throws IOException {
     lca.renderInitialization( toolBar );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( toolBar );
-    assertEquals( WidgetUtil.getId( toolBar.getParent() ), operation.getParent() );
+    assertEquals( getId( toolBar.getParent() ), getParent( operation ) );
   }
 
   @Test
   public void testRenderInitialCustomVariant() throws IOException {
     lca.render( toolBar );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( toolBar );
-    assertTrue( operation.getPropertyNames().indexOf( "customVariant" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "customVariant" ) );
   }
 
   @Test
@@ -153,7 +153,7 @@ public class ToolBarLCA_Test {
     toolBar.setData( RWT.CUSTOM_VARIANT, "blue" );
     lca.renderChanges( toolBar );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( "variant_blue", message.findSetProperty( toolBar, "customVariant" ).asString() );
   }
 
@@ -166,7 +166,7 @@ public class ToolBarLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( toolBar );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( toolBar, "customVariant" ) );
   }
 

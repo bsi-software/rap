@@ -15,7 +15,10 @@ import static org.eclipse.rap.rwt.internal.protocol.ClientMessageConst.EVENT_SEL
 import static org.eclipse.rap.rwt.internal.protocol.RemoteObjectFactory.getRemoteObject;
 import static org.eclipse.rap.rwt.internal.lifecycle.WidgetUtil.getId;
 import static org.eclipse.rap.rwt.internal.lifecycle.WidgetUtil.registerDataKeys;
+import static org.eclipse.rap.rwt.testfixture.TestMessage.getParent;
+import static org.eclipse.rap.rwt.testfixture.TestMessage.getStyles;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -25,8 +28,6 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
-import java.util.Arrays;
-
 import org.eclipse.rap.json.JsonArray;
 import org.eclipse.rap.json.JsonObject;
 import org.eclipse.rap.json.JsonValue;
@@ -36,10 +37,10 @@ import org.eclipse.rap.rwt.internal.lifecycle.WidgetAdapter;
 import org.eclipse.rap.rwt.internal.lifecycle.WidgetUtil;
 import org.eclipse.rap.rwt.remote.OperationHandler;
 import org.eclipse.rap.rwt.testfixture.Fixture;
-import org.eclipse.rap.rwt.testfixture.Message;
-import org.eclipse.rap.rwt.testfixture.Message.CreateOperation;
-import org.eclipse.rap.rwt.testfixture.Message.DestroyOperation;
-import org.eclipse.rap.rwt.testfixture.Message.Operation;
+import org.eclipse.rap.rwt.testfixture.TestMessage;
+import org.eclipse.rap.rwt.internal.protocol.Operation.CreateOperation;
+import org.eclipse.rap.rwt.internal.protocol.Operation.DestroyOperation;
+import org.eclipse.rap.rwt.internal.protocol.Operation;
 import org.eclipse.rap.rwt.testfixture.internal.TestUtil;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.HelpEvent;
@@ -163,10 +164,10 @@ public class MenuItemLCA_Test {
 
     lca.renderInitialization( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( item );
     assertEquals( "rwt.widgets.MenuItem", operation.getType() );
-    assertTrue( Arrays.asList( operation.getStyles() ).contains( "PUSH" ) );
+    assertTrue( getStyles( operation ).contains( "PUSH" ) );
   }
 
   @Test
@@ -175,10 +176,10 @@ public class MenuItemLCA_Test {
 
     lca.renderInitialization( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( item );
     assertEquals( "rwt.widgets.MenuItem", operation.getType() );
-    assertTrue( Arrays.asList( operation.getStyles() ).contains( "CHECK" ) );
+    assertTrue( getStyles( operation ).contains( "CHECK" ) );
   }
 
   @Test
@@ -187,10 +188,10 @@ public class MenuItemLCA_Test {
 
     lca.renderInitialization( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( item );
     assertEquals( "rwt.widgets.MenuItem", operation.getType() );
-    assertTrue( Arrays.asList( operation.getStyles() ).contains( "RADIO" ) );
+    assertTrue( getStyles( operation ).contains( "RADIO" ) );
   }
 
   @Test
@@ -199,10 +200,10 @@ public class MenuItemLCA_Test {
 
     lca.renderInitialization( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( item );
     assertEquals( "rwt.widgets.MenuItem", operation.getType() );
-    assertTrue( Arrays.asList( operation.getStyles() ).contains( "CASCADE" ) );
+    assertTrue( getStyles( operation ).contains( "CASCADE" ) );
   }
 
   @Test
@@ -233,9 +234,9 @@ public class MenuItemLCA_Test {
 
     lca.renderInitialization( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( item );
-    assertEquals( WidgetUtil.getId( item.getParent() ), operation.getParent() );
+    assertEquals( getId( item.getParent() ), getParent( operation ) );
   }
 
   @Test
@@ -244,7 +245,7 @@ public class MenuItemLCA_Test {
 
     lca.renderInitialization( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( 0, message.findCreateProperty( item, "index" ).asInt() );
   }
 
@@ -254,7 +255,7 @@ public class MenuItemLCA_Test {
 
     lca.renderDispose( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     Operation operation = message.getOperation( 0 );
     assertTrue( operation instanceof DestroyOperation );
     assertEquals( WidgetUtil.getId( item ), operation.getTarget() );
@@ -266,9 +267,9 @@ public class MenuItemLCA_Test {
 
     lca.render( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( item );
-    assertTrue( operation.getPropertyNames().indexOf( "menu" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "menu" ) );
   }
 
   @Test
@@ -279,7 +280,7 @@ public class MenuItemLCA_Test {
     item.setMenu( subMenu );
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( getId( subMenu ), message.findSetProperty( item, "menu" ).asString() );
   }
 
@@ -294,7 +295,7 @@ public class MenuItemLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( item, "menu" ) );
   }
 
@@ -304,9 +305,9 @@ public class MenuItemLCA_Test {
 
     lca.render( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( item );
-    assertTrue( operation.getPropertyNames().indexOf( "enabled" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "enabled" ) );
   }
 
   @Test
@@ -316,7 +317,7 @@ public class MenuItemLCA_Test {
     item.setEnabled( false );
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.FALSE, message.findSetProperty( item, "enabled" ) );
   }
 
@@ -330,7 +331,7 @@ public class MenuItemLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( item, "enabled" ) );
   }
 
@@ -340,9 +341,9 @@ public class MenuItemLCA_Test {
 
     lca.render( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( item );
-    assertTrue( operation.getPropertyNames().indexOf( "selection" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "selection" ) );
   }
 
   @Test
@@ -352,7 +353,7 @@ public class MenuItemLCA_Test {
     item.setSelection( true );
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.TRUE, message.findSetProperty( item, "selection" ) );
   }
 
@@ -366,7 +367,7 @@ public class MenuItemLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( item, "selection" ) );
   }
 
@@ -376,9 +377,9 @@ public class MenuItemLCA_Test {
 
     lca.render( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( item );
-    assertTrue( operation.getPropertyNames().indexOf( "customVariant" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "customVariant" ) );
   }
 
   @Test
@@ -388,7 +389,7 @@ public class MenuItemLCA_Test {
     item.setData( RWT.CUSTOM_VARIANT, "blue" );
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( "variant_blue", message.findSetProperty( item, "customVariant" ).asString() );
   }
 
@@ -402,7 +403,7 @@ public class MenuItemLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( item, "customVariant" ) );
   }
 
@@ -412,9 +413,9 @@ public class MenuItemLCA_Test {
 
     lca.render( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( item );
-    assertTrue( operation.getPropertyNames().indexOf( "text" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "text" ) );
   }
 
   @Test
@@ -424,7 +425,7 @@ public class MenuItemLCA_Test {
     item.setText( "foo" );
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( "foo", message.findSetProperty( item, "text" ).asString() );
   }
 
@@ -435,7 +436,7 @@ public class MenuItemLCA_Test {
     item.setText( "f&oo" );
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( "foo", message.findSetProperty( item, "text" ).asString() );
   }
 
@@ -449,7 +450,7 @@ public class MenuItemLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( item, "text" ) );
   }
 
@@ -459,7 +460,7 @@ public class MenuItemLCA_Test {
 
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( item, "mnemonicIndex" ) );
   }
 
@@ -470,7 +471,7 @@ public class MenuItemLCA_Test {
     item.setText( "te&st" );
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( 2, message.findSetProperty( item, "mnemonicIndex" ).asInt() );
   }
 
@@ -481,7 +482,7 @@ public class MenuItemLCA_Test {
     item.setText( "te&st" );
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( item, "mnemonicIndex" ) );
   }
 
@@ -496,7 +497,7 @@ public class MenuItemLCA_Test {
     item.setText( "aa&bb" );
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( 2, message.findSetProperty( item, "mnemonicIndex" ).asInt() );
   }
 
@@ -510,7 +511,7 @@ public class MenuItemLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( item, "mnemonicIndex" ) );
   }
 
@@ -520,9 +521,9 @@ public class MenuItemLCA_Test {
 
     lca.render( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( item );
-    assertTrue( operation.getPropertyNames().indexOf( "image" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "image" ) );
   }
 
   @Test
@@ -533,7 +534,7 @@ public class MenuItemLCA_Test {
     item.setImage( image );
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     JsonArray expected
       = new JsonArray().add( "rwt-resources/generated/90fb0bfe.gif" ).add( 58 ).add( 12 );
     assertEquals( expected, message.findSetProperty( item, "image" ) );
@@ -550,7 +551,7 @@ public class MenuItemLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( item, "image" ) );
   }
 
@@ -564,7 +565,7 @@ public class MenuItemLCA_Test {
     item.addListener( SWT.Selection, mock( Listener.class ) );
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.TRUE, message.findListenProperty( item, "Selection" ) );
     assertNull( message.findListenOperation( item, "DefaultSelection" ) );
   }
@@ -581,7 +582,7 @@ public class MenuItemLCA_Test {
     item.removeListener( SWT.Selection, listener );
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.FALSE, message.findListenProperty( item, "Selection" ) );
     assertNull( message.findListenOperation( item, "DefaultSelection" ) );
   }
@@ -597,7 +598,7 @@ public class MenuItemLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findListenOperation( item, "Selection" ) );
   }
 
@@ -614,7 +615,7 @@ public class MenuItemLCA_Test {
     } );
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.TRUE, message.findListenProperty( item, "Help" ) );
   }
 
@@ -633,7 +634,7 @@ public class MenuItemLCA_Test {
     item.removeHelpListener( listener );
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.FALSE, message.findListenProperty( item, "Help" ) );
   }
 
@@ -651,7 +652,7 @@ public class MenuItemLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findListenOperation( item, "help" ) );
   }
 
@@ -664,7 +665,7 @@ public class MenuItemLCA_Test {
 
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     JsonObject data = ( JsonObject )message.findSetProperty( item, "data" );
     assertEquals( "string", data.get( "foo" ).asString() );
     assertEquals( 1, data.get( "bar" ).asInt() );
@@ -681,7 +682,7 @@ public class MenuItemLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( item );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( 0, message.getOperationCount() );
   }
 

@@ -14,9 +14,11 @@ package org.eclipse.swt.internal.widgets.treecolumnkit;
 import static org.eclipse.rap.rwt.internal.lifecycle.WidgetUtil.getId;
 import static org.eclipse.rap.rwt.internal.lifecycle.WidgetUtil.registerDataKeys;
 import static org.eclipse.rap.rwt.testfixture.Fixture.getProtocolMessage;
+import static org.eclipse.rap.rwt.testfixture.TestMessage.getParent;
 import static org.eclipse.rap.rwt.testfixture.internal.TestUtil.createImage;
 import static org.eclipse.swt.internal.widgets.treecolumnkit.TreeColumnLCA.getLeft;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
@@ -28,13 +30,13 @@ import org.eclipse.rap.json.JsonArray;
 import org.eclipse.rap.json.JsonObject;
 import org.eclipse.rap.json.JsonValue;
 import org.eclipse.rap.rwt.RWT;
-import org.eclipse.rap.rwt.internal.remote.RemoteObjectRegistry;
 import org.eclipse.rap.rwt.internal.lifecycle.WidgetAdapter;
 import org.eclipse.rap.rwt.internal.lifecycle.WidgetUtil;
+import org.eclipse.rap.rwt.internal.protocol.Operation.CreateOperation;
+import org.eclipse.rap.rwt.internal.remote.RemoteObjectRegistry;
 import org.eclipse.rap.rwt.remote.OperationHandler;
 import org.eclipse.rap.rwt.testfixture.Fixture;
-import org.eclipse.rap.rwt.testfixture.Message;
-import org.eclipse.rap.rwt.testfixture.Message.CreateOperation;
+import org.eclipse.rap.rwt.testfixture.TestMessage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionListener;
@@ -182,7 +184,7 @@ public class TreeColumnLCA_Test {
   public void testRenderCreate() throws IOException {
     lca.renderInitialization( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( column );
     assertEquals( "rwt.widgets.GridColumn", operation.getType() );
   }
@@ -193,9 +195,9 @@ public class TreeColumnLCA_Test {
 
     lca.render( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( column );
-    assertTrue( operation.getPropertyNames().indexOf( "style" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "style" ) );
     assertEquals( "right", message.findCreateProperty( column, "alignment" ).asString() );
   }
 
@@ -213,16 +215,16 @@ public class TreeColumnLCA_Test {
   public void testRenderParent() throws IOException {
     lca.renderInitialization( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( column );
-    assertEquals( WidgetUtil.getId( column.getParent() ), operation.getParent() );
+    assertEquals( getId( column.getParent() ), getParent( operation ) );
   }
 
   @Test
   public void testRenderInitialIndex() throws IOException {
     lca.render( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( 0, message.findCreateProperty( column, "index" ).asInt() );
   }
 
@@ -231,7 +233,7 @@ public class TreeColumnLCA_Test {
     new TreeColumn( tree, SWT.NONE, 0 );
     lca.renderChanges( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( 1, message.findSetProperty( column, "index" ).asInt() );
   }
 
@@ -244,7 +246,7 @@ public class TreeColumnLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( column, "index" ) );
   }
 
@@ -254,7 +256,7 @@ public class TreeColumnLCA_Test {
 
     lca.renderChanges( column );
 
-    Message message = getProtocolMessage();
+    TestMessage message = getProtocolMessage();
     assertTrue( "foo", message.findSetProperty( column, "toolTipMarkupEnabled" ).asBoolean() );
   }
 
@@ -265,7 +267,7 @@ public class TreeColumnLCA_Test {
 
     lca.renderChanges( column );
 
-    Message message = getProtocolMessage();
+    TestMessage message = getProtocolMessage();
     assertNull( message.findSetOperation( column, "toolTipMarkupEnabled" ) );
   }
 
@@ -273,9 +275,9 @@ public class TreeColumnLCA_Test {
   public void testRenderInitialToolTip() throws IOException {
     lca.render( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( column );
-    assertTrue( operation.getPropertyNames().indexOf( "toolTip" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "toolTip" ) );
   }
 
   @Test
@@ -283,7 +285,7 @@ public class TreeColumnLCA_Test {
     column.setToolTipText( "foo" );
     lca.renderChanges( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( "foo", message.findSetProperty( column, "toolTip" ).asString() );
   }
 
@@ -296,7 +298,7 @@ public class TreeColumnLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( column, "toolTip" ) );
   }
 
@@ -304,9 +306,9 @@ public class TreeColumnLCA_Test {
   public void testRenderInitialCustomVariant() throws IOException {
     lca.render( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( column );
-    assertTrue( operation.getPropertyNames().indexOf( "customVariant" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "customVariant" ) );
   }
 
   @Test
@@ -314,7 +316,7 @@ public class TreeColumnLCA_Test {
     column.setData( RWT.CUSTOM_VARIANT, "blue" );
     lca.renderChanges( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( "variant_blue", message.findSetProperty( column, "customVariant" ).asString() );
   }
 
@@ -327,7 +329,7 @@ public class TreeColumnLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( column, "customVariant" ) );
   }
 
@@ -335,9 +337,9 @@ public class TreeColumnLCA_Test {
   public void testRenderInitialText() throws IOException {
     lca.render( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( column );
-    assertTrue( operation.getPropertyNames().indexOf( "text" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "text" ) );
   }
 
   @Test
@@ -345,7 +347,7 @@ public class TreeColumnLCA_Test {
     column.setText( "foo" );
     lca.renderChanges( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( "foo", message.findSetProperty( column, "text" ).asString() );
   }
 
@@ -358,7 +360,7 @@ public class TreeColumnLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( column, "text" ) );
   }
 
@@ -366,7 +368,7 @@ public class TreeColumnLCA_Test {
   public void testRenderInitialImage() throws IOException {
     lca.renderChanges( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( column, "image" ) );
   }
 
@@ -377,7 +379,7 @@ public class TreeColumnLCA_Test {
     column.setImage( image );
     lca.renderChanges( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     String imageLocation = ImageFactory.getImagePath( image );
     JsonArray expected = new JsonArray().add( imageLocation ).add( 100 ).add( 50 );
     assertEquals( expected, message.findSetProperty( column, "image" ) );
@@ -393,7 +395,7 @@ public class TreeColumnLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( column, "image" ) );
   }
 
@@ -408,7 +410,7 @@ public class TreeColumnLCA_Test {
     column.setImage( null );
     lca.renderChanges( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonObject.NULL, message.findSetProperty( column, "image" ) );
   }
 
@@ -416,9 +418,9 @@ public class TreeColumnLCA_Test {
   public void testRenderInitialLeft() throws IOException {
     lca.render( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( column );
-    assertTrue( operation.getPropertyNames().indexOf( "left" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "left" ) );
   }
 
   @Test
@@ -427,7 +429,7 @@ public class TreeColumnLCA_Test {
     col2.setWidth( 50 );
     lca.renderChanges( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( 50, message.findSetProperty( column, "left" ).asInt() );
   }
 
@@ -441,7 +443,7 @@ public class TreeColumnLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( column, "left" ) );
   }
 
@@ -449,9 +451,9 @@ public class TreeColumnLCA_Test {
   public void testRenderInitialWidth() throws IOException {
     lca.render( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( column );
-    assertTrue( operation.getPropertyNames().indexOf( "width" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "width" ) );
   }
 
   @Test
@@ -459,7 +461,7 @@ public class TreeColumnLCA_Test {
     column.setWidth( 50 );
     lca.renderChanges( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( 50, message.findSetProperty( column, "width" ).asInt() );
   }
 
@@ -472,7 +474,7 @@ public class TreeColumnLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( column, "width" ) );
   }
 
@@ -480,9 +482,9 @@ public class TreeColumnLCA_Test {
   public void testRenderInitialResizable() throws IOException {
     lca.render( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( column );
-    assertTrue( operation.getPropertyNames().indexOf( "resizable" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "resizable" ) );
   }
 
   @Test
@@ -490,7 +492,7 @@ public class TreeColumnLCA_Test {
     column.setResizable( false );
     lca.renderChanges( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.FALSE, message.findSetProperty( column, "resizable" ) );
   }
 
@@ -503,7 +505,7 @@ public class TreeColumnLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( column, "resizable" ) );
   }
 
@@ -511,9 +513,9 @@ public class TreeColumnLCA_Test {
   public void testRenderInitialMoveable() throws IOException {
     lca.render( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( column );
-    assertTrue( operation.getPropertyNames().indexOf( "moveable" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "moveable" ) );
   }
 
   @Test
@@ -521,7 +523,7 @@ public class TreeColumnLCA_Test {
     column.setMoveable( true );
     lca.renderChanges( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.TRUE, message.findSetProperty( column, "moveable" ) );
   }
 
@@ -534,7 +536,7 @@ public class TreeColumnLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( column, "moveable" ) );
   }
 
@@ -542,9 +544,9 @@ public class TreeColumnLCA_Test {
   public void testRenderInitialAlignment() throws IOException {
     lca.render( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( column );
-    assertTrue( operation.getPropertyNames().indexOf( "alignment" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "alignment" ) );
   }
 
   @Test
@@ -552,7 +554,7 @@ public class TreeColumnLCA_Test {
     column.setAlignment( SWT.RIGHT );
     lca.renderChanges( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( "right", message.findSetProperty( column, "alignment" ).asString() );
   }
 
@@ -565,7 +567,7 @@ public class TreeColumnLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( column, "alignment" ) );
   }
 
@@ -573,9 +575,9 @@ public class TreeColumnLCA_Test {
   public void testRenderInitialFixed() throws IOException {
     lca.render( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( column );
-    assertTrue( operation.getPropertyNames().indexOf( "fixed" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "fixed" ) );
   }
 
   @Test
@@ -583,7 +585,7 @@ public class TreeColumnLCA_Test {
     tree.setData( RWT.FIXED_COLUMNS, Integer.valueOf( 1 ) );
     lca.renderChanges( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.TRUE, message.findSetProperty( column, "fixed" ) );
   }
 
@@ -596,7 +598,7 @@ public class TreeColumnLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( column, "fixed" ) );
   }
 
@@ -609,7 +611,7 @@ public class TreeColumnLCA_Test {
     column.addListener( SWT.Selection, mock( Listener.class ) );
     lca.renderChanges( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.TRUE, message.findListenProperty( column, "Selection" ) );
   }
 
@@ -624,7 +626,7 @@ public class TreeColumnLCA_Test {
     column.removeListener( SWT.Selection, listener );
     lca.renderChanges( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.FALSE, message.findListenProperty( column, "Selection" ) );
   }
 
@@ -638,7 +640,7 @@ public class TreeColumnLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findListenOperation( column, "selection" ) );
   }
 
@@ -646,9 +648,9 @@ public class TreeColumnLCA_Test {
   public void testRenderInitialFont() throws IOException {
     lca.render( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( column );
-    assertTrue( operation.getPropertyNames().indexOf( "font" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "font" ) );
   }
 
   @Test
@@ -657,7 +659,7 @@ public class TreeColumnLCA_Test {
 
     lca.renderChanges( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     JsonArray expected = JsonArray.readFrom( "[[\"Arial\"], 12, false, false ]" );
     assertEquals( expected, message.findSetProperty( column, "font" ) );
   }
@@ -671,7 +673,7 @@ public class TreeColumnLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( column, "font" ) );
   }
 
@@ -685,7 +687,7 @@ public class TreeColumnLCA_Test {
     tree.setFont( null );
     lca.renderChanges( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonObject.NULL, message.findSetProperty( column, "font" ) );
   }
 
@@ -697,7 +699,7 @@ public class TreeColumnLCA_Test {
 
     lca.renderChanges( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     JsonObject data = ( JsonObject )message.findSetProperty( column, "data" );
     assertEquals( "string", data.get( "foo" ).asString() );
     assertEquals( 1, data.get( "bar" ).asInt() );
@@ -713,7 +715,7 @@ public class TreeColumnLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( column );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( 0, message.getOperationCount() );
   }
 

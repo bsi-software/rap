@@ -90,6 +90,11 @@ import org.eclipse.swt.widgets.Widget;
 @SuppressWarnings( "deprecation" )
 public final class Fixture {
 
+  private static final String HEAD = "head";
+  private static final String OPERATIONS = "operations";
+  private static final String SET = "set";
+  private static final String CALL = "call";
+  private static final String NOTIFY = "notify";
   public final static File TEMP_DIR = createTempDir();
   public static final File WEB_CONTEXT_DIR = new File( TEMP_DIR, "testapp" );
   public static final File WEB_CONTEXT_RWT_RESOURCES_DIR
@@ -187,11 +192,13 @@ public final class Fixture {
 
   public static void createServiceContext() {
     TestRequest request = new TestRequest();
-    request.setBody( createEmptyMessage() );
+    ClientMessage message = createEmptyMessage();
+    request.setBody( message.toString() );
     TestResponse response = new TestResponse();
     HttpSession session = createTestSession();
     request.setSession( session );
     createNewServiceContext( request, response );
+    ProtocolUtil.setClientMessage( message );
   }
 
   private static TestSession createTestSession() {
@@ -297,16 +304,16 @@ public final class Fixture {
     fakePhase( bufferedPhaseId );
   }
 
-  public static Message getProtocolMessage() {
+  public static TestMessage getProtocolMessage() {
     TestResponse response = ( TestResponse )ContextProvider.getResponse();
     finishResponse( response );
-    return new Message( JsonObject.readFrom( response.getContent() ) );
+    return new TestMessage( JsonObject.readFrom( response.getContent() ) );
   }
 
   private static void finishResponse( TestResponse response ) {
     if( response.getContent().length() == 0 ) {
       try {
-        getProtocolWriter().createMessage().writeTo( response.getWriter() );
+        getProtocolWriter().createMessage().toJson().writeTo( response.getWriter() );
       } catch( IOException exception ) {
         throw new IllegalStateException( "Failed to get response writer", exception );
       }
@@ -325,8 +332,10 @@ public final class Fixture {
   public static TestRequest fakeNewRequest() {
     TestRequest request = createNewRequest( HTTP.METHOD_POST );
     request.setContentType( HTTP.CONTENT_TYPE_JSON );
-    request.setBody( createEmptyMessage() );
+    ClientMessage emptyMessage = createEmptyMessage();
+    request.setBody( emptyMessage.toString() );
     createNewServiceContext( request, new TestResponse() );
+    ProtocolUtil.setClientMessage( emptyMessage );
     fakeResponseWriter();
     return request;
   }
@@ -354,11 +363,10 @@ public final class Fixture {
     ensureUISession( serviceContext );
   }
 
-  public static String createEmptyMessage() {
-    JsonObject result = new JsonObject();
-    result.add( ClientMessage.PROP_HEAD, new JsonObject() );
-    result.add( ClientMessage.PROP_OPERATIONS, new JsonArray() );
-    return result.toString();
+  private static ClientMessage createEmptyMessage() {
+    return new ClientMessage( new JsonObject()
+      .add( HEAD, new JsonObject() )
+      .add( OPERATIONS, new JsonArray() ) );
   }
 
   public static void fakeHeadParameter( String key, long value ) {
@@ -379,9 +387,10 @@ public final class Fixture {
     String json = request.getBody();
     try {
       JsonObject message = JsonObject.readFrom( json );
-      JsonObject header = message.get( ClientMessage.PROP_HEAD ).asObject();
+      JsonObject header = message.get( HEAD ).asObject();
       header.add( key, value );
       request.setBody( message.toString() );
+      ProtocolUtil.setClientMessage( new ClientMessage( message ) );
     } catch( Exception exception ) {
       throw new RuntimeException( "Failed to add header parameter", exception );
     }
@@ -409,13 +418,14 @@ public final class Fixture {
     String json = request.getBody();
     try {
       JsonObject message = JsonObject.readFrom( json );
-      JsonArray operations = message.get( ClientMessage.PROP_OPERATIONS ).asArray();
+      JsonArray operations = message.get( OPERATIONS ).asArray();
       JsonArray newOperation = new JsonArray();
-      newOperation.add( ClientMessage.OPERATION_SET );
+      newOperation.add( SET );
       newOperation.add( target );
       newOperation.add( properties != null ? properties : new JsonObject() );
       operations.add( newOperation );
       request.setBody( message.toString() );
+      ProtocolUtil.setClientMessage( new ClientMessage( message ) );
     } catch( Exception exception ) {
       throw new RuntimeException( "Failed to add set operation", exception );
     }
@@ -430,14 +440,15 @@ public final class Fixture {
     String json = request.getBody();
     try {
       JsonObject message = JsonObject.readFrom( json );
-      JsonArray operations = message.get( ClientMessage.PROP_OPERATIONS ).asArray();
+      JsonArray operations = message.get( OPERATIONS ).asArray();
       JsonArray newOperation = new JsonArray();
-      newOperation.add( ClientMessage.OPERATION_NOTIFY );
+      newOperation.add( NOTIFY );
       newOperation.add( target );
       newOperation.add( eventName );
       newOperation.add( properties != null ? properties : new JsonObject() );
       operations.add( newOperation );
       request.setBody( message.toString() );
+      ProtocolUtil.setClientMessage( new ClientMessage( message ) );
     } catch( Exception exception ) {
       throw new RuntimeException( "Failed to add notify operation", exception );
     }
@@ -452,14 +463,15 @@ public final class Fixture {
     String json = request.getBody();
     try {
       JsonObject message = JsonObject.readFrom( json );
-      JsonArray operations = message.get( ClientMessage.PROP_OPERATIONS ).asArray();
+      JsonArray operations = message.get( OPERATIONS ).asArray();
       JsonArray newOperation = new JsonArray();
-      newOperation.add( ClientMessage.OPERATION_CALL );
+      newOperation.add( CALL );
       newOperation.add( target );
       newOperation.add( methodName );
       newOperation.add( parameters != null ? parameters : new JsonObject() );
       operations.add( newOperation );
       request.setBody( message.toString() );
+      ProtocolUtil.setClientMessage( new ClientMessage( message ) );
     } catch( Exception exception ) {
       throw new RuntimeException( "Failed to add call operation", exception );
     }

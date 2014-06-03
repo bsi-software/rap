@@ -11,8 +11,10 @@
  ******************************************************************************/
 package org.eclipse.swt.internal.widgets.buttonkit;
 
-import static org.eclipse.rap.rwt.internal.protocol.RemoteObjectFactory.getRemoteObject;
 import static org.eclipse.rap.rwt.internal.lifecycle.WidgetUtil.getId;
+import static org.eclipse.rap.rwt.internal.protocol.RemoteObjectFactory.getRemoteObject;
+import static org.eclipse.rap.rwt.testfixture.TestMessage.getParent;
+import static org.eclipse.rap.rwt.testfixture.TestMessage.getStyles;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -32,15 +34,15 @@ import java.util.List;
 import org.eclipse.rap.json.JsonArray;
 import org.eclipse.rap.json.JsonObject;
 import org.eclipse.rap.json.JsonValue;
-import org.eclipse.rap.rwt.internal.protocol.ClientMessageConst;
-import org.eclipse.rap.rwt.internal.remote.RemoteObjectRegistry;
 import org.eclipse.rap.rwt.internal.lifecycle.WidgetAdapter;
 import org.eclipse.rap.rwt.internal.lifecycle.WidgetUtil;
+import org.eclipse.rap.rwt.internal.protocol.ClientMessageConst;
+import org.eclipse.rap.rwt.internal.protocol.Operation.CreateOperation;
+import org.eclipse.rap.rwt.internal.remote.RemoteObjectRegistry;
 import org.eclipse.rap.rwt.remote.OperationHandler;
 import org.eclipse.rap.rwt.scripting.ClientListener;
 import org.eclipse.rap.rwt.testfixture.Fixture;
-import org.eclipse.rap.rwt.testfixture.Message;
-import org.eclipse.rap.rwt.testfixture.Message.CreateOperation;
+import org.eclipse.rap.rwt.testfixture.TestMessage;
 import org.eclipse.rap.rwt.testfixture.internal.TestUtil;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -320,10 +322,9 @@ public class ButtonLCA_Test {
 
     lca.renderInitialization( button );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( button );
-    Object[] styles = operation.getStyles();
-    assertTrue( Arrays.asList( styles ).contains( "WRAP" ) );
+    assertTrue( getStyles( operation ).contains( "WRAP" ) );
   }
 
   @Test
@@ -332,11 +333,10 @@ public class ButtonLCA_Test {
 
     lca.renderInitialization( pushButton );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( pushButton );
     assertEquals( "rwt.widgets.Button", operation.getType() );
-    Object[] styles = operation.getStyles();
-    assertTrue( Arrays.asList( styles ).contains( "PUSH" ) );
+    assertTrue( getStyles( operation ).contains( "PUSH" ) );
   }
 
   @Test
@@ -345,11 +345,10 @@ public class ButtonLCA_Test {
 
     lca.renderInitialization( pushButton );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( pushButton );
     assertEquals( "rwt.widgets.Button", operation.getType() );
-    Object[] styles = operation.getStyles();
-    assertTrue( Arrays.asList( styles ).contains( "ARROW" ) );
+    assertTrue( getStyles( operation ).contains( "ARROW" ) );
   }
 
   @Test
@@ -367,16 +366,16 @@ public class ButtonLCA_Test {
 
     lca.renderInitialization( pushButton );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( pushButton );
-    assertEquals( WidgetUtil.getId( pushButton.getParent() ), operation.getParent() );
+    assertEquals( getId( pushButton.getParent() ), getParent( operation ) );
   }
 
   @Test
   public void testRenderInitialText() throws IOException {
     lca.renderChanges( button );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( button, "text" ) );
   }
 
@@ -385,7 +384,7 @@ public class ButtonLCA_Test {
     button.setText( "test" );
     lca.renderChanges( button );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( "test", message.findSetProperty( button, "text" ).asString() );
   }
 
@@ -394,7 +393,7 @@ public class ButtonLCA_Test {
     button.setText( "te\"s't" );
     lca.renderChanges( button );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( "te\"s't", message.findSetProperty( button, "text" ).asString() );
   }
 
@@ -403,7 +402,7 @@ public class ButtonLCA_Test {
     button.setText( "te&st" );
     lca.renderChanges( button );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( "test", message.findSetProperty( button, "text" ).asString() );
   }
 
@@ -412,7 +411,7 @@ public class ButtonLCA_Test {
     button.setText( "\ntes\r\nt\n" );
     lca.renderChanges( button );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( "\ntes\r\nt\n", message.findSetProperty( button, "text" ).asString() );
   }
 
@@ -425,7 +424,7 @@ public class ButtonLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( button );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( button, "text" ) );
   }
 
@@ -433,7 +432,7 @@ public class ButtonLCA_Test {
   public void testRenderInitialAlignment() throws IOException {
     lca.renderChanges( button );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( button, "alignment" ) );
   }
 
@@ -443,7 +442,7 @@ public class ButtonLCA_Test {
 
     lca.renderChanges( button );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( "up", message.findSetProperty( button, "alignment" ).asString() );
   }
 
@@ -452,7 +451,7 @@ public class ButtonLCA_Test {
     button.setAlignment( SWT.RIGHT );
     lca.renderChanges( button );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( "right", message.findSetProperty( button, "alignment" ).asString() );
   }
 
@@ -462,7 +461,7 @@ public class ButtonLCA_Test {
 
     lca.renderChanges( button );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( "down", message.findSetProperty( button, "alignment" ).asString() );
   }
 
@@ -475,7 +474,7 @@ public class ButtonLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( button );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( button, "alignment" ) );
   }
 
@@ -488,7 +487,7 @@ public class ButtonLCA_Test {
     button.addSelectionListener( new SelectionAdapter() { } );
     lca.renderChanges( button );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.TRUE, message.findListenProperty( button, "Selection" ) );
   }
 
@@ -503,7 +502,7 @@ public class ButtonLCA_Test {
     button.removeSelectionListener( listener );
     lca.renderChanges( button );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.FALSE, message.findListenProperty( button, "Selection" ) );
   }
 
@@ -517,7 +516,7 @@ public class ButtonLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( button );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findListenOperation( button, "selection" ) );
   }
 
@@ -525,7 +524,7 @@ public class ButtonLCA_Test {
   public void testRenderInitialImage() throws IOException {
     lca.renderChanges( button );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( button, "image" ) );
   }
 
@@ -536,7 +535,7 @@ public class ButtonLCA_Test {
     button.setImage( image );
     lca.renderChanges( button );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     String imageLocation = ImageFactory.getImagePath( image );
     JsonArray expected = new JsonArray().add( imageLocation ).add( 100 ).add ( 50 );
     assertEquals( expected, message.findSetProperty( button, "image" ) );
@@ -552,7 +551,7 @@ public class ButtonLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( button );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( button, "image" ) );
   }
 
@@ -567,7 +566,7 @@ public class ButtonLCA_Test {
     button.setImage( null );
     lca.renderChanges( button );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonObject.NULL, message.findSetProperty( button, "image" ) );
   }
 
@@ -577,7 +576,7 @@ public class ButtonLCA_Test {
 
     lca.renderChanges( button );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( button, "selection" ) );
   }
 
@@ -588,7 +587,7 @@ public class ButtonLCA_Test {
     button.setSelection( true );
     lca.renderChanges( button );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.TRUE, message.findSetProperty( button, "selection" ) );
   }
 
@@ -602,7 +601,7 @@ public class ButtonLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( button );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( button, "selection" ) );
   }
 
@@ -612,7 +611,7 @@ public class ButtonLCA_Test {
 
     lca.renderChanges( button );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( button, "grayed" ) );
   }
 
@@ -623,7 +622,7 @@ public class ButtonLCA_Test {
     button.setGrayed( true );
     lca.renderChanges( button );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.TRUE, message.findSetProperty( button, "grayed" ) );
   }
 
@@ -637,7 +636,7 @@ public class ButtonLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( button );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( button, "grayed" ) );
   }
 
@@ -645,7 +644,7 @@ public class ButtonLCA_Test {
   public void testRenderInitialMnemonicIndex() throws IOException {
     lca.renderChanges( button );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( button, "mnemonicIndex" ) );
   }
 
@@ -654,7 +653,7 @@ public class ButtonLCA_Test {
     button.setText( "te&st" );
     lca.renderChanges( button );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( 2, message.findSetProperty( button, "mnemonicIndex" ).asInt() );
   }
 
@@ -668,7 +667,7 @@ public class ButtonLCA_Test {
     button.setText( "aa&bb" );
     lca.renderChanges( button );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( 2, message.findSetProperty( button, "mnemonicIndex" ).asInt() );
   }
 
@@ -681,7 +680,7 @@ public class ButtonLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( button );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( button, "mnemonicIndex" ) );
   }
 
@@ -691,7 +690,7 @@ public class ButtonLCA_Test {
 
     lca.renderChanges( button );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNotNull( message.findCallOperation( button, "addListener" ) );
   }
 

@@ -12,6 +12,7 @@ package org.eclipse.swt.internal.widgets.canvaskit;
 
 import static org.eclipse.rap.rwt.internal.protocol.RemoteObjectFactory.getRemoteObject;
 import static org.eclipse.rap.rwt.internal.lifecycle.WidgetUtil.getId;
+import static org.eclipse.rap.rwt.testfixture.TestMessage.getParent;
 import static org.eclipse.swt.internal.widgets.canvaskit.GCOperationWriter.getGcId;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -29,9 +30,9 @@ import org.eclipse.rap.rwt.lifecycle.PhaseId;
 import org.eclipse.rap.rwt.remote.OperationHandler;
 import org.eclipse.rap.rwt.scripting.ClientListener;
 import org.eclipse.rap.rwt.testfixture.Fixture;
-import org.eclipse.rap.rwt.testfixture.Message;
-import org.eclipse.rap.rwt.testfixture.Message.CallOperation;
-import org.eclipse.rap.rwt.testfixture.Message.CreateOperation;
+import org.eclipse.rap.rwt.testfixture.TestMessage;
+import org.eclipse.rap.rwt.internal.protocol.Operation.CallOperation;
+import org.eclipse.rap.rwt.internal.protocol.Operation.CreateOperation;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
@@ -88,14 +89,14 @@ public class CanvasLCA_Test {
   public void testRenderCreate() throws IOException {
     lca.renderInitialization( canvas );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation canvasCreate = message.findCreateOperation( canvas );
     assertEquals( "rwt.widgets.Canvas", canvasCreate.getType() );
-    assertEquals( getId( shell ), canvasCreate.getProperty( "parent" ).asString() );
+    assertEquals( getId( shell ), canvasCreate.getProperties().get( "parent" ).asString() );
     String canvasId = getId( canvas );
     CreateOperation gcCreate = message.findCreateOperation( getGcId( canvas ) );
     assertEquals( "rwt.widgets.GC", gcCreate.getType() );
-    assertEquals( canvasId, gcCreate.getProperty( "parent" ).asString() );
+    assertEquals( canvasId, gcCreate.getProperties().get( "parent" ).asString() );
   }
 
   @Test
@@ -122,9 +123,9 @@ public class CanvasLCA_Test {
   public void testRenderParent() throws IOException {
     lca.renderInitialization( canvas );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( canvas );
-    assertEquals( getId( canvas.getParent() ), operation.getParent() );
+    assertEquals( getId( canvas.getParent() ), getParent( operation ) );
   }
 
   @Test
@@ -140,16 +141,16 @@ public class CanvasLCA_Test {
     new CanvasLCA().renderChanges( canvas );
 
     CallOperation init = getGCOperation( canvas, "init" );
-    assertEquals( 50, init.getProperty( "width" ).asInt() );
-    assertEquals( 50, init.getProperty( "height" ).asInt() );
+    assertEquals( 50, init.getParameters().get( "width" ).asInt() );
+    assertEquals( 50, init.getParameters().get( "height" ).asInt() );
     JsonArray expectedFont = JsonArray.readFrom( "[[\"Arial\"], 11, false, false]" );
-    assertEquals( expectedFont, init.getProperty( "font" ) );
+    assertEquals( expectedFont, init.getParameters().get( "font" ) );
     JsonArray expectedFillStyle = JsonArray.readFrom( "[255, 255, 255, 255]" );
-    assertEquals( expectedFillStyle, init.getProperty( "fillStyle" ) );
+    assertEquals( expectedFillStyle, init.getParameters().get( "fillStyle" ) );
     JsonArray expectedStrokeStyle = JsonArray.readFrom( "[74, 74, 74, 255]" );
-    assertEquals( expectedStrokeStyle, init.getProperty( "strokeStyle" ) );
+    assertEquals( expectedStrokeStyle, init.getParameters().get( "strokeStyle" ) );
     CallOperation draw = getGCOperation( canvas, "draw" );
-    assertEquals( 4, draw.getProperty( "operations" ).asArray().size() );
+    assertEquals( 4, draw.getParameters().get( "operations" ).asArray().size() );
   }
 
   @Test
@@ -166,7 +167,7 @@ public class CanvasLCA_Test {
     new CanvasLCA().renderChanges( canvas );
 
     CallOperation draw = getGCOperation( canvas, "draw" );
-    assertEquals( 8, draw.getProperty( "operations" ).asArray().size() );
+    assertEquals( 8, draw.getParameters().get( "operations" ).asArray().size() );
   }
 
   // see bug 323080
@@ -189,7 +190,7 @@ public class CanvasLCA_Test {
     gc.dispose();
     new CanvasLCA().renderChanges( canvas );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( 0, message.getOperationCount() );
   }
 
@@ -211,7 +212,7 @@ public class CanvasLCA_Test {
     new CanvasLCA().renderChanges( canvas );
 
     CallOperation draw = getGCOperation( canvas, "draw" );
-    assertEquals( 8, draw.getProperty( "operations" ).asArray().size() );
+    assertEquals( 8, draw.getParameters().get( "operations" ).asArray().size() );
     assertEquals( 0, adapter.getGCOperations().length );
   }
 
@@ -252,7 +253,7 @@ public class CanvasLCA_Test {
 
     new CanvasLCA().renderChanges( canvas );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( 0, message.getOperationCount() );
   }
 
@@ -277,10 +278,10 @@ public class CanvasLCA_Test {
     new CanvasLCA().renderChanges( canvas );
 
     CallOperation init = getGCOperation( canvas, "init" );
-    assertEquals( 150, init.getProperty( "width" ).asInt() );
-    assertEquals( 150, init.getProperty( "height" ).asInt() );
+    assertEquals( 150, init.getParameters().get( "width" ).asInt() );
+    assertEquals( 150, init.getParameters().get( "height" ).asInt() );
     CallOperation draw = getGCOperation( canvas, "draw" );
-    assertEquals( 8, draw.getProperty( "operations" ).asArray().size() );
+    assertEquals( 8, draw.getParameters().get( "operations" ).asArray().size() );
   }
 
   @Test
@@ -303,7 +304,7 @@ public class CanvasLCA_Test {
     new CanvasLCA().renderChanges( canvas );
 
     CallOperation draw = getGCOperation( canvas, "draw" );
-    assertEquals( 8, draw.getProperty( "operations" ).asArray().size() );
+    assertEquals( 8, draw.getParameters().get( "operations" ).asArray().size() );
   }
 
   @Test
@@ -334,7 +335,7 @@ public class CanvasLCA_Test {
 
     lca.renderClientArea( canvas );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     Rectangle clientArea = canvas.getClientArea();
     assertEquals( clientArea, toRectangle( message.findSetProperty( canvas, "clientArea" ) ) );
   }
@@ -345,7 +346,7 @@ public class CanvasLCA_Test {
 
     lca.renderClientArea( canvas );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     Rectangle clientArea = new Rectangle( 0, 0, 0, 0 );
     assertEquals( clientArea, toRectangle( message.findSetProperty( canvas, "clientArea" ) ) );
   }
@@ -358,7 +359,7 @@ public class CanvasLCA_Test {
     lca.preserveValues( canvas );
     lca.renderClientArea( canvas );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( canvas, "clientArea" ) );
   }
 
@@ -368,7 +369,7 @@ public class CanvasLCA_Test {
 
     lca.renderChanges( canvas );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNotNull( message.findCallOperation( canvas, "addListener" ) );
   }
 
@@ -384,7 +385,7 @@ public class CanvasLCA_Test {
   }
 
   private static CallOperation getGCOperation( Canvas canvas, String method ) {
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     return message.findCallOperation( getGcId( canvas ), method );
   }
 

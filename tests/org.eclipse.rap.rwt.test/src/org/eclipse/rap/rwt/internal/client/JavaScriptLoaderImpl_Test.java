@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 EclipseSource and others.
+ * Copyright (c) 2012, 2014 EclipseSource and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,10 +19,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.rap.json.JsonArray;
+import org.eclipse.rap.json.JsonValue;
 import org.eclipse.rap.rwt.client.service.JavaScriptLoader;
 import org.eclipse.rap.rwt.testfixture.Fixture;
-import org.eclipse.rap.rwt.testfixture.Message.CallOperation;
-import org.eclipse.rap.rwt.testfixture.Message.Operation;
+import org.eclipse.rap.rwt.internal.protocol.Operation.CallOperation;
+import org.eclipse.rap.rwt.internal.protocol.Operation;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.junit.After;
@@ -53,7 +54,7 @@ public class JavaScriptLoaderImpl_Test {
 
     Operation operation = getProtocolMessage().getOperation( 0 );
     assertTrue( isLoadOperation( operation ) );
-    assertEquals( list( "url" ), getFiles( operation ) );
+    assertEquals( list( "url" ), getFiles( ( CallOperation )operation ) );
   }
 
   @Test
@@ -71,7 +72,7 @@ public class JavaScriptLoaderImpl_Test {
     loader.require( "url" );
     loader.require( "url" );
 
-    assertEquals( list( "url" ), getFiles( getProtocolMessage().getOperation( 0 ) ) );
+    assertEquals( list( "url" ), getFiles( ( CallOperation )getProtocolMessage().getOperation( 0 ) ) );
     assertEquals( 1, getProtocolMessage().getOperationCount() );
   }
 
@@ -92,11 +93,11 @@ public class JavaScriptLoaderImpl_Test {
            && ( ( CallOperation )operation ).getMethodName().equals( "load" );
   }
 
-  private static List<String> getFiles( Operation operation ) {
+  private static List<String> getFiles( CallOperation operation ) {
     List<String> result = new ArrayList<String>();
-    JsonArray files = ( JsonArray )operation.getProperty( "files" );
-    for( int i = 0; i < files.size(); i++ ) {
-      result.add( files.get( i ).asString() );
+    JsonArray files = ( JsonArray )operation.getParameters().get( "files" );
+    for( JsonValue file : files ) {
+      result.add( file.asString() );
     }
     return result;
   }

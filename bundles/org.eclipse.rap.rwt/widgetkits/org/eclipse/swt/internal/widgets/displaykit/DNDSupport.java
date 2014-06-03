@@ -13,7 +13,7 @@ package org.eclipse.swt.internal.widgets.displaykit;
 import static org.eclipse.rap.rwt.internal.protocol.ProtocolUtil.handleOperation;
 
 import org.eclipse.rap.rwt.internal.protocol.ClientMessage;
-import org.eclipse.rap.rwt.internal.protocol.ClientMessage.Operation;
+import org.eclipse.rap.rwt.internal.protocol.Operation;
 import org.eclipse.rap.rwt.internal.protocol.ProtocolUtil;
 import org.eclipse.rap.rwt.internal.remote.RemoteObjectImpl;
 import org.eclipse.rap.rwt.internal.remote.RemoteObjectRegistry;
@@ -29,7 +29,7 @@ public final class DNDSupport {
 
   public static void handleOperations() {
     ClientMessage clientMessage = ProtocolUtil.getClientMessage();
-    for( Operation operation : clientMessage.getAllOperations() ) {
+    for( Operation operation : clientMessage.getOperations() ) {
       OperationHandler handler = getOperationHandler( operation.getTarget() );
       if( isDNDOperationHandler( handler) ) {
         handleOperation( handler, operation );

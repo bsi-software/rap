@@ -31,7 +31,7 @@ import org.eclipse.rap.rwt.internal.lifecycle.UITestUtil;
 import org.eclipse.rap.rwt.internal.lifecycle.WidgetAdapter;
 import org.eclipse.rap.rwt.internal.lifecycle.WidgetUtil;
 import org.eclipse.rap.rwt.internal.protocol.ClientMessage;
-import org.eclipse.rap.rwt.internal.protocol.ClientMessage.Operation;
+import org.eclipse.rap.rwt.internal.protocol.Operation;
 import org.eclipse.rap.rwt.internal.protocol.ProtocolMessageWriter;
 import org.eclipse.rap.rwt.internal.protocol.ProtocolUtil;
 import org.eclipse.rap.rwt.internal.protocol.RemoteObjectFactory;
@@ -65,7 +65,7 @@ public class DisplayLCA implements DisplayLifeCycleAdapter {
     handleOperations( display );
     visitWidgets( display );
     DNDSupport.handleOperations();
-    RemoteObjectLifeCycleAdapter.readData();
+    RemoteObjectLifeCycleAdapter.readData( ProtocolUtil.getClientMessage() );
   }
 
   public void preserveValues( Display display ) {

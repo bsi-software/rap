@@ -370,6 +370,35 @@ Combo-List {
   border-radius: 2px;
 }
 
+Combo-List-Item {
+  color: inherit;
+  background-color: transparent;
+  background-image: none;
+  text-decoration: none;
+  text-shadow: none;
+  padding: 6px 10px 6px 10px;
+}
+
+Combo-List-Item:hover {
+  color: #4a4a4a;
+  background-color: #b5b5b5;
+  background-image: gradient(
+    linear, left top, left bottom,
+    from( #ebebeb ),
+    to( #d5d5d5 )
+  );
+}
+
+Combo-List-Item:selected {
+  color: #ffffff;
+  background-color: #5882b5;
+  background-image: gradient(
+    linear, left top, left bottom,
+    from( #5882b5 ),
+    to( #416693 )
+  );
+}
+
 Combo-Field {
   padding: 5px 10px 5px 10px;
 }
@@ -385,7 +414,37 @@ Combo-FocusIndicator {
 
 DropDown {
   border: 1px solid #4f7cb1;
+  border-radius: 0;
   box-shadow: 0 0 5px #4f7cb1;
+}
+
+DropDown-Item {
+  color: inherit;
+  background-color: transparent;
+  background-image: none;
+  text-decoration: none;
+  text-shadow: none;
+  padding: 6px 10px 6px 10px;
+}
+
+DropDown-Item:hover {
+  color: #4a4a4a;
+  background-color: #b5b5b5;
+  background-image: gradient(
+    linear, left top, left bottom,
+    from( #ebebeb ),
+    to( #d5d5d5 )
+  );
+}
+
+DropDown-Item:selected {
+  color: #ffffff;
+  background-color: #5882b5;
+  background-image: gradient(
+    linear, left top, left bottom,
+    from( #5882b5 ),
+    to( #416693 )
+  );
 }
 
 /* CoolBar default theme */
@@ -559,8 +618,7 @@ List-Item {
 }
 
 List-Item:hover {
-  color: inherit;
-  background-color: #dae9f7;
+  color: #4a4a4a;
   background-image: gradient(
     linear, left top, left bottom,
     from( #ebebeb ),
@@ -570,6 +628,8 @@ List-Item:hover {
 
 List-Item:selected {
   color: #ffffff;
+  /* background-color property is used on the server to compute system color with id
+     SWT.COLOR_LIST_SELECTION (see bug https://bugs.eclipse.org/bugs/show_bug.cgi?id=434191) */
   background-color: #00589f;
   background-image: gradient(
     linear, left top, left bottom,
@@ -579,7 +639,6 @@ List-Item:selected {
 }
 
 List-Item:selected:unfocused {
-  background-color: #959595;
   color: #ffffff;
   background-image: gradient(
     linear, left top, left bottom,
@@ -594,7 +653,6 @@ List-Item:even {
 
 List-Item:even:hover {
   color: #4a4a4a;
-  background-color: #818181;
   background-image: gradient(
     linear, left top, left bottom,
     from( #ebebeb ),
@@ -604,7 +662,6 @@ List-Item:even:hover {
 
 List-Item:even:selected {
   color: #ffffff;
-  background-color: #818181;
   background-image: gradient(
     linear, left top, left bottom,
     from( #5882b5 ),
@@ -613,7 +670,6 @@ List-Item:even:selected {
 }
 
 List-Item:even:selected:unfocused {
-  background-color: #959595;
   color: #ffffff;
   background-image: gradient(
     linear, left top, left bottom,
@@ -2024,6 +2080,35 @@ CCombo-List {
   border: 1px solid #4f7cb1;
   box-shadow: 0 0 5px #4f7cb1;
   border-radius: 2px;
+}
+
+CCombo-List-Item {
+  color: inherit;
+  background-color: transparent;
+  background-image: none;
+  text-decoration: none;
+  text-shadow: none;
+  padding: 6px 10px 6px 10px;
+}
+
+CCombo-List-Item:hover {
+  color: #4a4a4a;
+  background-color: #b5b5b5;
+  background-image: gradient(
+    linear, left top, left bottom,
+    from( #ebebeb ),
+    to( #d5d5d5 )
+  );
+}
+
+CCombo-List-Item:selected {
+  color: #ffffff;
+  background-color: #5882b5;
+  background-image: gradient(
+    linear, left top, left bottom,
+    from( #5882b5 ),
+    to( #416693 )
+  );
 }
 
 CCombo-Field {

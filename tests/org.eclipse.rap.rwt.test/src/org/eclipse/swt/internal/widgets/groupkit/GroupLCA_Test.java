@@ -10,9 +10,11 @@
  ******************************************************************************/
 package org.eclipse.swt.internal.widgets.groupkit;
 
-import static org.eclipse.rap.rwt.internal.protocol.RemoteObjectFactory.getRemoteObject;
 import static org.eclipse.rap.rwt.internal.lifecycle.WidgetUtil.getId;
+import static org.eclipse.rap.rwt.internal.protocol.RemoteObjectFactory.getRemoteObject;
+import static org.eclipse.rap.rwt.testfixture.TestMessage.getParent;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.spy;
@@ -21,12 +23,11 @@ import static org.mockito.Mockito.verify;
 import java.io.IOException;
 
 import org.eclipse.rap.json.JsonObject;
+import org.eclipse.rap.rwt.internal.protocol.Operation.CreateOperation;
 import org.eclipse.rap.rwt.internal.remote.RemoteObjectRegistry;
-import org.eclipse.rap.rwt.internal.lifecycle.WidgetUtil;
 import org.eclipse.rap.rwt.remote.OperationHandler;
 import org.eclipse.rap.rwt.testfixture.Fixture;
-import org.eclipse.rap.rwt.testfixture.Message;
-import org.eclipse.rap.rwt.testfixture.Message.CreateOperation;
+import org.eclipse.rap.rwt.testfixture.TestMessage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.internal.widgets.controlkit.ControlLCATestUtil;
 import org.eclipse.swt.widgets.Display;
@@ -73,7 +74,7 @@ public class GroupLCA_Test {
   public void testRenderCreate() throws IOException {
     lca.renderInitialization( group );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( group );
     assertEquals( "rwt.widgets.Group", operation.getType() );
   }
@@ -102,18 +103,18 @@ public class GroupLCA_Test {
   public void testRenderParent() throws IOException {
     lca.renderInitialization( group );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( group );
-    assertEquals( WidgetUtil.getId( group.getParent() ), operation.getParent() );
+    assertEquals( getId( group.getParent() ), getParent( operation ) );
   }
 
   @Test
   public void testRenderInitialText() throws IOException {
     lca.render( group );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( group );
-    assertTrue( operation.getPropertyNames().indexOf( "text" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "text" ) );
   }
 
   @Test
@@ -121,7 +122,7 @@ public class GroupLCA_Test {
     group.setText( "foo" );
     lca.renderChanges( group );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( "foo", message.findSetProperty( group, "text" ).asString() );
   }
 
@@ -130,7 +131,7 @@ public class GroupLCA_Test {
     group.setText( "te&st" );
     lca.renderChanges( group );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( "test", message.findSetProperty( group, "text" ).asString() );
   }
 
@@ -143,7 +144,7 @@ public class GroupLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( group );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( group, "text" ) );
   }
 
@@ -151,7 +152,7 @@ public class GroupLCA_Test {
   public void testRenderInitialMnemonicIndex() throws IOException {
     lca.renderChanges( group );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( group, "mnemonicIndex" ) );
   }
 
@@ -160,7 +161,7 @@ public class GroupLCA_Test {
     group.setText( "te&st" );
     lca.renderChanges( group );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( 2, message.findSetProperty( group, "mnemonicIndex" ).asInt() );
   }
 
@@ -173,7 +174,7 @@ public class GroupLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( group );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( group, "mnemonicIndex" ) );
   }
 

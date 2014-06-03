@@ -11,8 +11,10 @@
  ******************************************************************************/
 package org.eclipse.swt.internal.widgets.expandbarkit;
 
-import static org.eclipse.rap.rwt.internal.protocol.RemoteObjectFactory.getRemoteObject;
 import static org.eclipse.rap.rwt.internal.lifecycle.WidgetUtil.getId;
+import static org.eclipse.rap.rwt.internal.protocol.RemoteObjectFactory.getRemoteObject;
+import static org.eclipse.rap.rwt.testfixture.TestMessage.getParent;
+import static org.eclipse.rap.rwt.testfixture.TestMessage.getStyles;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -22,21 +24,19 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 
 import org.eclipse.rap.json.JsonArray;
 import org.eclipse.rap.json.JsonObject;
 import org.eclipse.rap.json.JsonValue;
-import org.eclipse.rap.rwt.internal.remote.RemoteObjectRegistry;
 import org.eclipse.rap.rwt.internal.lifecycle.WidgetAdapter;
 import org.eclipse.rap.rwt.internal.lifecycle.WidgetUtil;
+import org.eclipse.rap.rwt.internal.protocol.Operation;
+import org.eclipse.rap.rwt.internal.protocol.Operation.CreateOperation;
+import org.eclipse.rap.rwt.internal.protocol.Operation.DestroyOperation;
+import org.eclipse.rap.rwt.internal.remote.RemoteObjectRegistry;
 import org.eclipse.rap.rwt.remote.OperationHandler;
 import org.eclipse.rap.rwt.testfixture.Fixture;
-import org.eclipse.rap.rwt.testfixture.Message;
-import org.eclipse.rap.rwt.testfixture.Message.CreateOperation;
-import org.eclipse.rap.rwt.testfixture.Message.DestroyOperation;
-import org.eclipse.rap.rwt.testfixture.Message.Operation;
+import org.eclipse.rap.rwt.testfixture.TestMessage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionListener;
@@ -145,7 +145,7 @@ public class ExpandBarLCA_Test {
   public void testRenderCreate() throws IOException {
     lca.renderInitialization( expandBar );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( expandBar );
     assertEquals( "rwt.widgets.ExpandBar", operation.getType() );
   }
@@ -156,11 +156,10 @@ public class ExpandBarLCA_Test {
 
     lca.render( expandBar );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( expandBar );
     assertEquals( "rwt.widgets.ExpandBar", operation.getType() );
-    List<Object> styles = Arrays.asList( operation.getStyles() );
-    assertFalse( styles.contains( "V_SCROLL" ) );
+    assertFalse( getStyles( operation ).contains( "V_SCROLL" ) );
   }
 
   @Test
@@ -176,7 +175,7 @@ public class ExpandBarLCA_Test {
   public void testRenderInitialization_rendersExpandListener() throws Exception {
     lca.renderInitialization( expandBar );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.TRUE, message.findListenProperty( expandBar, "Expand" ) );
   }
 
@@ -184,7 +183,7 @@ public class ExpandBarLCA_Test {
   public void testRenderInitialization_rendersCollapseListener() throws Exception {
     lca.renderInitialization( expandBar );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.TRUE, message.findListenProperty( expandBar, "Collapse" ) );
   }
 
@@ -203,16 +202,16 @@ public class ExpandBarLCA_Test {
   public void testRenderParent() throws IOException {
     lca.renderInitialization( expandBar );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( expandBar );
-    assertEquals( WidgetUtil.getId( expandBar.getParent() ), operation.getParent() );
+    assertEquals( WidgetUtil.getId( expandBar.getParent() ), getParent( operation ) );
   }
 
   @Test
   public void testRenderDispose() throws IOException {
     lca.renderDispose( expandBar );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     Operation operation = message.getOperation( 0 );
     assertTrue( operation instanceof DestroyOperation );
     assertEquals( WidgetUtil.getId( expandBar ), operation.getTarget() );
@@ -222,7 +221,7 @@ public class ExpandBarLCA_Test {
   public void testRenderInitialBottomSpacingBounds() throws IOException {
     lca.render( expandBar );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     JsonArray bounds = ( JsonArray )message.findSetProperty( expandBar, "bottomSpacingBounds" );
     assertTrue( bounds.get( 2 ).asInt() > 0 );
     assertTrue( bounds.get( 3 ).asInt() > 0 );
@@ -232,7 +231,7 @@ public class ExpandBarLCA_Test {
   public void testRenderBottomSpacingBounds() throws IOException {
     lca.renderChanges( expandBar );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     JsonArray bounds = ( JsonArray )message.findSetProperty( expandBar, "bottomSpacingBounds" );
     assertTrue( bounds.get( 2 ).asInt() > 0 );
     assertTrue( bounds.get( 3 ).asInt() > 0 );
@@ -246,7 +245,7 @@ public class ExpandBarLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( expandBar );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( expandBar, "boubottomSpacingBoundsnds" ) );
   }
 
@@ -259,7 +258,7 @@ public class ExpandBarLCA_Test {
 
     lca.render( expandBar );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( vScroll, "visibility" ) );
   }
 
@@ -273,7 +272,7 @@ public class ExpandBarLCA_Test {
     new ExpandItem( expandBar, SWT.NONE );
     lca.renderChanges( expandBar );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.TRUE, message.findSetProperty( vScroll, "visibility" ) );
   }
 
@@ -291,7 +290,7 @@ public class ExpandBarLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( expandBar );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( vScroll, "visibility" ) );
   }
 
@@ -303,9 +302,9 @@ public class ExpandBarLCA_Test {
 
     lca.render( expandBar );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( expandBar );
-    assertTrue( operation.getPropertyNames().indexOf( "vScrollBarMax" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "vScrollBarMax" ) );
   }
 
   @Test
@@ -317,7 +316,7 @@ public class ExpandBarLCA_Test {
     new ExpandItem( expandBar, SWT.NONE );
     lca.renderChanges( expandBar );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNotNull( message.findSetProperty( expandBar, "vScrollBarMax" ) );
   }
 
@@ -333,7 +332,7 @@ public class ExpandBarLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( expandBar );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( expandBar, "vScrollBarMax" ) );
   }
 
@@ -347,7 +346,7 @@ public class ExpandBarLCA_Test {
     vScroll.addSelectionListener( new SelectionAdapter() { } );
     lca.renderChanges( expandBar );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.TRUE, message.findListenProperty( vScroll, "Selection" ) );
   }
 
@@ -363,7 +362,7 @@ public class ExpandBarLCA_Test {
     vScroll.removeSelectionListener( listener );
     lca.renderChanges( expandBar );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.FALSE, message.findListenProperty( vScroll, "Selection" ) );
   }
 
@@ -378,7 +377,7 @@ public class ExpandBarLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( expandBar );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findListenOperation( vScroll, "Selection" ) );
   }
 

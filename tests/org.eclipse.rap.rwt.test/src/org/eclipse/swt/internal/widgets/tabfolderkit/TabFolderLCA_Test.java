@@ -14,6 +14,8 @@ package org.eclipse.swt.internal.widgets.tabfolderkit;
 import static org.eclipse.rap.rwt.internal.lifecycle.WidgetUtil.getAdapter;
 import static org.eclipse.rap.rwt.internal.lifecycle.WidgetUtil.getId;
 import static org.eclipse.rap.rwt.internal.protocol.RemoteObjectFactory.getRemoteObject;
+import static org.eclipse.rap.rwt.testfixture.TestMessage.getParent;
+import static org.eclipse.rap.rwt.testfixture.TestMessage.getStyles;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -21,17 +23,16 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import org.eclipse.rap.json.JsonObject;
 import org.eclipse.rap.json.JsonValue;
 import org.eclipse.rap.rwt.internal.lifecycle.WidgetAdapter;
 import org.eclipse.rap.rwt.internal.protocol.ClientMessageConst;
+import org.eclipse.rap.rwt.internal.protocol.Operation.CreateOperation;
 import org.eclipse.rap.rwt.internal.remote.RemoteObjectRegistry;
 import org.eclipse.rap.rwt.remote.OperationHandler;
 import org.eclipse.rap.rwt.testfixture.Fixture;
-import org.eclipse.rap.rwt.testfixture.Message;
-import org.eclipse.rap.rwt.testfixture.Message.CreateOperation;
+import org.eclipse.rap.rwt.testfixture.TestMessage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -157,11 +158,10 @@ public class TabFolderLCA_Test {
   public void testRenderCreate() throws IOException {
     lca.renderInitialization( folder );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( folder );
     assertEquals( "rwt.widgets.TabFolder", operation.getType() );
-    Object[] styles = operation.getStyles();
-    assertTrue( Arrays.asList( styles ).contains( "TOP" ) );
+    assertTrue( getStyles( operation ).contains( "TOP" ) );
   }
 
   @Test
@@ -170,11 +170,10 @@ public class TabFolderLCA_Test {
 
     lca.renderInitialization( folder );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( folder );
     assertEquals( "rwt.widgets.TabFolder", operation.getType() );
-    Object[] styles = operation.getStyles();
-    assertTrue( Arrays.asList( styles ).contains( "BOTTOM" ) );
+    assertTrue( getStyles( operation ).contains( "BOTTOM" ) );
   }
 
   @Test
@@ -190,7 +189,7 @@ public class TabFolderLCA_Test {
   public void testRenderInitialization_rendersSelectionListener() throws Exception {
     lca.renderInitialization( folder );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.TRUE, message.findListenProperty( folder, "Selection" ) );
   }
 
@@ -209,16 +208,16 @@ public class TabFolderLCA_Test {
   public void testRenderParent() throws IOException {
     lca.renderInitialization( folder );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( folder );
-    assertEquals( getId( folder.getParent() ), operation.getParent() );
+    assertEquals( getId( folder.getParent() ), getParent( operation ) );
   }
 
   @Test
   public void testRenderInitialSelectionWithoutItems() throws IOException {
     lca.render( folder );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( folder, "selection" ) );
   }
 
@@ -230,7 +229,7 @@ public class TabFolderLCA_Test {
 
     lca.render( folder );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( getId( item ), message.findSetProperty( folder, "selection" ).asString() );
   }
 
@@ -243,7 +242,7 @@ public class TabFolderLCA_Test {
     folder.setSelection( 1 );
     lca.renderChanges( folder );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( getId( item ), message.findSetProperty( folder, "selection" ).asString() );
   }
 
@@ -259,7 +258,7 @@ public class TabFolderLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( folder );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( folder, "selection" ) );
   }
 
@@ -281,7 +280,7 @@ public class TabFolderLCA_Test {
     fakeWidgetSelected( folder, item2 );
     Fixture.executeLifeCycleFromServerThread();
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( getId( item1 ), message.findSetProperty( folder, "selection" ).asString() );
   }
 

@@ -15,6 +15,8 @@ import static org.eclipse.rap.rwt.internal.lifecycle.DisplayUtil.getLCA;
 import static org.eclipse.rap.rwt.internal.protocol.RemoteObjectFactory.getRemoteObject;
 import static org.eclipse.rap.rwt.internal.service.ContextProvider.getApplicationContext;
 import static org.eclipse.rap.rwt.internal.lifecycle.WidgetUtil.getId;
+import static org.eclipse.rap.rwt.testfixture.TestMessage.getParent;
+import static org.eclipse.rap.rwt.testfixture.TestMessage.getStyles;
 import static org.eclipse.rap.rwt.testfixture.internal.TestUtil.createImage;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -29,7 +31,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.List;
 
 import org.eclipse.rap.json.JsonArray;
 import org.eclipse.rap.json.JsonObject;
@@ -46,9 +48,10 @@ import org.eclipse.rap.rwt.internal.lifecycle.WidgetUtil;
 import org.eclipse.rap.rwt.remote.OperationHandler;
 import org.eclipse.rap.rwt.template.Template;
 import org.eclipse.rap.rwt.testfixture.Fixture;
-import org.eclipse.rap.rwt.testfixture.Message;
-import org.eclipse.rap.rwt.testfixture.Message.CreateOperation;
-import org.eclipse.rap.rwt.testfixture.Message.Operation;
+import org.eclipse.rap.rwt.testfixture.TestMessage;
+import org.eclipse.rap.rwt.internal.protocol.Operation.CreateOperation;
+import org.eclipse.rap.rwt.internal.protocol.Operation;
+import org.eclipse.rap.rwt.internal.protocol.Operation.SetOperation;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -264,7 +267,7 @@ public class TableLCA_Test {
       }
     } );
     Fixture.executeLifeCycleFromServerThread();
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNotNull( message.findCallOperation( table.getItem( lastItemIndex ), "clear" ) );
   }
 
@@ -548,14 +551,14 @@ public class TableLCA_Test {
   public void testRenderCreate() throws IOException {
     lca.renderInitialization( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( table );
     assertEquals( "rwt.widgets.Grid", operation.getType() );
-    assertEquals( "table", operation.getProperty( "appearance" ).asString() );
-    assertEquals( 0, operation.getProperty( "indentionWidth" ).asInt() );
-    assertEquals( -1, operation.getProperty( "treeColumn" ).asInt() );
-    assertFalse( operation.getPropertyNames().contains( "checkBoxMetrics" ) );
-    assertEquals( JsonValue.FALSE, operation.getProperty( "markupEnabled" ) );
+    assertEquals( "table", operation.getProperties().get( "appearance" ).asString() );
+    assertEquals( 0, operation.getProperties().get( "indentionWidth" ).asInt() );
+    assertEquals( -1, operation.getProperties().get( "treeColumn" ).asInt() );
+    assertFalse( operation.getProperties().names().contains( "checkBoxMetrics" ) );
+    assertEquals( JsonValue.FALSE, operation.getProperties().get( "markupEnabled" ) );
   }
 
   @Test
@@ -564,9 +567,9 @@ public class TableLCA_Test {
 
     lca.renderInitialization( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( table );
-    assertEquals( JsonValue.TRUE, operation.getProperty( "splitContainer" ) );
+    assertEquals( JsonValue.TRUE, operation.getProperties().get( "splitContainer" ) );
   }
 
   @Test
@@ -594,9 +597,9 @@ public class TableLCA_Test {
   public void testRenderParent() throws IOException {
     lca.renderInitialization( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( table );
-    assertEquals( WidgetUtil.getId( table.getParent() ), operation.getParent() );
+    assertEquals( getId( table.getParent() ), getParent( operation ) );
   }
 
   @Test
@@ -606,12 +609,12 @@ public class TableLCA_Test {
     lca.renderInitialization( table );
     lca.renderChanges( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation create = message.findCreateOperation( table );
-    Object[] styles = create.getStyles();
-    assertTrue( Arrays.asList( styles ).contains( "VIRTUAL" ) );
-    assertTrue( Arrays.asList( styles ).contains( "NO_SCROLL" ) );
-    assertTrue( Arrays.asList( styles ).contains( "MULTI" ) );
+    List<String> styles = getStyles( create );
+    assertTrue( styles.contains( "VIRTUAL" ) );
+    assertTrue( styles.contains( "NO_SCROLL" ) );
+    assertTrue( styles.contains( "MULTI" ) );
     assertEquals( JsonValue.TRUE, message.findListenProperty( table, "SetData" ) );
   }
 
@@ -624,7 +627,7 @@ public class TableLCA_Test {
 
     lca.renderChanges( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findListenOperation( table, "SetData" ) );
   }
 
@@ -636,7 +639,7 @@ public class TableLCA_Test {
 
     lca.renderChanges( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findListenOperation( table, "SetData" ) );
   }
 
@@ -646,10 +649,9 @@ public class TableLCA_Test {
 
     lca.renderInitialization( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( table );
-    Object[] styles = operation.getStyles();
-    assertTrue( Arrays.asList( styles ).contains( "HIDE_SELECTION" ) );
+    assertTrue( getStyles( operation ).contains( "HIDE_SELECTION" ) );
   }
 
   @Test
@@ -658,21 +660,20 @@ public class TableLCA_Test {
 
     lca.renderInitialization( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( table );
-    Object[] styles = operation.getStyles();
-    assertTrue( Arrays.asList( styles ).contains( "CHECK" ) );
+    assertTrue( getStyles( operation ).contains( "CHECK" ) );
     JsonArray expected = JsonArray.readFrom( "[4, 21]" );
-    assertEquals( expected, operation.getProperty( "checkBoxMetrics" ) );
+    assertEquals( expected, operation.getProperties().get( "checkBoxMetrics" ) );
   }
 
   @Test
   public void testRenderInitialItemCount() throws IOException {
     lca.render( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( table );
-    assertTrue( operation.getPropertyNames().indexOf( "itemCount" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "itemCount" ) );
   }
 
   @Test
@@ -680,7 +681,7 @@ public class TableLCA_Test {
     table.setItemCount( 10 );
     lca.renderChanges( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( 10, message.findSetProperty( table, "itemCount" ).asInt() );
   }
 
@@ -693,7 +694,7 @@ public class TableLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( table, "itemCount" ) );
   }
 
@@ -701,7 +702,7 @@ public class TableLCA_Test {
   public void testRenderInitialItemHeight() throws IOException {
     lca.render( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNotNull( message.findSetOperation( table, "itemHeight" ) );
   }
 
@@ -712,7 +713,7 @@ public class TableLCA_Test {
     table.setFont( font );
     lca.renderChanges( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNotNull( message.findSetOperation( table, "itemHeight" ) );
   }
 
@@ -726,7 +727,7 @@ public class TableLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( table, "itemHeight" ) );
   }
 
@@ -734,7 +735,7 @@ public class TableLCA_Test {
   public void testRenderInitialItemMetrics() throws IOException {
     lca.render( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNotNull( message.findSetOperation( table, "itemMetrics" ) );
   }
 
@@ -745,7 +746,7 @@ public class TableLCA_Test {
 
     lca.renderChanges( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     JsonArray expected = JsonArray.readFrom( "[[0, 0, 26, 3, 0, 3, 20]]" );
     assertEquals( expected, message.findSetProperty( table, "itemMetrics" ) );
   }
@@ -760,7 +761,7 @@ public class TableLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( table, "itemMetrics" ) );
   }
 
@@ -768,9 +769,9 @@ public class TableLCA_Test {
   public void testRenderInitialColumnCount() throws IOException {
     lca.render( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( table );
-    assertTrue( operation.getPropertyNames().indexOf( "columnCount" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "columnCount" ) );
   }
 
   @Test
@@ -778,7 +779,7 @@ public class TableLCA_Test {
     new TableColumn( table, SWT.NONE );
     lca.renderChanges( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( 1, message.findSetProperty( table, "columnCount" ).asInt() );
   }
 
@@ -791,7 +792,7 @@ public class TableLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( table, "columnCount" ) );
   }
 
@@ -799,9 +800,9 @@ public class TableLCA_Test {
   public void testRenderInitialFixedColumns() throws IOException {
     lca.render( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( table );
-    assertTrue( operation.getPropertyNames().indexOf( "fixedColumns" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "fixedColumns" ) );
   }
 
   @Test
@@ -811,7 +812,7 @@ public class TableLCA_Test {
     table.setData( RWT.FIXED_COLUMNS, Integer.valueOf( 1 ) );
     lca.renderChanges( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( 1, message.findSetProperty( table, "fixedColumns" ).asInt() );
   }
 
@@ -825,7 +826,7 @@ public class TableLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( table, "fixedColumns" ) );
   }
 
@@ -833,9 +834,9 @@ public class TableLCA_Test {
   public void testRenderInitialHeaderHeight() throws IOException {
     lca.render( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( table );
-    assertTrue( operation.getPropertyNames().indexOf( "headerHeight" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "headerHeight" ) );
   }
 
   @Test
@@ -843,7 +844,7 @@ public class TableLCA_Test {
     table.setHeaderVisible( true );
     lca.renderChanges( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( 31, message.findSetProperty( table, "headerHeight" ).asInt() );
   }
 
@@ -856,7 +857,7 @@ public class TableLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( table, "headerHeight" ) );
   }
 
@@ -864,9 +865,9 @@ public class TableLCA_Test {
   public void testRenderInitialHeaderVisible() throws IOException {
     lca.render( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( table );
-    assertTrue( operation.getPropertyNames().indexOf( "headerVisible" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "headerVisible" ) );
   }
 
   @Test
@@ -874,7 +875,7 @@ public class TableLCA_Test {
     table.setHeaderVisible( true );
     lca.renderChanges( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.TRUE, message.findSetProperty( table, "headerVisible" ) );
   }
 
@@ -887,7 +888,7 @@ public class TableLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( table, "headerVisible" ) );
   }
 
@@ -895,9 +896,9 @@ public class TableLCA_Test {
   public void testRenderInitialLinesVisible() throws IOException {
     lca.render( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( table );
-    assertTrue( operation.getPropertyNames().indexOf( "linesVisible" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "linesVisible" ) );
   }
 
   @Test
@@ -905,7 +906,7 @@ public class TableLCA_Test {
     table.setLinesVisible( true );
     lca.renderChanges( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.TRUE, message.findSetProperty( table, "linesVisible" ) );
   }
 
@@ -918,7 +919,7 @@ public class TableLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( table, "linesVisible" ) );
   }
 
@@ -926,9 +927,9 @@ public class TableLCA_Test {
   public void testRenderInitialTopItemIndex() throws IOException {
     getLCA( display ).render( display );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( table );
-    assertTrue( operation.getPropertyNames().indexOf( "topItemIndex" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "topItemIndex" ) );
   }
 
   @Test
@@ -938,7 +939,7 @@ public class TableLCA_Test {
     table.setTopIndex( 2 );
     getLCA( display ).render( display );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( 2, message.findSetProperty( table, "topItemIndex" ).asInt() );
   }
 
@@ -950,12 +951,13 @@ public class TableLCA_Test {
     table.setTopIndex( 2 );
     getLCA( display ).render( display );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNotNull( message.findCreateOperation( table.getItem( 2 ) ) );
     assertNotNull( message.findCreateOperation( column ) );
-    Operation lastOperation = message.getOperation( message.getOperationCount() - 1 );
+    List<Operation> operations = message.getOperations();
+    SetOperation lastOperation = ( SetOperation )operations.get( operations.size() - 1 );
     assertEquals( getId( table ), lastOperation.getTarget() );
-    assertEquals( 2, lastOperation.getProperty( "topItemIndex" ).asInt() );
+    assertEquals( 2, lastOperation.getProperties().get( "topItemIndex" ).asInt() );
   }
 
   @Test
@@ -968,7 +970,7 @@ public class TableLCA_Test {
     Fixture.preserveWidgets();
     getLCA( display ).render( display );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( table, "topItemIndex" ) );
   }
 
@@ -976,9 +978,9 @@ public class TableLCA_Test {
   public void testRenderInitialFocusItem() throws IOException {
     getLCA( display ).render( display );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( table );
-    assertTrue( operation.getPropertyNames().indexOf( "focusItem" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "focusItem" ) );
   }
 
   @Test
@@ -989,7 +991,7 @@ public class TableLCA_Test {
     table.getAdapter( ITableAdapter.class ).setFocusIndex( 2 );
     getLCA( display ).render( display );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( getId( item ), message.findSetProperty( table, "focusItem" ).asString() );
   }
 
@@ -1003,7 +1005,7 @@ public class TableLCA_Test {
     Fixture.preserveWidgets();
     getLCA( display ).render( display );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( table, "focusItem" ) );
   }
 
@@ -1011,9 +1013,9 @@ public class TableLCA_Test {
   public void testRenderInitialScrollLeft() throws IOException {
     getLCA( display ).render( display );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( table );
-    assertTrue( operation.getPropertyNames().indexOf( "scrollLeft" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "scrollLeft" ) );
   }
 
   @Test
@@ -1022,7 +1024,7 @@ public class TableLCA_Test {
 
     getLCA( display ).render( display );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( 10, message.findSetProperty( table, "scrollLeft" ).asInt() );
   }
 
@@ -1034,12 +1036,13 @@ public class TableLCA_Test {
     table.getAdapter( ITableAdapter.class ).setLeftOffset( 10 );
     getLCA( display ).render( display );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNotNull( message.findCreateOperation( table.getItem( 2 ) ) );
     assertNotNull( message.findCreateOperation( column ) );
-    Operation lastOperation = message.getOperation( message.getOperationCount() - 1 );
+    List<Operation> operations = message.getOperations();
+    SetOperation lastOperation = ( SetOperation )operations.get( operations.size() - 1 );
     assertEquals( getId( table ), lastOperation.getTarget() );
-    assertEquals( 10, lastOperation.getProperty( "scrollLeft" ).asInt() );
+    assertEquals( 10, lastOperation.getProperties().get( "scrollLeft" ).asInt() );
   }
 
   @Test
@@ -1051,7 +1054,7 @@ public class TableLCA_Test {
     Fixture.preserveWidgets();
     getLCA( display ).render( display );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( table, "scrollLeft" ) );
   }
 
@@ -1059,9 +1062,9 @@ public class TableLCA_Test {
   public void testRenderInitialSelection() throws IOException {
     getLCA( display ).render( display );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( table );
-    assertTrue( operation.getPropertyNames().indexOf( "selection" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "selection" ) );
   }
 
   @Test
@@ -1072,7 +1075,7 @@ public class TableLCA_Test {
     table.setSelection( new int[] { 0, 2 } );
     getLCA( display ).render( display );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     JsonArray expected = new JsonArray();
     expected.add( getId( table.getItem( 2 ) ) );
     expected.add( getId( table.getItem( 0 ) ) );
@@ -1090,7 +1093,7 @@ public class TableLCA_Test {
     Fixture.preserveWidgets();
     getLCA( display ).render( display );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( table, "selection" ) );
   }
 
@@ -1098,9 +1101,9 @@ public class TableLCA_Test {
   public void testRenderInitialSortDirection() throws IOException {
     lca.render( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( table );
-    assertTrue( operation.getPropertyNames().indexOf( "sortDirection" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "sortDirection" ) );
   }
 
   @Test
@@ -1111,7 +1114,7 @@ public class TableLCA_Test {
     table.setSortDirection( SWT.UP );
     lca.renderChanges( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( "up", message.findSetProperty( table, "sortDirection" ).asString() );
   }
 
@@ -1126,7 +1129,7 @@ public class TableLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( table, "sortDirection" ) );
   }
 
@@ -1134,9 +1137,9 @@ public class TableLCA_Test {
   public void testRenderInitialSortColumn() throws IOException {
     getLCA( display ).render( display );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( table );
-    assertTrue( operation.getPropertyNames().indexOf( "sortColumn" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "sortColumn" ) );
   }
 
   @Test
@@ -1146,7 +1149,7 @@ public class TableLCA_Test {
     table.setSortColumn( column );
     getLCA( display ).render( display );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( getId( column ), message.findSetProperty( table, "sortColumn" ).asString() );
   }
 
@@ -1160,7 +1163,7 @@ public class TableLCA_Test {
     Fixture.preserveWidgets();
     getLCA( display ).render( display );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( table, "sortColumn" ) );
   }
 
@@ -1173,7 +1176,7 @@ public class TableLCA_Test {
     hScroll.addListener( SWT.Selection, mock( Listener.class ) );
     lca.renderChanges( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.TRUE, message.findListenProperty( hScroll, "Selection" ) );
   }
 
@@ -1188,7 +1191,7 @@ public class TableLCA_Test {
     hScroll.removeListener( SWT.Selection, listener );
     lca.renderChanges( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.FALSE, message.findListenProperty( hScroll, "Selection" ) );
   }
 
@@ -1202,7 +1205,7 @@ public class TableLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findListenOperation( hScroll, "Selection" ) );
   }
 
@@ -1215,7 +1218,7 @@ public class TableLCA_Test {
     vScroll.addListener( SWT.Selection, mock( Listener.class ) );
     lca.renderChanges( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.TRUE, message.findListenProperty( vScroll, "Selection" ) );
   }
 
@@ -1230,7 +1233,7 @@ public class TableLCA_Test {
     vScroll.removeListener( SWT.Selection, listener );
     lca.renderChanges( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.FALSE, message.findListenProperty( vScroll, "Selection" ) );
   }
 
@@ -1244,7 +1247,7 @@ public class TableLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findListenOperation( vScroll, "Selection" ) );
   }
 
@@ -1252,7 +1255,7 @@ public class TableLCA_Test {
   public void testRenderInitialScrollBarsVisible() throws IOException {
     lca.render( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( table.getHorizontalBar(), "visibility" ) );
     assertNull( message.findSetOperation( table.getVerticalBar(), "visibility" ) );
   }
@@ -1264,7 +1267,7 @@ public class TableLCA_Test {
     column.setWidth( 25 );
     lca.renderChanges( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.TRUE, message.findSetProperty( table.getHorizontalBar(), "visibility" ) );
     assertNull( message.findSetOperation( table.getVerticalBar(), "visibility" ) );
   }
@@ -1276,7 +1279,7 @@ public class TableLCA_Test {
     table.setHeaderVisible( true );
     lca.renderChanges( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( table.getHorizontalBar(), "visibility" ) );
     assertEquals( JsonValue.TRUE, message.findSetProperty( table.getVerticalBar(), "visibility" ) );
   }
@@ -1293,7 +1296,7 @@ public class TableLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( table.getHorizontalBar(), "visibility" ) );
     assertNull( message.findSetOperation( table.getVerticalBar(), "visibility" ) );
   }
@@ -1307,7 +1310,7 @@ public class TableLCA_Test {
     table.addListener( SWT.Selection, mock( Listener.class ) );
     lca.renderChanges( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.TRUE, message.findListenProperty( table, "Selection" ) );
     assertNull( message.findListenOperation( table, "DefaultSelection" ) );
   }
@@ -1323,7 +1326,7 @@ public class TableLCA_Test {
     table.removeListener( SWT.Selection, listener );
     lca.renderChanges( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.FALSE, message.findListenProperty( table, "Selection" ) );
     assertNull( message.findListenOperation( table, "DefaultSelection" ) );
   }
@@ -1337,7 +1340,7 @@ public class TableLCA_Test {
     table.addListener( SWT.DefaultSelection, mock( Listener.class ) );
     lca.renderChanges( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.TRUE, message.findListenProperty( table, "DefaultSelection" ) );
     assertNull( message.findListenOperation( table, "Selection" ) );
   }
@@ -1353,7 +1356,7 @@ public class TableLCA_Test {
     table.removeListener( SWT.DefaultSelection, listener );
     lca.renderChanges( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.FALSE, message.findListenProperty( table, "DefaultSelection" ) );
     assertNull( message.findListenOperation( table, "Selection" ) );
   }
@@ -1368,7 +1371,7 @@ public class TableLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findListenOperation( table, "Selection" ) );
   }
 
@@ -1376,9 +1379,9 @@ public class TableLCA_Test {
   public void testRenderInitialAlwaysHideSelection() throws IOException {
     lca.render( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( table );
-    assertTrue( operation.getPropertyNames().indexOf( "alwaysHideSelection" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "alwaysHideSelection" ) );
   }
 
   @Test
@@ -1386,7 +1389,7 @@ public class TableLCA_Test {
     table.setData( Table.ALWAYS_HIDE_SELECTION, Boolean.TRUE );
     lca.renderChanges( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.TRUE, message.findSetProperty( table, "alwaysHideSelection" ) );
   }
 
@@ -1399,7 +1402,7 @@ public class TableLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( table, "alwaysHideSelection" ) );
   }
 
@@ -1407,9 +1410,9 @@ public class TableLCA_Test {
   public void testRenderInitialEnableCellToolTip() throws IOException {
     lca.render( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( table );
-    assertTrue( operation.getPropertyNames().indexOf( "enableCellToolTip" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "enableCellToolTip" ) );
   }
 
   @Test
@@ -1417,7 +1420,7 @@ public class TableLCA_Test {
     table.setData( ICellToolTipProvider.ENABLE_CELL_TOOLTIP, Boolean.TRUE );
     lca.renderChanges( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.TRUE, message.findSetProperty( table, "enableCellToolTip" ) );
   }
 
@@ -1430,7 +1433,7 @@ public class TableLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( table, "enableCellToolTip" ) );
   }
 
@@ -1457,7 +1460,7 @@ public class TableLCA_Test {
     fakeCellToolTipRequest( table, itemId, 0 );
     Fixture.executeLifeCycleFromServerThread();
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     String expected = "[" + itemId + ",0]";
     assertEquals( expected, message.findSetProperty( table, "cellToolTipText" ).asString() );
   }
@@ -1489,7 +1492,7 @@ public class TableLCA_Test {
     fakeCellToolTipRequest( table, itemId, 0 );
     Fixture.executeLifeCycleFromServerThread();
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( table, "cellToolTipText" ) );
   }
 
@@ -1499,7 +1502,7 @@ public class TableLCA_Test {
 
     lca.render( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.TRUE, message.findCreateProperty( table, "markupEnabled" ) );
   }
 
@@ -1510,7 +1513,7 @@ public class TableLCA_Test {
 
     lca.render( table );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNotNull( message.findCreateProperty( table, "rowTemplate" ) );
   }
 

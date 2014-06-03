@@ -9,12 +9,13 @@
  *    Innoopract Informationssysteme GmbH - initial API and implementation
  *    EclipseSource - ongoing development
  ******************************************************************************/
-
 package org.eclipse.swt.internal.widgets.linkkit;
 
-import static org.eclipse.rap.rwt.internal.protocol.RemoteObjectFactory.getRemoteObject;
 import static org.eclipse.rap.rwt.internal.lifecycle.WidgetUtil.getId;
+import static org.eclipse.rap.rwt.internal.protocol.RemoteObjectFactory.getRemoteObject;
+import static org.eclipse.rap.rwt.testfixture.TestMessage.getParent;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -26,13 +27,13 @@ import java.io.IOException;
 import org.eclipse.rap.json.JsonArray;
 import org.eclipse.rap.json.JsonObject;
 import org.eclipse.rap.json.JsonValue;
-import org.eclipse.rap.rwt.internal.remote.RemoteObjectRegistry;
 import org.eclipse.rap.rwt.internal.lifecycle.WidgetAdapter;
 import org.eclipse.rap.rwt.internal.lifecycle.WidgetUtil;
+import org.eclipse.rap.rwt.internal.protocol.Operation.CreateOperation;
+import org.eclipse.rap.rwt.internal.remote.RemoteObjectRegistry;
 import org.eclipse.rap.rwt.remote.OperationHandler;
 import org.eclipse.rap.rwt.testfixture.Fixture;
-import org.eclipse.rap.rwt.testfixture.Message;
-import org.eclipse.rap.rwt.testfixture.Message.CreateOperation;
+import org.eclipse.rap.rwt.testfixture.TestMessage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.graphics.Color;
@@ -167,7 +168,7 @@ public class LinkLCA_Test {
   public void testRenderCreate() throws IOException {
     lca.renderInitialization( link );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( link );
     assertEquals( "rwt.widgets.Link", operation.getType() );
   }
@@ -196,18 +197,18 @@ public class LinkLCA_Test {
   public void testRenderParent() throws IOException {
     lca.renderInitialization( link );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( link );
-    assertEquals( WidgetUtil.getId( link.getParent() ), operation.getParent() );
+    assertEquals( getId( link.getParent() ), getParent( operation ) );
   }
 
   @Test
   public void testRenderInitialText() throws IOException {
     lca.render( link );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( link );
-    assertTrue( operation.getPropertyNames().indexOf( "text" ) == -1 );
+    assertFalse( operation.getProperties().names().contains( "text" ) );
   }
 
   @Test
@@ -215,7 +216,7 @@ public class LinkLCA_Test {
     link.setText( "foo <a>123</a> bar" );
     lca.renderChanges( link );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     JsonArray text = ( JsonArray )message.findSetProperty( link, "text" );
     assertEquals( 3, text.size() );
     JsonArray segment1 = text.get( 0 ).asArray();
@@ -239,7 +240,7 @@ public class LinkLCA_Test {
     link.setText( "" );
     lca.renderChanges( link );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     JsonArray text = ( JsonArray )message.findSetProperty( link, "text" );
     assertEquals( 0, text.size() );
   }
@@ -253,7 +254,7 @@ public class LinkLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( link );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( link, "text" ) );
   }
 
@@ -266,7 +267,7 @@ public class LinkLCA_Test {
     link.addListener( SWT.Selection, mock( Listener.class ) );
     lca.renderChanges( link );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.TRUE, message.findListenProperty( link, "Selection" ) );
     assertNull( message.findListenOperation( link, "DefaultSelection" ) );
   }
@@ -282,7 +283,7 @@ public class LinkLCA_Test {
     link.removeListener( SWT.Selection, listener );
     lca.renderChanges( link );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.FALSE, message.findListenProperty( link, "Selection" ) );
   }
 
@@ -296,7 +297,7 @@ public class LinkLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( link );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findListenOperation( link, "Selection" ) );
   }
 

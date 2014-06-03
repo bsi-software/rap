@@ -26,10 +26,10 @@ import org.eclipse.rap.rwt.internal.remote.RemoteObjectRegistry;
 import org.eclipse.rap.rwt.lifecycle.PhaseId;
 import org.eclipse.rap.rwt.remote.OperationHandler;
 import org.eclipse.rap.rwt.testfixture.Fixture;
-import org.eclipse.rap.rwt.testfixture.Message;
-import org.eclipse.rap.rwt.testfixture.Message.CallOperation;
-import org.eclipse.rap.rwt.testfixture.Message.CreateOperation;
-import org.eclipse.rap.rwt.testfixture.Message.SetOperation;
+import org.eclipse.rap.rwt.testfixture.TestMessage;
+import org.eclipse.rap.rwt.internal.protocol.Operation.CallOperation;
+import org.eclipse.rap.rwt.internal.protocol.Operation.CreateOperation;
+import org.eclipse.rap.rwt.internal.protocol.Operation.SetOperation;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DragSource;
@@ -77,12 +77,12 @@ public class DragSourceLCA_Test {
   public void testRenderCreate() throws IOException {
     lca.renderInitialization( source );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( source );
     assertEquals( "rwt.widgets.DragSource", operation.getType() );
-    assertEquals( getId( control ), operation.getProperty( "control" ).asString() );
+    assertEquals( getId( control ), operation.getProperties().get( "control" ).asString() );
     JsonArray expected = new JsonArray().add( "DROP_COPY" ).add( "DROP_MOVE" );
-    assertEquals( expected, operation.getProperty( "style" ) );
+    assertEquals( expected, operation.getProperties().get( "style" ) );
   }
 
   @Test
@@ -105,12 +105,12 @@ public class DragSourceLCA_Test {
     } );
     lca.renderChanges( source );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     SetOperation setOperation = message.findSetOperation( source, "transfer" );
     JsonArray expected = new JsonArray()
       .add( Integer.toString( TextTransfer.getInstance().getSupportedTypes()[ 0 ].type ) )
       .add( Integer.toString( HTMLTransfer.getInstance().getSupportedTypes()[ 0 ].type ) );
-    assertEquals( expected, setOperation.getProperty( "transfer" ) );
+    assertEquals( expected, setOperation.getProperties().get( "transfer" ) );
   }
 
   @Test
@@ -123,7 +123,7 @@ public class DragSourceLCA_Test {
     cancel();
     lca.renderChanges( source );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CallOperation call = message.findCallOperation( source, "cancel" );
     assertNotNull( call );
   }
@@ -138,7 +138,7 @@ public class DragSourceLCA_Test {
 
     Fixture.executeLifeCycleFromServerThread();
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNotNull( message.findDestroyOperation( control ) );
     assertNull( message.findDestroyOperation( source ) );
   }
@@ -154,7 +154,7 @@ public class DragSourceLCA_Test {
 
     Fixture.executeLifeCycleFromServerThread();
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNotNull( message.findDestroyOperation( control ) );
     assertNull( message.findDestroyOperation( source ) );
   }
@@ -168,7 +168,7 @@ public class DragSourceLCA_Test {
     source.addDragListener( mock( DragSourceListener.class ) );
     lca.renderChanges( source );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.TRUE, message.findListenProperty( source, "DragStart" ) );
     assertEquals( JsonValue.TRUE, message.findListenProperty( source, "DragEnd" ) );
   }
@@ -184,7 +184,7 @@ public class DragSourceLCA_Test {
     source.removeDragListener( listener );
     lca.renderChanges( source );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( JsonValue.FALSE, message.findListenProperty( source, "DragStart" ) );
     assertEquals( JsonValue.FALSE, message.findListenProperty( source, "DragEnd" ) );
   }
@@ -199,7 +199,7 @@ public class DragSourceLCA_Test {
     Fixture.preserveWidgets();
     lca.renderChanges( source );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findListenOperation( source, "DragStart" ) );
     assertNull( message.findListenOperation( source, "DragEnd" ) );
   }

@@ -12,6 +12,7 @@ package org.eclipse.swt.internal.widgets.compositekit;
 
 import static org.eclipse.rap.rwt.internal.protocol.RemoteObjectFactory.getRemoteObject;
 import static org.eclipse.rap.rwt.internal.lifecycle.WidgetUtil.getId;
+import static org.eclipse.rap.rwt.testfixture.TestMessage.getParent;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -27,8 +28,8 @@ import org.eclipse.rap.rwt.internal.remote.RemoteObjectRegistry;
 import org.eclipse.rap.rwt.remote.OperationHandler;
 import org.eclipse.rap.rwt.scripting.ClientListener;
 import org.eclipse.rap.rwt.testfixture.Fixture;
-import org.eclipse.rap.rwt.testfixture.Message;
-import org.eclipse.rap.rwt.testfixture.Message.CreateOperation;
+import org.eclipse.rap.rwt.testfixture.TestMessage;
+import org.eclipse.rap.rwt.internal.protocol.Operation.CreateOperation;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.internal.widgets.controlkit.ControlLCATestUtil;
@@ -77,7 +78,7 @@ public class CompositeLCA_Test {
   public void testRenderCreate() throws IOException {
     lca.renderInitialization( composite );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( composite );
     assertEquals( "rwt.widgets.Composite", operation.getType() );
   }
@@ -106,9 +107,9 @@ public class CompositeLCA_Test {
   public void testRenderParent() throws IOException {
     lca.renderInitialization( composite );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CreateOperation operation = message.findCreateOperation( composite );
-    assertEquals( getId( composite.getParent() ), operation.getParent() );
+    assertEquals( getId( composite.getParent() ), getParent( operation ) );
   }
 
   @Test
@@ -117,7 +118,7 @@ public class CompositeLCA_Test {
 
     lca.renderClientArea( composite );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     Rectangle clientArea = composite.getClientArea();
     assertEquals( clientArea, toRectangle( message.findSetProperty( composite, "clientArea" ) ) );
   }
@@ -128,7 +129,7 @@ public class CompositeLCA_Test {
 
     lca.renderClientArea( composite );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     Rectangle clientArea = new Rectangle( 0, 0, 0, 0 );
     assertEquals( clientArea, toRectangle( message.findSetProperty( composite, "clientArea" ) ) );
   }
@@ -141,7 +142,7 @@ public class CompositeLCA_Test {
     lca.preserveValues( composite );
     lca.renderClientArea( composite );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( composite, "clientArea" ) );
   }
 
@@ -151,7 +152,7 @@ public class CompositeLCA_Test {
 
     lca.renderChanges( composite );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNotNull( message.findCallOperation( composite, "addListener" ) );
   }
 

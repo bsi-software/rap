@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Frank Appel and others.
+ * Copyright (c) 2011, 2014 Frank Appel and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,8 +15,8 @@ import static org.eclipse.rap.rwt.internal.protocol.JsonUtil.createJsonArray;
 import static org.eclipse.rap.rwt.internal.service.ContextProvider.getApplicationContext;
 import static org.eclipse.rap.rwt.internal.textsize.MeasurementOperator.METHOD_MEASURE_ITEMS;
 import static org.eclipse.rap.rwt.internal.textsize.MeasurementOperator.METHOD_STORE_MEASUREMENTS;
-import static org.eclipse.rap.rwt.internal.textsize.MeasurementOperator.PROPERTY_ITEMS;
-import static org.eclipse.rap.rwt.internal.textsize.MeasurementOperator.PROPERTY_RESULTS;
+import static org.eclipse.rap.rwt.internal.textsize.MeasurementOperator.PARAM_ITEMS;
+import static org.eclipse.rap.rwt.internal.textsize.MeasurementOperator.PARAM_RESULTS;
 import static org.eclipse.rap.rwt.internal.textsize.MeasurementOperator.TYPE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
@@ -24,9 +24,9 @@ import static org.junit.Assert.assertTrue;
 
 import org.eclipse.rap.json.JsonObject;
 import org.eclipse.rap.json.JsonValue;
+import org.eclipse.rap.rwt.internal.protocol.Operation.CallOperation;
 import org.eclipse.rap.rwt.testfixture.Fixture;
-import org.eclipse.rap.rwt.testfixture.Message;
-import org.eclipse.rap.rwt.testfixture.Message.CallOperation;
+import org.eclipse.rap.rwt.testfixture.TestMessage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
@@ -217,7 +217,7 @@ public class MeasurementOperator_Test {
     if( measurementItem != null ) {
       results.add( MeasurementUtil.getId( measurementItem ), createJsonArray( 12, 4 ) );
     }
-    JsonObject parameters = new JsonObject().add( PROPERTY_RESULTS, results );
+    JsonObject parameters = new JsonObject().add( PARAM_RESULTS, results );
     Fixture.fakeCallOperation( TYPE, METHOD_STORE_MEASUREMENTS, parameters  );
   }
 
@@ -248,17 +248,17 @@ public class MeasurementOperator_Test {
   }
 
   private void checkResponseContainsMeasurementCall() {
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CallOperation operation = message.findCallOperation( TYPE, METHOD_MEASURE_ITEMS );
-    JsonValue itemsProperty = operation.getProperty( PROPERTY_ITEMS );
+    JsonValue itemsProperty = operation.getParameters().get( PARAM_ITEMS );
     String[] expected = getMeasurementCall();
     checkResponseContainsContent( expected, itemsProperty.toString() );
   }
 
   private void checkResponseContainsProbeCall() {
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CallOperation operation = message.findCallOperation( TYPE, METHOD_MEASURE_ITEMS );
-    JsonValue itemsProperty = operation.getProperty( PROPERTY_ITEMS );
+    JsonValue itemsProperty = operation.getParameters().get( PARAM_ITEMS );
     String[] expected = getProbeCall();
     checkResponseContainsContent( expected, itemsProperty.toString() );
   }

@@ -34,8 +34,8 @@ rwt.qx.Class.define( "rwt.widgets.Menu", {
       anonymous : true
     } );
     this.add( this._layout );
-    this.addEventListener( "mousedown", this._unhoverSubMenu );
-    this.addEventListener( "mousedown", this._onMouseUp );
+    this.addEventListener( "mousedown", this._onMouseDown );
+    this.addEventListener( "mouseup", this._onMouseUp );
     this.addEventListener( "mouseout", this._onMouseOut );
     this.addEventListener( "mouseover", this._onMouseOver );
     this.addEventListener( "keypress", this._onKeyPress );
@@ -249,7 +249,7 @@ rwt.qx.Class.define( "rwt.widgets.Menu", {
         if( this.hasSubmenu( newHover ) && ( this._openItem != newHover ) ) {
           this._openTimer.setEnabled( true );
         }
-        // handle close tiemr
+        // handle close timer
         if( this._openItem ) {
           if( this._openItem == newHover || newHover == null ) {
             this._closeTimer.setEnabled( false );
@@ -399,12 +399,14 @@ rwt.qx.Class.define( "rwt.widgets.Menu", {
         this._openItem.setSubMenuOpen( false );
         var oldMenu = this._openItem.getMenu();
         oldMenu.hide();
-        this._makeActive();
+        if( this.getVisibility() ) {
+          this._makeActive();
+        }
       }
       this._openItem = item;
       // in theory an item could have lost it's assigned menu (by eval-code)
       // since the timer has been started/the item opend, so check for it
-      if( item && item.getMenu() ) {
+      if( item && item.getMenu() && item.getEnabled() ) {
         var subMenu = item.getMenu();
         item.setSubMenuOpen( true );
         subMenu.setOpener( item );
@@ -448,6 +450,16 @@ rwt.qx.Class.define( "rwt.widgets.Menu", {
         }
         this._unhoverSubMenu();
       } else {
+        // This is a capture widget, re-dispatch on original
+        target._dispatchEvent( event );
+        event.stopPropagation();
+      }
+    },
+
+    _onMouseDown : function( event ) {
+      this._unhoverSubMenu();
+      var target = event.getOriginalTarget();
+      if( !this.contains( target ) ) {
         // This is a capture widget, re-dispatch on original
         target._dispatchEvent( event );
         event.stopPropagation();

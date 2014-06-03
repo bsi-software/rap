@@ -26,7 +26,11 @@ import org.eclipse.rap.rwt.internal.client.ClientSelector;
 import org.eclipse.rap.rwt.internal.lifecycle.EntryPointManager;
 import org.eclipse.rap.rwt.internal.lifecycle.LifeCycleAdapterFactory;
 import org.eclipse.rap.rwt.internal.lifecycle.LifeCycleFactory;
-import org.eclipse.rap.rwt.internal.lifecycle.PhaseListenerRegistry;
+import org.eclipse.rap.rwt.internal.lifecycle.PhaseListenerManager;
+import org.eclipse.rap.rwt.internal.remote.MessageChainElement;
+import org.eclipse.rap.rwt.internal.remote.MessageChainReference;
+import org.eclipse.rap.rwt.internal.remote.MessageFilter;
+import org.eclipse.rap.rwt.internal.remote.MessageFilterChain;
 import org.eclipse.rap.rwt.internal.resources.ClientResources;
 import org.eclipse.rap.rwt.internal.resources.ResourceDirectory;
 import org.eclipse.rap.rwt.internal.resources.ResourceManagerImpl;
@@ -34,6 +38,7 @@ import org.eclipse.rap.rwt.internal.resources.ResourceRegistry;
 import org.eclipse.rap.rwt.internal.serverpush.ServerPushServiceHandler;
 import org.eclipse.rap.rwt.internal.service.ApplicationStoreImpl;
 import org.eclipse.rap.rwt.internal.service.LifeCycleServiceHandler;
+import org.eclipse.rap.rwt.internal.service.RWTMessageHandler;
 import org.eclipse.rap.rwt.internal.service.ServiceManagerImpl;
 import org.eclipse.rap.rwt.internal.service.SettingStoreManager;
 import org.eclipse.rap.rwt.internal.service.StartupPage;
@@ -87,8 +92,9 @@ public class ApplicationContextImpl implements ApplicationContext {
   private final ApplicationConfiguration applicationConfiguration;
   private final ResourceDirectory resourceDirectory;
   private final ResourceManagerImpl resourceManager;
-  private final PhaseListenerRegistry phaseListenerRegistry;
+  private final PhaseListenerManager phaseListenerManager;
   private final LifeCycleFactory lifeCycleFactory;
+  private final MessageChainReference messageChainReference;
   private final EntryPointManager entryPointManager;
   private final LifeCycleAdapterFactory lifeCycleAdapterFactory;
   private final SettingStoreManager settingStoreManager;
@@ -119,9 +125,11 @@ public class ApplicationContextImpl implements ApplicationContext {
     applicationStore = new ApplicationStoreImpl();
     resourceDirectory = new ResourceDirectory();
     resourceManager = new ResourceManagerImpl( resourceDirectory );
-    phaseListenerRegistry = new PhaseListenerRegistry();
+    phaseListenerManager = new PhaseListenerManager();
     entryPointManager = new EntryPointManager();
     lifeCycleFactory = new LifeCycleFactory( this );
+    RWTMessageHandler rwtHandler = new RWTMessageHandler( lifeCycleFactory );
+    messageChainReference = new MessageChainReference( new MessageChainElement( rwtHandler, null ) );
     themeManager = new ThemeManager();
     resourceFactory = new ResourceFactory();
     imageFactory = new ImageFactory();
@@ -243,8 +251,8 @@ public class ApplicationContextImpl implements ApplicationContext {
     return settingStoreManager;
   }
 
-  public PhaseListenerRegistry getPhaseListenerRegistry() {
-    return phaseListenerRegistry;
+  public PhaseListenerManager getPhaseListenerManager() {
+    return phaseListenerManager;
   }
 
   public LifeCycleAdapterFactory getLifeCycleAdapterFactory() {
@@ -323,6 +331,20 @@ public class ApplicationContextImpl implements ApplicationContext {
     this.exceptionHandler = exceptionHandler;
   }
 
+  public MessageFilterChain getHandlerChain() {
+    return messageChainReference.get();
+  }
+
+  public void addMessageFilter( MessageFilter filter ) {
+    ParamCheck.notNull( filter, "filter" );
+    messageChainReference.add( filter );
+  }
+
+  public void removeMessageFilter( MessageFilter filter ) {
+    ParamCheck.notNull( filter, "filter" );
+    messageChainReference.remove( filter );
+  }
+
   void doActivate() {
     themeManager.initialize();
     applicationConfiguration.configure( new ApplicationImpl( this, applicationConfiguration ) );
@@ -351,7 +373,7 @@ public class ApplicationContextImpl implements ApplicationContext {
       getResourceDirectory().deleteDirectory();
     }
     entryPointManager.deregisterAll();
-    phaseListenerRegistry.removeAll();
+    phaseListenerManager.clear();
     resourceRegistry.clear();
     settingStoreManager.deregisterFactory();
     resourceDirectory.reset();
@@ -359,7 +381,7 @@ public class ApplicationContextImpl implements ApplicationContext {
   }
 
   private ServiceManagerImpl createServiceManager() {
-    return new ServiceManagerImpl( new LifeCycleServiceHandler( lifeCycleFactory, startupPage ) );
+    return new ServiceManagerImpl( new LifeCycleServiceHandler( messageChainReference, startupPage ) );
   }
 
   private String getContextDirectory() {
@@ -372,7 +394,7 @@ public class ApplicationContextImpl implements ApplicationContext {
   }
 
   private void addInternalPhaseListeners() {
-    phaseListenerRegistry.add( new MeasurementListener() );
+    phaseListenerManager.addPhaseListener( new MeasurementListener() );
   }
 
   private void addInternalServiceHandlers() {

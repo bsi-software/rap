@@ -10,7 +10,6 @@
  ******************************************************************************/
 package org.eclipse.swt.internal.widgets.displaykit;
 
-
 import static org.eclipse.rap.rwt.internal.lifecycle.DisplayUtil.getId;
 import static org.eclipse.rap.rwt.internal.protocol.RemoteObjectFactory.getRemoteObject;
 import static org.eclipse.rap.rwt.internal.lifecycle.WidgetUtil.getId;
@@ -37,8 +36,8 @@ import org.eclipse.rap.json.JsonObject;
 import org.eclipse.rap.rwt.internal.protocol.ControlOperationHandler;
 import org.eclipse.rap.rwt.lifecycle.PhaseId;
 import org.eclipse.rap.rwt.testfixture.Fixture;
-import org.eclipse.rap.rwt.testfixture.Message;
-import org.eclipse.rap.rwt.testfixture.Message.CallOperation;
+import org.eclipse.rap.rwt.testfixture.TestMessage;
+import org.eclipse.rap.rwt.internal.protocol.Operation.CallOperation;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
 import org.eclipse.swt.dnd.DND;
@@ -476,7 +475,7 @@ public class DNDSupport_Test {
     createDropTargetEvent( "DragOver", 10, 10, "copy", getTextType(), 2 );
     Fixture.executeLifeCycleFromServerThread();
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findSetOperation( dragSource, "changeDetail" ) );
   }
 
@@ -495,9 +494,9 @@ public class DNDSupport_Test {
     fakeDropTargetEvent( "DragOver", 2 );
     Fixture.executeLifeCycleFromServerThread();
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CallOperation call = message.findCallOperation( dropTarget, "changeDetail" );
-    assertEquals( "DROP_LINK", call.getProperty( "detail" ).asString() );
+    assertEquals( "DROP_LINK", call.getParameters().get( "detail" ).asString() );
   }
 
   @Test
@@ -515,9 +514,9 @@ public class DNDSupport_Test {
     createDropTargetEvent( "DragOver", 10, 10, "copy", getTextType(), 2 );
     Fixture.executeLifeCycleFromServerThread();
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CallOperation call = message.findCallOperation( dropTarget, "changeDetail" );
-    assertEquals( "DROP_LINK", call.getProperty( "detail" ).asString() );
+    assertEquals( "DROP_LINK", call.getParameters().get( "detail" ).asString() );
   }
 
   @Test
@@ -541,7 +540,7 @@ public class DNDSupport_Test {
     fakeDragSourceEvent( "DragEnd", 3 );
     Fixture.executeLifeCycleFromServerThread();
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertEquals( 0, message.getOperationCount() );
     assertEquals( DND.DROP_COPY, getDropTargetEvent( 0 ).detail );
     assertEquals( DND.DROP_COPY, getDropTargetEvent( 1 ).detail );
@@ -567,10 +566,10 @@ public class DNDSupport_Test {
     fakeDropTargetEvent( "DragOver", 2 );
     Fixture.executeLifeCycleFromServerThread();
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CallOperation call = message.findCallOperation( dropTarget, "changeFeedback" );
-    assertEquals( DND.FEEDBACK_SELECT, call.getProperty( "flags" ).asInt() );
-    JsonArray feedbackArr = call.getProperty( "feedback" ).asArray();
+    assertEquals( DND.FEEDBACK_SELECT, call.getParameters().get( "flags" ).asInt() );
+    JsonArray feedbackArr = call.getParameters().get( "feedback" ).asArray();
     assertEquals( 1, feedbackArr.size() );
     assertEquals( "FEEDBACK_SELECT", feedbackArr.get( 0 ).asString() );
   }
@@ -592,10 +591,10 @@ public class DNDSupport_Test {
     fakeDropTargetEvent( "DragOver", 2 );
     Fixture.executeLifeCycleFromServerThread();
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CallOperation call = message.findCallOperation( dropTarget, "changeFeedback" );
-    assertEquals( DND.FEEDBACK_SCROLL | DND.FEEDBACK_EXPAND, call.getProperty( "flags" ).asInt() );
-    JsonArray feedbackArr = call.getProperty( "feedback" ).asArray();
+    assertEquals( DND.FEEDBACK_SCROLL | DND.FEEDBACK_EXPAND, call.getParameters().get( "flags" ).asInt() );
+    JsonArray feedbackArr = call.getParameters().get( "feedback" ).asArray();
     assertEquals( 2, feedbackArr.size() );
     assertEquals( "FEEDBACK_EXPAND", feedbackArr.get( 0 ).asString() );
     assertEquals( "FEEDBACK_SCROLL", feedbackArr.get( 1 ).asString() );
@@ -618,7 +617,7 @@ public class DNDSupport_Test {
     fakeDropTargetEvent( "DragEnter", 1 );
     Fixture.executeLifeCycleFromServerThread();
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNotNull( message.findCallOperation( dropTarget, "changeDataType" ) );
   }
 
@@ -642,9 +641,9 @@ public class DNDSupport_Test {
 
     DropTargetEvent dragEnter = getDropTargetEvent( 0 );
     assertTrue( HTMLTransfer.getInstance().isSupportedType( dragEnter.currentDataType ) );
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CallOperation call = message.findCallOperation( dropTarget, "changeDataType" );
-    assertEquals( getTextType(), call.getProperty( "dataType" ).asInt() );
+    assertEquals( getTextType(), call.getParameters().get( "dataType" ).asInt() );
   }
 
   @Test
@@ -668,10 +667,10 @@ public class DNDSupport_Test {
 
     DropTargetEvent dragOver = getDropTargetEvent( 1 );
     assertTrue( TextTransfer.getInstance().isSupportedType( dragOver.currentDataType ) );
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CallOperation call = message.findCallOperation( dropTarget, "changeDataType" );
     int expectedType = TextTransfer.getInstance().getSupportedTypes()[ 0 ].type;
-    assertEquals( expectedType, call.getProperty( "dataType" ).asInt() );
+    assertEquals( expectedType, call.getParameters().get( "dataType" ).asInt() );
   }
 
   @Test
@@ -695,9 +694,9 @@ public class DNDSupport_Test {
     fakeDropTargetEvent( "DragOver", 1 );
     Fixture.executeLifeCycleFromServerThread();
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     CallOperation call = message.findCallOperation( dropTarget, "changeDataType" );
-    assertEquals( getTextType(), call.getProperty( "dataType" ).asInt() );
+    assertEquals( getTextType(), call.getParameters().get( "dataType" ).asInt() );
   }
 
   @Test

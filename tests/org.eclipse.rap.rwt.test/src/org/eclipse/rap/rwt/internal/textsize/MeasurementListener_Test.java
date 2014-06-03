@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2011, 2013 Frank Appel and others.
+ * Copyright (c) 2011, 2014 Frank Appel and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,7 +15,7 @@ import static org.eclipse.rap.rwt.internal.protocol.JsonUtil.createJsonArray;
 import static org.eclipse.rap.rwt.internal.service.ContextProvider.getApplicationContext;
 import static org.eclipse.rap.rwt.internal.textsize.MeasurementOperator.METHOD_MEASURE_ITEMS;
 import static org.eclipse.rap.rwt.internal.textsize.MeasurementOperator.METHOD_STORE_MEASUREMENTS;
-import static org.eclipse.rap.rwt.internal.textsize.MeasurementOperator.PROPERTY_RESULTS;
+import static org.eclipse.rap.rwt.internal.textsize.MeasurementOperator.PARAM_RESULTS;
 import static org.eclipse.rap.rwt.internal.textsize.MeasurementOperator.TYPE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -29,7 +29,7 @@ import org.eclipse.rap.rwt.internal.lifecycle.LifeCycleUtil;
 import org.eclipse.rap.rwt.lifecycle.PhaseEvent;
 import org.eclipse.rap.rwt.lifecycle.PhaseId;
 import org.eclipse.rap.rwt.testfixture.Fixture;
-import org.eclipse.rap.rwt.testfixture.Message;
+import org.eclipse.rap.rwt.testfixture.TestMessage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
@@ -77,7 +77,7 @@ public class MeasurementListener_Test {
   public void testAfterPhaseWithoutMeasurementItemsOrProbes() {
     listener.afterPhase( createPhaseEvent( PhaseId.RENDER ) );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findCallOperation( TYPE, METHOD_MEASURE_ITEMS ) );
   }
 
@@ -87,7 +87,7 @@ public class MeasurementListener_Test {
 
     listener.afterPhase( createPhaseEvent( PhaseId.RENDER ) );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNotNull( message.findCallOperation( TYPE, METHOD_MEASURE_ITEMS ) );
   }
 
@@ -97,7 +97,7 @@ public class MeasurementListener_Test {
 
     listener.afterPhase( createPhaseEvent( PhaseId.RENDER ) );
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNotNull( message.findCallOperation( TYPE, METHOD_MEASURE_ITEMS ) );
   }
 
@@ -107,7 +107,7 @@ public class MeasurementListener_Test {
 
     executeNonRenderPhases();
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findCallOperation( TYPE, METHOD_MEASURE_ITEMS ) );
   }
 
@@ -117,7 +117,7 @@ public class MeasurementListener_Test {
 
     executeNonRenderPhases();
 
-    Message message = Fixture.getProtocolMessage();
+    TestMessage message = Fixture.getProtocolMessage();
     assertNull( message.findCallOperation( TYPE, METHOD_MEASURE_ITEMS ) );
   }
 
@@ -196,7 +196,7 @@ public class MeasurementListener_Test {
     listener.afterPhase( createPhaseEvent( PhaseId.RENDER ) );
     JsonObject results = new JsonObject()
       .add( MeasurementUtil.getId( FONT_DATA ), createJsonArray( 5, 10 ) );
-    JsonObject parameters = new JsonObject().add( PROPERTY_RESULTS, results );
+    JsonObject parameters = new JsonObject().add( PARAM_RESULTS, results );
     Fixture.fakeCallOperation( TYPE, METHOD_STORE_MEASUREMENTS, parameters  );
   }
 
@@ -206,7 +206,7 @@ public class MeasurementListener_Test {
     fakeRequestWithProbeMeasurementResults();
     JsonObject results = new JsonObject()
       .add( MeasurementUtil.getId( itemToMeasure ), createJsonArray( 100, 10 ) );
-    JsonObject parameters = new JsonObject().add( PROPERTY_RESULTS, results );
+    JsonObject parameters = new JsonObject().add( PARAM_RESULTS, results );
     Fixture.fakeCallOperation( TYPE, METHOD_STORE_MEASUREMENTS, parameters  );
   }
 

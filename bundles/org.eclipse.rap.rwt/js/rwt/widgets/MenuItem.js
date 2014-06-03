@@ -100,7 +100,7 @@ rwt.qx.Class.define("rwt.widgets.MenuItem",  {
     setAccelerator : function( value ) {
       var acc = null;
       if( value ) {
-        // assumign a tab is rendered as four spaces
+        // assuming a tab is rendered as four spaces
         acc = rwt.util.Encoding.escapeText( value );
         acc = rwt.util.Encoding.replaceWhiteSpaces( "    " + acc );
       }
@@ -296,11 +296,13 @@ rwt.qx.Class.define("rwt.widgets.MenuItem",  {
     // could be shared between Button, MenuItem and (future) ToolItem.
     // Then, also the corrosponding LCA-methods could be shared
     execute : function() {
-      this.base( arguments );
-      if( this._isSelectable ) {
-        this.setSelection( !( this._selected && this._isDeselectable ) );
-      } else {
-        this._notifySelected();
+      if( this.isEnabled() ) {
+        this.base( arguments );
+        if( this._isSelectable ) {
+          this.setSelection( !( this._selected && this._isDeselectable ) );
+        } else {
+          this._notifySelected();
+        }
       }
     },
 

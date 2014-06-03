@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2010, 2013 EclipseSource and others.
+* Copyright (c) 2010, 2014 EclipseSource and others.
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -10,33 +10,28 @@
 *******************************************************************************/
 package org.eclipse.rap.rwt.internal.protocol;
 
-import static org.eclipse.rap.rwt.internal.protocol.ProtocolConstants.ACTION_CALL;
-import static org.eclipse.rap.rwt.internal.protocol.ProtocolConstants.ACTION_CREATE;
-import static org.eclipse.rap.rwt.internal.protocol.ProtocolConstants.ACTION_DESTROY;
-import static org.eclipse.rap.rwt.internal.protocol.ProtocolConstants.ACTION_LISTEN;
-import static org.eclipse.rap.rwt.internal.protocol.ProtocolConstants.ACTION_SET;
-import static org.eclipse.rap.rwt.internal.protocol.ProtocolConstants.HEAD;
-import static org.eclipse.rap.rwt.internal.protocol.ProtocolConstants.OPERATIONS;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.eclipse.rap.json.JsonArray;
 import org.eclipse.rap.json.JsonObject;
 import org.eclipse.rap.json.JsonValue;
+import org.eclipse.rap.rwt.internal.protocol.Operation.CallOperation;
+import org.eclipse.rap.rwt.internal.protocol.Operation.CreateOperation;
+import org.eclipse.rap.rwt.internal.protocol.Operation.DestroyOperation;
+import org.eclipse.rap.rwt.internal.protocol.Operation.ListenOperation;
+import org.eclipse.rap.rwt.internal.protocol.Operation.SetOperation;
 
 
 public class ProtocolMessageWriter {
 
   private final JsonObject head;
-  private final JsonArray operations;
+  private final List<Operation> operations;
   private Operation pendingOperation;
   private boolean alreadyCreated;
 
   public ProtocolMessageWriter() {
     head = new JsonObject();
-    operations = new JsonArray();
-  }
-
-  public boolean hasOperations() {
-    return pendingOperation != null;
+    operations = new ArrayList<Operation>();
   }
 
   public void appendHead( String property, int value ) {
@@ -53,7 +48,7 @@ public class ProtocolMessageWriter {
   }
 
   public void appendCreate( String target, String type ) {
-    prepareOperation( target, ACTION_CREATE, type );
+    prepareOperation( new CreateOperation( target, type ) );
   }
 
   public void appendSet( String target, String property, int value ) {
@@ -73,41 +68,43 @@ public class ProtocolMessageWriter {
   }
 
   public void appendSet( String target, String property, JsonValue value ) {
-    prepareOperation( target, ACTION_SET );
-    pendingOperation.putProperty( property, value );
-  }
-
-  public void appendListen( String target, String eventType, boolean listen ) {
-    prepareOperation( target, ACTION_LISTEN );
-    pendingOperation.putProperty( eventType, JsonValue.valueOf( listen ) );
-  }
-
-  public void appendCall( String target, String methodName, JsonObject parameters ) {
-    prepareOperation( target, ACTION_CALL, methodName, parameters );
-  }
-
-  public void appendDestroy( String target ) {
-    prepareOperation( target, ACTION_DESTROY );
-  }
-
-  private void prepareOperation( String target, String type ) {
-    prepareOperation( target, type, null, null );
-  }
-
-  private void prepareOperation( String target, String type, String detail ) {
-    prepareOperation( target, type, detail, null );
-  }
-
-  private void prepareOperation( String target, String type, String detail, JsonObject properties )
-  {
-    ensureMessagePending();
-    if( !canAppendToCurrentOperation( target, type ) ) {
-      appendPendingOperation();
-      pendingOperation = new Operation( target, type, detail, properties );
+    CreateOperation createOperation = findPendingOperation( target, CreateOperation.class );
+    if( createOperation != null ) {
+      createOperation.putProperty( property, value );
+    } else {
+      SetOperation setOperation = findPendingOperation( target, SetOperation.class );
+      if( setOperation == null ) {
+        setOperation = new Operation.SetOperation( target );
+        prepareOperation( setOperation );
+      }
+      setOperation.putProperty( property, value );
     }
   }
 
-  public JsonObject createMessage() {
+  public void appendListen( String target, String eventType, boolean listen ) {
+    ListenOperation operation = findPendingOperation( target, ListenOperation.class );
+    if( operation == null ) {
+      operation = new ListenOperation( target );
+      prepareOperation( operation );
+    }
+    operation.putListener( eventType, listen );
+  }
+
+  public void appendCall( String target, String methodName, JsonObject parameters ) {
+    prepareOperation( new CallOperation( target, methodName, parameters ) );
+  }
+
+  public void appendDestroy( String target ) {
+    prepareOperation( new DestroyOperation( target ) );
+  }
+
+  private void prepareOperation( Operation operation ) {
+    ensureMessagePending();
+    appendPendingOperation();
+    pendingOperation = operation;
+  }
+
+  public ResponseMessage createMessage() {
     ensureMessagePending();
     alreadyCreated = true;
     return createMessageObject();
@@ -119,30 +116,22 @@ public class ProtocolMessageWriter {
     }
   }
 
-  private JsonObject createMessageObject() {
-    JsonObject message = new JsonObject();
-    message.add( HEAD, head );
+  private ResponseMessage createMessageObject() {
     appendPendingOperation();
-    message.add( OPERATIONS, operations );
-    return message;
+    return new ResponseMessage( head, operations );
   }
 
-  private boolean canAppendToCurrentOperation( String target, String action ) {
-    boolean result = false;
-    if( pendingOperation != null && pendingOperation.getTarget().equals( target ) ) {
-      String pendingAction = pendingOperation.getAction();
-      if( ACTION_LISTEN.equals( action ) ) {
-        result = pendingAction.equals( ACTION_LISTEN );
-      } else if( ACTION_SET.equals( action ) ) {
-        result = pendingAction.equals( ACTION_CREATE ) || pendingAction.equals( ACTION_SET );
-      }
-    }
-    return result;
+  @SuppressWarnings( "unchecked" )
+  private <T extends Operation> T findPendingOperation( String target, Class<T> type ) {
+    boolean matches =    pendingOperation != null
+                      && pendingOperation.getClass().equals( type )
+                      && pendingOperation.getTarget().equals( target );
+    return matches ? (T) pendingOperation : null;
   }
 
   private void appendPendingOperation() {
     if( pendingOperation != null ) {
-      operations.add( pendingOperation.toJson() );
+      operations.add( pendingOperation );
     }
   }
 

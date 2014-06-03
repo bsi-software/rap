@@ -255,7 +255,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.MenuTest", {
     },
 
     testTextOnly : function() {
-      createSimpleMenu( "push" );
+      openSimpleMenu( "push" );
       menuItem.setText( "Hello World!" );
       TestUtil.flush();
       assertEquals( 1, menuItem._getTargetNode().childNodes.length );
@@ -266,7 +266,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.MenuTest", {
     },
 
     testImageOnly : function() {
-      createSimpleMenu( "push" );
+      openSimpleMenu( "push" );
       menuItem.setImage( "url.jpg", 20, 30 );
       TestUtil.flush();
       assertEquals( 1, menuItem._getTargetNode().childNodes.length );
@@ -281,7 +281,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.MenuTest", {
     },
 
     testArrowUrl : function() {
-      createSimpleMenu( "push" );
+      openSimpleMenu( "push" );
 
       menuItem.setArrow( [ "url.jpg", 13, 13 ] );
       TestUtil.flush();
@@ -292,7 +292,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.MenuTest", {
     },
 
     testArrowDimension : function() {
-      createSimpleMenu( "push" );
+      openSimpleMenu( "push" );
 
       menuItem.setArrow( [ "url.jpg", 13, 14 ] );
       TestUtil.flush();
@@ -304,7 +304,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.MenuTest", {
     },
 
     testMenuResize : function() {
-      createSimpleMenu( "push" );
+      openSimpleMenu( "push" );
       menuItem.setSpacing( 3 );
       TestUtil.flush();
       var menuNode = menu.getElement();
@@ -360,7 +360,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.MenuTest", {
     },
 
     testItemHover : function() {
-      createSimpleMenu( "push" );
+      openSimpleMenu( "push" );
       TestUtil.flush();
       TestUtil.mouseOver( menuItem );
       assertTrue( menuItem.hasState( "over" ) );
@@ -369,7 +369,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.MenuTest", {
     },
 
     testMenuLayout : function() {
-      createSimpleMenu( "push" );
+      openSimpleMenu( "push" );
       menuItem.setText( "hello" );
       var item2 = new MenuItem( "push" );
       item2.setText( "bla!" );
@@ -710,7 +710,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.MenuTest", {
     },
 
     testExecuteWithoutOpener : function() {
-      createSimpleMenu( "push" );
+      openSimpleMenu( "push" );
       this.executed = false;
       var command = function() {
         this.executed = true;
@@ -726,7 +726,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.MenuTest", {
     },
 
     testOpenSubmenuByMouseOver : function() {
-      createSimpleMenu();
+      openSimpleMenu();
       var subMenu = new Menu();
       menuItem.setSubMenu( subMenu );
       var subMenuItem = new MenuItem( "push" );
@@ -743,8 +743,26 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.MenuTest", {
       subMenu.destroy();
     },
 
+    testDoesNotOpenSubmenuByMouseOver_onDisabledItem : function() {
+      openSimpleMenu();
+      var subMenu = new Menu();
+      menuItem.setSubMenu( subMenu );
+      menuItem.setEnabled( false );
+      var subMenuItem = new MenuItem( "push" );
+      subMenu.addMenuItemAt( subMenuItem, 0 );
+      rwt.remote.ObjectRegistry.add( "w7", subMenu, menuHandler );
+      TestUtil.flush();
+
+      TestUtil.mouseOver( menuItem );
+      TestUtil.forceInterval( menu._openTimer );
+      TestUtil.flush();
+
+      assertFalse( subMenu.isSeeable() );
+      subMenu.destroy();
+    },
+
     testCloseSubmenuByMouseOverSiblingItem : function() {
-      createSimpleMenu();
+      openSimpleMenu();
       var subMenu = new Menu();
       menuItem.setSubMenu( subMenu );
       var subMenuItem = new MenuItem( "push" );
@@ -766,7 +784,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.MenuTest", {
     },
 
     testDoNotCloseSubmenuByMouseOverSubMenuItem : function() {
-      createSimpleMenu();
+      openSimpleMenu();
       var subMenu = new Menu();
       menuItem.setSubMenu( subMenu );
       var subMenuItem = new MenuItem( "push" );
@@ -790,7 +808,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.MenuTest", {
     },
 
     testDoNotOpenSubmenuByMouseOverAndOut : function() {
-      createSimpleMenu();
+      openSimpleMenu();
       var subMenu = new Menu();
       menuItem.setSubMenu( subMenu );
       var subMenuItem = new MenuItem( "push" );
@@ -812,7 +830,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.MenuTest", {
     },
 
     testDoNotOpenSubmenuByMouseDown : function() {
-      createSimpleMenu();
+      openSimpleMenu();
       var subMenu = new Menu();
       menuItem.setSubMenu( subMenu );
       var subMenuItem = new MenuItem( "push" );
@@ -831,7 +849,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.MenuTest", {
     },
 
     testCheckSelection : function() {
-      createSimpleMenu( "check" );
+      openSimpleMenu( "check" );
       TestUtil.flush();
       assertEquals( 1, menuItem._getTargetNode().childNodes.length );
       var node = menuItem._getTargetNode().firstChild;
@@ -893,7 +911,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.MenuTest", {
     },
 
     testExecutePushItem : function() {
-      createSimpleMenu( "push" );
+      openSimpleMenu( "push" );
       rwt.remote.ObjectRegistry.add( "w3", menuItem, menuItemHandler );
       TestUtil.flush();
       TestUtil.clearRequestLog();
@@ -909,8 +927,23 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.MenuTest", {
       TestUtil.clearRequestLog();
     },
 
+    //See Bug 434306 - [Menu] Application crashes when the preItem is clicked
+    testExecutePreItem_doNotSendSelection : function() {
+      openSimpleMenu( "push" );
+      menu.hide();
+      TestUtil.fakeListener( menu, "Show", true );
+      menu.show();
+      TestUtil.flush();
+      TestUtil.clearRequestLog();
+
+      TestUtil.click( menu._preItem );
+
+      assertTrue( menu._preItem.isSeeable() );
+      assertEquals( 0, TestUtil.getRequestsSend() );
+    },
+
     testExecuteCheckItem: function() {
-      createSimpleMenu( "check" );
+      openSimpleMenu( "check" );
       rwt.remote.ObjectRegistry.add( "w3", menuItem, menuItemHandler );
       TestUtil.flush();
       TestUtil.clearRequestLog();
@@ -934,7 +967,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.MenuTest", {
     },
 
     testExecuteRadioButton : function() {
-      createSimpleMenu( "radio" );
+      openSimpleMenu( "radio" );
       rwt.remote.ObjectRegistry.add( "w3", menuItem, menuItemHandler );
       TestUtil.flush();
       TestUtil.clearRequestLog();
@@ -953,7 +986,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.MenuTest", {
     },
 
     testExecuteRadioButton_DeselectSiblings : function() {
-      createSimpleMenu( "radio" );
+      openSimpleMenu( "radio" );
       rwt.remote.ObjectRegistry.add( "w3", menuItem, menuItemHandler );
       TestUtil.flush();
       TestUtil.clearRequestLog();
@@ -980,7 +1013,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.MenuTest", {
     },
 
     testExecuteSelectedRadioButton : function() {
-      createSimpleMenu( "radio" );
+      openSimpleMenu( "radio" );
       rwt.remote.ObjectRegistry.add( "w3", menuItem, menuItemHandler );
       TestUtil.flush();
       TestUtil.clearRequestLog();
@@ -999,7 +1032,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.MenuTest", {
     },
 
     testExecuteRadioButton_NoRadioGroup : function() {
-      createSimpleMenu( "radio" );
+      openSimpleMenu( "radio" );
       rwt.remote.ObjectRegistry.add( "w3", menuItem, menuItemHandler );
       menuItem.setNoRadioGroup( true );
       TestUtil.fakeListener( menuItem, "Selection", true );
@@ -1032,8 +1065,71 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.MenuTest", {
       assertFalse( TestUtil.getMessageObject().findSetProperty( "w2", "selection" ) );
     },
 
+    testExecuteSubItem_resetCaptureWidget : function() {
+      openSimpleMenu();
+      var subMenu = new Menu();
+      rwt.remote.ObjectRegistry.add( "w7", subMenu, menuHandler );
+      var subMenuItem = new MenuItem( "push" );
+      rwt.remote.ObjectRegistry.add( "w71", subMenuItem, menuItemHandler );
+      subMenu.addMenuItemAt( subMenuItem, 0 );
+      menuItem.setSubMenu( subMenu );
+      TestUtil.flush();
+
+      TestUtil.press( menu, "Down", true );
+      TestUtil.press( menu, "Right", true );
+      TestUtil.flush();
+      TestUtil.press( subMenuItem, "Enter", true );
+      TestUtil.flush();
+
+      assertNull( rwt.event.EventHandler.getCaptureWidget() );
+      menu.destroy();
+    },
+
+    testOpenMenuDoesReDispatchEvents : function() {
+      var text = new rwt.widgets.Text( false );
+      text.addToDocument();
+      var logger = TestUtil.getLogger();
+      text.addEventListener( "mouseover", logger.log );
+      TestUtil.flush();
+      openSimpleMenu();
+
+      TestUtil.mouseOver( text );
+
+      assertEquals( 1, logger.getLog().length );
+    },
+
+    testDisabledMenuDoesNotCaptureEvents : function() {
+      var text = new rwt.widgets.Text( false );
+      text.addToDocument();
+      var logger = TestUtil.getLogger();
+      text.addEventListener( "mouseover", logger.log );
+      TestUtil.flush();
+      openSimpleMenu();
+      menu.setEnabled( false );
+
+      TestUtil.mouseOver( text );
+
+      assertEquals( 1, logger.getLog().length );
+    },
+
+    testExecute_onMouseUp : function() {
+      openSimpleMenu( "push" );
+      rwt.remote.ObjectRegistry.add( "w3", menuItem, menuItemHandler );
+      TestUtil.fakeListener( menuItem, "Selection", true );
+      TestUtil.flush();
+      TestUtil.clearRequestLog();
+
+      TestUtil.fakeMouseEventDOM( menuItem._getTargetNode(), "mousedown" );
+      assertEquals( 0, TestUtil.getRequestsSend() );
+
+      TestUtil.fakeMouseEventDOM( menuItem._getTargetNode(), "mouseup" );
+
+      assertEquals( 1, TestUtil.getRequestsSend() );
+      assertNotNull( TestUtil.getMessageObject().findNotifyOperation( "w3", "Selection" ) );
+    },
+
     testKeyboardControl_KeyDownHoversFirstItemAfterItemsUnhide : function() {
-      createSimpleMenu();
+      openSimpleMenu();
       menu.addMenuItemAt( new MenuItem( "push" ), 1 );
       TestUtil.fakeListener( menu, "Show", true ); // force creation of preItem
       TestUtil.flush();
@@ -1046,7 +1142,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.MenuTest", {
     },
 
     testKeyboardControl_KeyEnterSelectsItem : function() {
-      createSimpleMenu();
+      openSimpleMenu();
       TestUtil.fakeListener( menuItem, "Selection", true );
       TestUtil.flush();
 
@@ -1059,7 +1155,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.MenuTest", {
     },
 
     testKeyboardControl_KeyUpHoversLastItemAfterItemsUnhide : function() {
-      createSimpleMenu();
+      openSimpleMenu();
       menu.addMenuItemAt( new MenuItem( "push" ), 0 );
       TestUtil.flush();
 
@@ -1069,7 +1165,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.MenuTest", {
     },
 
     testKeyboardControl_KeyDownHoversNextItem : function() {
-      createSimpleMenu();
+      openSimpleMenu();
       menu.addMenuItemAt( new MenuItem( "push" ), 0 );
       TestUtil.flush();
 
@@ -1080,7 +1176,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.MenuTest", {
     },
 
     testKeyboardControl_KeyUpHoversPreviousItem : function() {
-      createSimpleMenu();
+      openSimpleMenu();
       menu.addMenuItemAt( new MenuItem( "push" ), 1 );
       TestUtil.flush();
 
@@ -1091,7 +1187,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.MenuTest", {
     },
 
     testKeyboardControl_KeyDownHoversFirstItemWhenLastItemIsHovered : function() {
-      createSimpleMenu();
+      openSimpleMenu();
       menu.addMenuItemAt( new MenuItem( "push" ), 1 );
       menu.addMenuItemAt( new MenuItem( "push" ), 2 );
       TestUtil.flush();
@@ -1103,7 +1199,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.MenuTest", {
     },
 
     testKeyboardControl_KeyUpHoversLastItemWhenFirstItemIsHovered : function() {
-      createSimpleMenu();
+      openSimpleMenu();
       menu.addMenuItemAt( new MenuItem( "push" ), 0 );
       menu.addMenuItemAt( new MenuItem( "push" ), 0 );
       TestUtil.flush();
@@ -1115,7 +1211,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.MenuTest", {
     },
 
     testKeyboardControl_KeyRightOpensSubMenu : function() {
-      createSimpleMenu();
+      openSimpleMenu();
       var subMenu = new Menu();
       rwt.remote.ObjectRegistry.add( "w7", subMenu, menuHandler );
       var subMenuItem = new MenuItem( "push" );
@@ -1136,7 +1232,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.MenuTest", {
     },
 
     testKeyboardControl_KeyEnterOpensSubMenu : function() {
-      createSimpleMenu();
+      openSimpleMenu();
       var subMenu = new Menu();
       rwt.remote.ObjectRegistry.add( "w7", subMenu, menuHandler );
       var subMenuItem = new MenuItem( "push" );
@@ -1157,7 +1253,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.MenuTest", {
     },
 
     testKeyboardControl_KeysControlTopSubMenuOnly : function() {
-      createSimpleMenu();
+      openSimpleMenu();
       var subMenu = new Menu();
       rwt.remote.ObjectRegistry.add( "w7", subMenu, menuHandler );
       var subMenuItem = new MenuItem( "push" );
@@ -1179,7 +1275,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.MenuTest", {
     },
 
     testKeyboardControl_KeyLeftClosesSubMenu : function() {
-      createSimpleMenu();
+      openSimpleMenu();
       var subMenu = new Menu();
       rwt.remote.ObjectRegistry.add( "w7", subMenu, menuHandler );
       subMenu.addMenuItemAt( new MenuItem( "push" ), 0 );
@@ -1198,7 +1294,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.MenuTest", {
     },
 
     testKeyboardControl_ClosingSubMenuReturnsKeyboardControlToParent : function() {
-      createSimpleMenu();
+      openSimpleMenu();
       var subMenu = new Menu();
       rwt.remote.ObjectRegistry.add( "w7", subMenu, menuHandler );
       subMenu.addMenuItemAt( new MenuItem( "push" ), 0 );
@@ -1409,7 +1505,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.MenuTest", {
     },
 
     testDisposeWithAnimation : function() {
-      createSimpleMenu( "push" );
+      openSimpleMenu( "push" );
       TestUtil.flush();
       menu.setAnimation( {
         "slideIn" : [ 100, "easeIn" ]
@@ -1430,7 +1526,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.MenuTest", {
     },
 
     testDisposeWithRunningAnimaton : function() {
-      createSimpleMenu( "push" );
+      openSimpleMenu( "push" );
       rwt.remote.ObjectRegistry.add( "w321", menu, menuHandler );
       menu.hide();
       TestUtil.flush();
@@ -1671,7 +1767,7 @@ rwt.qx.Class.define( "org.eclipse.rwt.test.tests.MenuTest", {
     },
 
     testMenuIsNotFocusRoot : function() {
-      createSimpleMenu( "push" );
+      openSimpleMenu( "push" );
 
       assertFalse( menu.isFocusRoot() );
       assertNull( menu.getFocusRoot() );
@@ -1731,7 +1827,7 @@ var createMenuItemByProtocol = function( id, parentId, style, index ) {
   return ObjectRegistry.getObject( id );
 };
 
-var createSimpleMenu = function( type ) {
+var openSimpleMenu = function( type ) {
   menu = new Menu();
   ObjectRegistry.add( "w3", menu, menuHandler );
   menuItem = new MenuItem( type || "push" );

@@ -22,6 +22,8 @@
   <packaging>pom</packaging>
 
   <modules>
+    <!-- Runtime parent -->
+    <module>releng/org.eclipse.rap.build</module>
     <!-- Runtime projects -->
     <module>bundles/org.eclipse.rap.rwt</module>
     <module>bundles/org.eclipse.rap.rwt.osgi</module>
@@ -59,5 +61,61 @@
     <!-- Builder projects -->
     <module>releng/org.eclipse.rap.clientbuilder</module>
   </modules>
+
+  <profiles>
+    <profile>
+      <id>prepare-release</id>
+
+      <pluginRepositories>
+        <pluginRepository>
+          <id>tycho</id>
+          <url>https://repo.eclipse.org/content/groups/tycho/</url>
+        </pluginRepository>
+      </pluginRepositories>
+
+      <properties>
+        <rap.version.base>2.3.0</rap.version.base>
+        <milestone.version>I</milestone.version>       
+        <newVersion>${rap.version.base}.${maven.build.timestamp}-${milestone.version}</newVersion>
+        <artifacts>org.eclipse.rap.runtime-build,org.eclipse.rap.runtime-parent</artifacts>
+      </properties>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <build>
+        <pluginManagement>
+          <plugins>
+            <!--Use this plugin to set the version to a release or snapshot in Manifests, poms, repositories-->
+            <plugin>
+              <groupId>org.eclipse.tycho</groupId>
+              <artifactId>tycho-versions-plugin</artifactId>
+              <version>0.20.0</version>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+
+        <defaultGoal>org.eclipse.tycho:tycho-versions-plugin:0.20.0-SNAPSHOT:set-version</defaultGoal>
+        <plugins>
+          <plugin>
+            <groupId>org.eclipse.tycho</groupId>
+            <artifactId>tycho-versions-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>set-version</id>
+                <goals>
+                  <goal>set-version</goal>
+                </goals>
+                <configuration>
+                  <newVersion>${newVersion}</newVersion>
+                </configuration>
+                <phase>validate</phase>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+  </profiles>
 
 </project>

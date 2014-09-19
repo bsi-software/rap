@@ -32,8 +32,6 @@ public final class ServerPushManager implements SerializableCompatibility {
   private static final int DEFAULT_REQUEST_CHECK_INTERVAL = 30000;
   private static final int DEFAULT_REQUEST_TIMEOUT = -1;
   private static final String FORCE_PUSH = ServerPushManager.class.getName() + "#forcePush";
-  private static final String REQUEST_START_TIME = ServerPushManager.class.getName()
-                                                   + "#blockStartTime";
   private final ServerPushActivationTracker serverPushActivationTracker;
   private final SerializableLock lock;
   // Flag that indicates whether a request is processed. In that case no
@@ -133,9 +131,6 @@ public final class ServerPushManager implements SerializableCompatibility {
   }
 
   void processRequest( HttpServletResponse response ) {
-    if( requestTimeout >= 0 ) {
-      ContextProvider.getUISession().setAttribute( REQUEST_START_TIME, new Long( System.currentTimeMillis() ) );
-    }
     synchronized( lock ) {
       if( isCallBackRequestBlocked() ) {
         releaseBlockedRequest();
@@ -162,9 +157,9 @@ public final class ServerPushManager implements SerializableCompatibility {
 
   private boolean canReleaseBlockedRequest( HttpServletResponse response, long requestStartTime ) {
     boolean result = false;
-    if( isTimeoutReached() ) {
+    if( !mustBlockCallBackRequest() ) {
       result = true;
-    } else if( !mustBlockCallBackRequest() ) {
+    } else if( isTimeoutReached( requestStartTime ) ) {
       result = true;
     } else if( isSessionExpired( requestStartTime ) ) {
       result = true;
@@ -196,17 +191,15 @@ public final class ServerPushManager implements SerializableCompatibility {
     return result;
   }
 
-  private boolean isTimeoutReached() {
-    if( requestTimeout < 0 ) {
+  private boolean hasRequestTimeout() {
+    return requestTimeout >= 0;
+  }
+
+  private boolean isTimeoutReached( long requestStartTime ) {
+    if ( !hasRequestTimeout() ) {
       return false;
     }
-    Long startTime = (Long)ContextProvider.getUISession().getAttribute( REQUEST_START_TIME );
-    if( startTime != null) {
-      if( System.currentTimeMillis() - startTime.longValue() >= requestTimeout ) {
-        return true;
-      }
-    }
-    return false;
+    return System.currentTimeMillis() - requestStartTime >= requestTimeout;
   }
 
   private static boolean isSessionExpired( long requestStartTime ) {

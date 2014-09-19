@@ -28,7 +28,7 @@ final class UIThread extends Thread implements IUIThreadHolder, ISessionShutdown
     private static final long serialVersionUID = 1L;
   }
 
-  private ServiceContext serviceContext;
+  private volatile ServiceContext serviceContext;
   private UISession uiSession;
   private Runnable shutdownCallback;
   private volatile boolean uiThreadTerminating;

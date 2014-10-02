@@ -126,7 +126,9 @@ rwt.remote.Request.prototype = {
           if( that._request != null ) {
             that._aborted = true;
             that._request.abort();
-            console.log( new Date() +": ServerPush request aborted due to timeout." );
+            if( window.console ) {
+              console.log( new Date() +": ServerPush request aborted due to timeout." );
+            }
           }
         }, this._timeout);
       }
@@ -162,6 +164,9 @@ rwt.remote.Request.prototype = {
         } else {
           if( this._error ) {
             this._error( event );
+            if( window.console ) {
+              console.log( new Date() +": ServerPush request handled by errorhandler. Request aborted: "+this._aborted);
+            }
           }
         }
         if( this._async ) {
@@ -174,7 +179,9 @@ rwt.remote.Request.prototype = {
           if( typeof this._request.responseText !== "unknown" ) {
             text = this._request.responseText;
           }
-          console.log( new Date() +": About to handle the aborted ServerPush request." );
+          if( window.console ) {
+            console.log( new Date() +": About to handle the aborted ServerPush request." );
+          }
           var event = {
             "responseText" : text,
             "status" : this._request.status,

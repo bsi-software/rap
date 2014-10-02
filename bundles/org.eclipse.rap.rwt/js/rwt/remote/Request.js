@@ -25,6 +25,8 @@ rwt.remote.Request = function( url, method, responseType ) {
   this._error = null;
   this._data = null;
   this._timeout = null;
+  this._timeoutObject = null;
+  this._aborted = false;
   this._responseType = responseType;
   this._request = rwt.remote.Request.createXHR();
 };
@@ -41,6 +43,11 @@ rwt.remote.Request.prototype = {
         this._request.abort();
         this._success = null;
         this._error = null;
+        if (this._timeoutObject !== null) {
+          clearTimeout(this._timeoutObject);
+          this._timeoutObject = null;
+        }
+        this._aborted = false;
         this._request = null;
       }
     },
@@ -55,6 +62,7 @@ rwt.remote.Request.prototype = {
       if( urlpar ) {
         url += ( url.indexOf( "?" ) >= 0 ? "&" : "?" ) + urlpar;
       }
+      this._bindOnReadyStateChange();
       this._request.open( this._method, url, this._async );
       this._configRequest();
       this._request.send( post ? this._data : undefined );
@@ -99,21 +107,26 @@ rwt.remote.Request.prototype = {
       return this._data;
     },
 
+    _bindOnReadyStateChange : function() {
+      if( this._shouldUseStateListener() ) {
+        this._request.onreadystatechange = rwt.util.Functions.bind( this._onReadyStateChange, this );
+      }
+    },
+
     _configRequest : function() {
       if( !Client.isWebkit() ) {
         this._request.setRequestHeader( "Referer", window.location.href );
       }
       var contentType = "application/json; charset=UTF-8";
       this._request.setRequestHeader( "Content-Type", contentType );
-      if( this._shouldUseStateListener() ) {
-        this._request.onreadystatechange = rwt.util.Functions.bind( this._onReadyStateChange, this );
-      }
 
       var that = this;
       if( this._timeout > 0 ) {
-        setTimeout(function() {
+        this._timeoutObject = setTimeout(function() {
           if( that._request != null ) {
-    	    that._request.abort();
+            that._aborted = true;
+            that._request.abort();
+            console.log( new Date() +": ServerPush request aborted due to timeout." );
           }
         }, this._timeout);
       }
@@ -129,8 +142,8 @@ rwt.remote.Request.prototype = {
     },
 
     _onReadyStateChange : function() {
+      var text;
       if( this._request.readyState === 4 ) {
-        var text;
         // [if] typeof(..) == "unknown" is IE specific. Used to prevent error:
         // "The data necessary to complete this operation is not yet available"
         if( typeof this._request.responseText !== "unknown" ) {
@@ -153,6 +166,27 @@ rwt.remote.Request.prototype = {
         }
         if( this._async ) {
           this.dispose();
+        }
+      } else {
+        if (this._aborted) { // only true if serverpush was aborted due to timeout
+          // [if] typeof(..) == "unknown" is IE specific. Used to prevent error:
+          // "The data necessary to complete this operation is not yet available"
+          if( typeof this._request.responseText !== "unknown" ) {
+            text = this._request.responseText;
+          }
+          console.log( new Date() +": About to handle the aborted ServerPush request." );
+          var event = {
+            "responseText" : text,
+            "status" : this._request.status,
+            "responseHeaders" : {},
+            "target" : this
+          };
+          if( this._error ) {
+            this._error( event );
+          }
+          if( this._async ) {
+            this.dispose();
+          }
         }
       }
     },

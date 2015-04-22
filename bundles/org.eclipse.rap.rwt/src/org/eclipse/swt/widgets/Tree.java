@@ -127,6 +127,7 @@ public class Tree extends Composite {
   private final ITreeAdapter treeAdapter;
   private int scrollLeft;
   private int topItemIndex;
+  private int topItemIndexBackup;
   private boolean hasVScrollBar;
   private boolean hasHScrollBar;
   private Point itemImageSize;
@@ -536,6 +537,7 @@ public class Tree extends Composite {
   private void setTopItemIndex( int index ) {
     if( index != topItemIndex ) {
       topItemIndex = index;
+      topItemIndexBackup = topItemIndex;
       adjustTopItemIndex();
       updateAllItems();
     }
@@ -2097,6 +2099,7 @@ public class Tree extends Composite {
     int visibleItems = getVisibleItemsCount();
     int visibleRows = getVisibleRowCount( false );
     int correction = visibleRows == 0 ? 1 : 0;
+    topItemIndex = topItemIndexBackup;
     if( topItemIndex > visibleItems - visibleRows - correction ) {
       topItemIndex = Math.max( 0, visibleItems - visibleRows - correction );
     }

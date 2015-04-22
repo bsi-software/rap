@@ -32,7 +32,7 @@ public class TextSizeUtil {
 
   public static Point stringExtent( Font font, String string, boolean markup ) {
     if( markup ) {
-      return determineTextSize( font, string, SWT.DEFAULT, MARKUP_EXTENT );
+      return determineTextSize( font, string, SWT.DEFAULT, MARKUP_EXTENT ,false);
     }
     return stringExtent( font, string );
   }
@@ -41,23 +41,30 @@ public class TextSizeUtil {
     if( isEmptyString( string ) ) {
       return createSizeForEmptyString( font );
     }
-    return determineTextSize( font, string, SWT.DEFAULT, STRING_EXTENT );
+    return determineTextSize( font, string, SWT.DEFAULT, STRING_EXTENT , false);
   }
 
   public static Point textExtent( Font font, String text, int wrapWidth, boolean markup ) {
     if( markup ) {
-      return determineTextSize( font, text, wrapWidth, MARKUP_EXTENT );
+      return determineTextSize( font, text, wrapWidth, MARKUP_EXTENT, false );
     }
     return textExtent( font, text, wrapWidth );
   }
 
+  public static Point textExtentWrapTextWithoutWhitespaces( Font font, String text, int wrapWidth ) {
+    return textExtendInternal( font, text, wrapWidth, true );
+  }
   public static Point textExtent( Font font, String text, int wrapWidth ) {
-    Point result = determineTextSize( font, text, wrapWidth, TEXT_EXTENT );
+    return textExtendInternal( font, text, wrapWidth, false );
+  }
+  private static Point textExtendInternal(Font font, String text, int wrapWidth , boolean wrapTextWithoutSpaces) {
+    Point result = determineTextSize( font, text, wrapWidth, TEXT_EXTENT , wrapTextWithoutSpaces);
     // TODO [fappel]: replace with decent implementation
     if( wrapWidth > 0 && result.x > wrapWidth ) {
       result = adjustWrapDetermination( font, text, wrapWidth );
     }
     return result;
+
   }
 
   public static int getCharHeight( Font font ) {
@@ -99,11 +106,11 @@ public class TextSizeUtil {
     return string.length() == 0;
   }
 
-  private static Point determineTextSize( Font font, String string, int wrapWidth, int mode ) {
+  private static Point determineTextSize( Font font, String string, int wrapWidth, int mode, boolean wrapTextWithoutSpaces ) {
     int normalizedWrapWidth = normalizeWrapWidth( wrapWidth );
     Point result = lookup( font, string, normalizedWrapWidth, mode );
     if( result == null ) {
-      result = estimate( font, string, normalizedWrapWidth, mode );
+      result = estimate( font, string, normalizedWrapWidth, mode, wrapTextWithoutSpaces);
       if( !isTemporaryResize() ) {
         addItemToMeasure( font, string, normalizedWrapWidth, mode );
       }
@@ -131,7 +138,7 @@ public class TextSizeUtil {
     return TextSizeStorageUtil.lookup( fontData, measurementString, wrapWidth, mode );
   }
 
-  private static Point estimate( Font font, String string, int wrapWidth, int mode ) {
+  private static Point estimate( Font font, String string, int wrapWidth, int mode , boolean wrapTextWithoutSpaces) {
     Point result;
     switch( mode ) {
       case STRING_EXTENT: {
@@ -139,7 +146,7 @@ public class TextSizeUtil {
       }
       break;
       case TEXT_EXTENT: {
-        result = TextSizeEstimation.textExtent( font, string, wrapWidth );
+        result = TextSizeEstimation.textExtent( font, string, wrapWidth,wrapTextWithoutSpaces );
       }
       break;
       case MARKUP_EXTENT: {
@@ -163,7 +170,7 @@ public class TextSizeUtil {
   }
 
   private static Point adjustWrapDetermination( Font font, String text, int wrapWidth ) {
-    Point result = TextSizeEstimation.textExtent( font, text, wrapWidth );
+    Point result = TextSizeEstimation.textExtent( font, text, wrapWidth ,false);
     BigDecimal height = new BigDecimal( result.y );
     BigDecimal charHeight = new BigDecimal( TextSizeEstimation.getCharHeight( font ) );
     int rows = height.divide( charHeight, 0, BigDecimal.ROUND_HALF_UP ).intValue();

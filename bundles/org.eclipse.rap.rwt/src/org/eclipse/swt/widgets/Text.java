@@ -56,6 +56,7 @@ import org.eclipse.swt.internal.widgets.textkit.TextThemeAdapter;
  * @since 1.0
  */
 public class Text extends Scrollable {
+  public static final String WRAP_TEXT_WITHOUT_SPACES = "WrapWithoutSpaces";
 
   // This factor must be kept in sync with TextUtil.js#_updateLineHeight
   private static final double LINE_HEIGHT_FACTOR = 1.2;
@@ -806,7 +807,12 @@ public class Text extends Scrollable {
       if( ( getStyle() & SWT.SINGLE ) != 0 ) {
         extent = TextSizeUtil.stringExtent( font, text );
       } else {
-        extent = TextSizeUtil.textExtent( font, text, wrapWidth );
+        Object wrapObject = getData( WRAP_TEXT_WITHOUT_SPACES );
+        if(wrapObject instanceof Boolean && ((Boolean)wrapObject).booleanValue()){
+          extent = TextSizeUtil.textExtentWrapTextWithoutWhitespaces( font, text, wrapWidth );
+        }else{
+          extent = TextSizeUtil.textExtent( font, text, wrapWidth );
+        }
       }
       extent.x = Math.max( extent.x, messageExtent.x );
       extent.y = Math.max( extent.y, messageExtent.y );

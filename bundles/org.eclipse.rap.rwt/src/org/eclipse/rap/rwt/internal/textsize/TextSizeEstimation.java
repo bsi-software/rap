@@ -41,7 +41,7 @@ public final class TextSizeEstimation {
    *
    * @return the estimated size
    */
-  static Point textExtent( Font font, String string, int wrapWidth ) {
+  static Point textExtent( Font font, String string, int wrapWidth, boolean wrapTextWithoutSpaces ) {
     int lineCount = 0;
     int maxWidth = 0;
     String[] lines = EncodingUtil.splitNewLines( string );
@@ -52,7 +52,12 @@ public final class TextSizeEstimation {
       if( wrapWidth > 0 ) {
         boolean done = false;
         while( !done ) {
-          int index = getLongestMatch( line, wrapWidth, font );
+          final int index;
+          if(wrapTextWithoutSpaces){
+            index = getLongestMatchWrapWithoutWhitespaces( line, wrapWidth, font );
+          }else{
+            index = getLongestMatch( line, wrapWidth, font );
+          }
           if( index == 0 || index == line.length() ) {
             // line fits or cannot be wrapped
             done = true;
@@ -82,7 +87,7 @@ public final class TextSizeEstimation {
    * @return the estimated size
    */
   static Point markupExtent( Font font, String markup, int wrapWidth ) {
-    return textExtent( font, removeAllTags( markup ), wrapWidth );
+    return textExtent( font, removeAllTags( markup ), wrapWidth , false);
   }
 
   /**
@@ -170,6 +175,55 @@ public final class TextSizeEstimation {
       }
     }
     return result;
+  }
+
+  private static int getLongestMatchWrapWithoutWhitespaces( String string, int wrapWidth , Font font) {
+    if( getLineWidth( string, font ) < wrapWidth ) {
+      return string.length();
+    }
+    // start splitting
+    int result = getSplitPosByWords( string, wrapWidth ,font);
+    if( result >-1 ) {
+      return result;
+    }
+    return getSplitPosByChars( string, wrapWidth ,font);
+  }
+
+  private static int getSplitPosByWords( String string, int wrapWidth, Font font ) {
+    // remove leading
+    int index = string.indexOf( ' ' );
+    if( index > -1 && getLineWidth( string.substring( 0, index ) ,font) < wrapWidth ) {
+      int tempIndex = string.indexOf( ' ', index + 1 );
+      while( tempIndex > 0 && getLineWidth( string.substring( 0, tempIndex ) ,font) < wrapWidth ) {
+        index = tempIndex;
+        tempIndex = string.indexOf( ' ', index + 1 );
+      }
+      return index;
+    }
+    return -1;
+  }
+
+  private static int getSplitPosByChars( String input, int wrapWidth, Font font ) {
+    String string = input;
+    int index = string.indexOf( ' ' );
+    if( index > -1 ) {
+      string = string.substring( 0, index );
+    }
+    // binary search
+    int low = 0;
+    int high = string.length() - 1;
+    while( low <= high ) {
+      int mid = ( low + high ) >>> 1;
+      int lineWidth = getLineWidth( string.substring( 0, mid ) ,font);
+      if( lineWidth > wrapWidth ) {
+        high = mid - 1;
+      } else if( lineWidth < wrapWidth ) {
+        low = mid + 1;
+      } else {
+        return mid;
+      }
+    }
+    return high;
   }
 
   /**

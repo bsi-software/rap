@@ -77,11 +77,11 @@ public class TextSizeEstimation_Test {
     assertTrue( extent12.x > extent10.x );
     string = "Test1 Test2 Test3 Test4 Test5";
     int width = 0;
-    Point extent = TextSizeEstimation.textExtent( font10, string , width );
+    Point extent = TextSizeEstimation.textExtent( font10, string , width, false );
     assertTrue( extent.y >= charHeight );
     assertTrue( extent.y < charHeight * 2 );
     width = 40;
-    extent = TextSizeEstimation.textExtent( font10, string , width );
+    extent = TextSizeEstimation.textExtent( font10, string , width , false);
     assertTrue( extent.x <= width );
     assertTrue( extent.y >= charHeight * 2 );
     assertTrue( extent.y < charHeight * 1.5 * 5 );
@@ -99,12 +99,12 @@ public class TextSizeEstimation_Test {
     assertTrue( stringExtent.y >= charHeight );
     assertTrue( stringExtent.y < charHeight * 1.5 );
     String testString2L = testString + "\r\n" + testString;
-    Point textExtent2L = TextSizeEstimation.textExtent( font10, testString2L, 0 );
+    Point textExtent2L = TextSizeEstimation.textExtent( font10, testString2L, 0 , false);
     assertEquals( stringExtent.x, textExtent2L.x );
     assertTrue( textExtent2L.y >= charHeight * 2 );
     assertTrue( textExtent2L.y < charHeight * 3 );
     String testString5L = testString + "\r\n" + "\r\n" + testString + "\r\n" + "\r\n";
-    Point textExtent5L = TextSizeEstimation.textExtent( font10 , testString5L, 0 );
+    Point textExtent5L = TextSizeEstimation.textExtent( font10 , testString5L, 0, false );
     assertEquals( stringExtent.x, textExtent5L.x );
     assertTrue( textExtent5L.y >= charHeight * 5 );
     assertTrue( textExtent5L.y < charHeight * 5 + charHeight * 1.5 );
@@ -114,7 +114,7 @@ public class TextSizeEstimation_Test {
   @Test
   public void testEndlessLoopProblem() {
     Font font = new Font( display, "Helvetica", 11, SWT.NORMAL );
-    Point extent = TextSizeEstimation.textExtent( font, "Zusatzinfo (Besuch)", 100 );
+    Point extent = TextSizeEstimation.textExtent( font, "Zusatzinfo (Besuch)", 100 , false);
     assertEquals( 100, extent.x );
   }
 

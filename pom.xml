@@ -75,9 +75,10 @@
 
       <properties>
         <rap.version.base>2.3.0</rap.version.base>
-        <milestone.version>I</milestone.version>       
+        <milestone.version>I</milestone.version>
         <newVersion>${rap.version.base}.${maven.build.timestamp}-${milestone.version}</newVersion>
         <artifacts>org.eclipse.rap.runtime-build,org.eclipse.rap.runtime-parent</artifacts>
+        <maven.build.timestamp.format>yyyyMMdd-HHmm</maven.build.timestamp.format>
       </properties>
       <activation>
         <activeByDefault>false</activeByDefault>

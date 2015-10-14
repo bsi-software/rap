@@ -11,6 +11,13 @@
  ******************************************************************************/
 package org.eclipse.rap.rwt.internal.lifecycle;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+
+import java.util.concurrent.Executor;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 import org.eclipse.rap.rwt.internal.application.ApplicationContextImpl;
 import org.eclipse.rap.rwt.internal.service.ContextProvider;
 import org.eclipse.rap.rwt.internal.service.ServiceContext;
@@ -27,6 +34,8 @@ final class UIThread extends Thread implements IUIThreadHolder, ISessionShutdown
   static final class UIThreadTerminatedError extends ThreadDeath {
     private static final long serialVersionUID = 1L;
   }
+
+  private static final Executor executor = new ThreadPoolExecutor(1, 40, 60, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
 
   private volatile ServiceContext serviceContext;
   private UISession uiSession;
@@ -115,16 +124,20 @@ final class UIThread extends Thread implements IUIThreadHolder, ISessionShutdown
     setServiceContext( serviceContext );
     uiThreadTerminating = true;
     // interrupt the UI thread that is expected to wait in switchThread or already be terminated
-    synchronized( getLock() ) {
-      getThread().interrupt();
-    }
-    try {
-      getThread().join();
-    } catch( InterruptedException e ) {
-      String msg = "Received InterruptedException while terminating UIThread";
-      ServletLog.log( msg, e );
-    }
-    uiThreadTerminating = false;
+    executor.execute(new Runnable() {
+      public void run() {
+        synchronized( getLock() ) {
+          getThread().interrupt();
+        }
+        try {
+          getThread().join(SECONDS.toMillis(60));
+        } catch( InterruptedException e ) {
+          String msg = "Received InterruptedException while terminating UIThread";
+          ServletLog.log( msg, e );
+        }
+        uiThreadTerminating = false;
+      }
+    });
   }
 
   public Thread getThread() {

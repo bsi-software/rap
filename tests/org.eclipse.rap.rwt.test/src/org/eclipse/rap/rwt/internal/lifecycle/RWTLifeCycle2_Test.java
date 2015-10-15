@@ -133,7 +133,7 @@ public class RWTLifeCycle2_Test {
       assertEquals( EXCEPTION_MSG, e.getMessage() );
     }
 
-    Thread.sleep(5000);
+    Thread.sleep(5000); // BSI: UIThread.terminateThread runs async
 
     assertNotNull( session.getAttribute( TEST_SESSION_ATTRIBUTE ) );
     assertTrue( createUIEntered );
@@ -156,7 +156,7 @@ public class RWTLifeCycle2_Test {
       assertEquals( "/ by zero", expected.getMessage() );
     }
 
-    Thread.sleep(5000);
+    Thread.sleep(5000); // BSI: UIThread.terminateThread runs async
 
     assertTrue( createUIEntered );
     assertTrue( createUIExited );

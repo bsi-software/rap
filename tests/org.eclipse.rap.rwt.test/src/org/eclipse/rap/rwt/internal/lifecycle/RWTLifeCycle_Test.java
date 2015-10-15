@@ -757,6 +757,7 @@ public class RWTLifeCycle_Test {
     String uiThreadName = uiThreadHolder.getThread().getName();
     // Invalidate session
     invalidateSession( uiSession );
+    Thread.sleep(5000);
     //
     assertFalse( uiThreadHolder.getThread().isAlive() );
     assertFalse( uiSession.isBound() );
@@ -813,6 +814,7 @@ public class RWTLifeCycle_Test {
     lifeCycle.execute();
     // Invalidate session
     invalidateSession( uiSession );
+    Thread.sleep(5000);
     //
     assertFalse( uiSession.isBound() );
     assertEquals( uiThreadName[ 0 ], invalidateThreadName[ 0 ] );
@@ -829,6 +831,7 @@ public class RWTLifeCycle_Test {
     RWTLifeCycle lifeCycle = getLifeCycle();
     lifeCycle.execute();
     invalidateSession( uiSession );
+    Thread.sleep(5000);
     assertEquals( "display disposed", log.toString() );
   }
 
@@ -840,6 +843,7 @@ public class RWTLifeCycle_Test {
     RWTLifeCycle lifeCycle = getLifeCycle();
     lifeCycle.execute();
     invalidateSession( uiSession );
+    Thread.sleep(5000);
     assertEquals( "disposeEvent, beforeDestroy", log.toString() );
   }
 

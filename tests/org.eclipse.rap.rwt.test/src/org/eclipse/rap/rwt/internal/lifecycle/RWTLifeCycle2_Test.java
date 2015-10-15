@@ -133,6 +133,8 @@ public class RWTLifeCycle2_Test {
       assertEquals( EXCEPTION_MSG, e.getMessage() );
     }
 
+    Thread.sleep(5000);
+
     assertNotNull( session.getAttribute( TEST_SESSION_ATTRIBUTE ) );
     assertTrue( createUIEntered );
     assertTrue( createUIExited );
@@ -142,7 +144,7 @@ public class RWTLifeCycle2_Test {
   }
 
   @Test
-  public void testSessionShutdownAfterExceptionInInitialRequest() {
+  public void testSessionShutdownAfterExceptionInInitialRequest() throws Exception {
     Class<? extends EntryPoint> entryPoint = ExceptionInCreateUIEntryPoint.class;
     getApplicationContext().getEntryPointManager().register( "/test", entryPoint, null );
 
@@ -153,6 +155,8 @@ public class RWTLifeCycle2_Test {
     } catch( Exception expected ) {
       assertEquals( "/ by zero", expected.getMessage() );
     }
+
+    Thread.sleep(5000);
 
     assertTrue( createUIEntered );
     assertTrue( createUIExited );
